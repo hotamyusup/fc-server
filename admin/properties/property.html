@@ -1,0 +1,308 @@
+<!doctype html>
+<html class="no-js" lang="en">
+<head>
+	<meta charset="utf-8">
+	<meta http-equiv="x-ua-compatible" content="ie=edge">
+	<title>Fire Cloud Admin</title>
+	<meta name="description" content="">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<link rel="apple-touch-icon" href="apple-touch-icon.png">
+	<link rel="stylesheet" href="/admin/css/vendor.css">
+	<link rel="stylesheet" href="/admin/css/app.css">
+	<script>
+		var themeSettings = (localStorage.getItem('themeSettings')) ? JSON.parse(localStorage.getItem('themeSettings')) :
+            {};
+		var themeName = themeSettings.themeName || 'red';
+		if (themeName) {
+			document.write('<link rel="stylesheet" id="theme-style" href="/admin/css/app-' + themeName + '.css">');
+		}
+		else {
+			document.write('<link rel="stylesheet" id="theme-style" href="/admin/css/app.css">');
+		}
+	</script>
+</head>
+<body>
+	<div class="main-wrapper">
+		<div class="app" id="app">
+		<header class="header">
+				<div class="header-block header-block-collapse d-lg-none d-xl-none">
+					<button class="collapse-btn" id="sidebar-collapse-btn">
+						<i class="fa fa-bars"></i>
+					</button>
+				</div>
+				<div class="header-block header-block-search"></div>
+				<div class="header-block header-block-buttons"></div>
+				<div class="header-block header-block-nav"></div>
+			</header>
+			<aside class="sidebar">
+				<div class="sidebar-container">
+					<div class="sidebar-header">
+						<div class="brand">Fire Cloud Admin</div>
+					</div>
+					<nav class="menu">
+						<ul class="sidebar-menu metismenu" id="sidebar-menu">
+							<li class="active">
+								<a href="/admin/properties">
+									<i class="fa fa-th-large"></i> Properties
+								</a>
+							</li>
+							<li>
+								<a href="/admin/users">
+									<i class="fa fa-users"></i> Users
+								</a>
+							</li>
+							<li>
+								<a href="/admin/organizations">
+									<i class="fa fa-dot-circle-o"></i> Organizations
+								</a>
+							</li>
+							<li>
+								<a href="/admin/equipments">
+									<i class="fa fa-lightbulb-o"></i> Equipments
+								</a>
+							</li>
+							<li>
+								<a href="/admin/constructiontypes">
+									<i class="fa fa-building-o"></i> Construction Types
+								</a>
+							</li>
+							<li>
+								<a href="/admin/occupancytypes">
+									<i class="fa fa-home"></i> Occupancy Types
+								</a>
+							</li>
+							<li>
+								<a href="/admin/logout.html">
+									<i class="fa fa-lock"></i> Log out
+								</a>
+							</li>
+						</ul>
+					</nav>
+				</div>
+			</aside>
+			<div class="sidebar-overlay" id="sidebar-overlay"></div>
+			<div class="sidebar-mobile-menu-handle" id="sidebar-mobile-menu-handle"></div>
+			<div class="mobile-menu-handle"></div>
+			<article class="content dashboard-page">
+				<section class="section" id="users">
+					<div class="row">
+						<div class="col-xl-12">
+							<div class="card items" data-exclude="xs,sm,lg">
+								<div class="card-header bordered">
+									<div class="header-block">
+										<h3 class="title"> Property Details </h3>
+
+									</div>
+									<div class="header-block pull-right">
+										
+									</div>
+								</div>
+								<ul class="item-list striped">
+									<li class="item">
+										<div class="item-row">
+											<div class="item-col item-col-title no-overflow">
+												<h4 class="item-title no-wrap">Organization</h4>
+											</div>
+											<div class="item-col item-col-title no-overflow">
+												<span class="item-title no-wrap" data-bind="text: Organization.Title"></span>
+											</div>
+										</div>
+									</li>
+									<li class="item">
+										<div class="item-row">
+											<div class="item-col item-col-title no-overflow">
+												<h4 class="item-title no-wrap">Title</h4>
+											</div>
+											<div class="item-col item-col-title no-overflow">
+												<h4 class="item-title no-wrap" data-bind="text: Property.Title"></h4>
+											</div>
+										</div>
+									</li>
+									<li class="item">
+										<div class="item-row">
+											<div class="item-col item-col-title no-overflow">
+												<h4 class="item-title no-wrap">Property Manager</h4>
+											</div>
+											<div class="item-col item-col-title no-overflow">
+												<h4 class="item-title no-wrap" data-bind="text: PropertyManager.Title"></h4>
+											</div>
+										</div>
+									</li>
+									<li class="item">
+										<div class="item-row">
+											<div class="item-col item-col-title no-overflow">
+												<h4 class="item-title no-wrap">Buildings</h4>
+											</div>
+											<div class="item-col item-col-title no-overflow">
+												<span class="item-title no-wrap" data-bind="text: Property.Buildings.length"></span>
+												 &emsp; <a href="javascript:;;" data-bind="attr: {href:'buildings.html?i='+Property._id}" class="userlink">(List)</a>
+											</div>
+										</div>
+									</li>
+									<li class="item">
+										<div class="item-row">
+											<div class="item-col item-col-title no-overflow">
+												<h4 class="item-title no-wrap">Street</h4>
+											</div>
+											<div class="item-col item-col-title no-overflow">
+												<span class="item-title no-wrap" data-bind="text: Property.Street"></span>
+											</div>
+										</div>
+									</li>
+									<li class="item">
+										<div class="item-row">
+											<div class="item-col item-col-title no-overflow">
+												<h4 class="item-title no-wrap">Zip Code</h4>
+											</div>
+											<div class="item-col item-col-title no-overflow">
+												<span class="item-title no-wrap" data-bind="text: Property.ZipCode"></span>
+											</div>
+										</div>
+									</li>
+									<li class="item">
+										<div class="item-row">
+											<div class="item-col item-col-title no-overflow">
+												<h4 class="item-title no-wrap">City</h4>
+											</div>
+											<div class="item-col item-col-title no-overflow">
+												<span class="item-title no-wrap" data-bind="text: Property.City"></span>
+											</div>
+										</div>
+									</li>
+									<li class="item">
+										<div class="item-row">
+											<div class="item-col item-col-title no-overflow">
+												<h4 class="item-title no-wrap">State</h4>
+											</div>
+											<div class="item-col item-col-title no-overflow">
+												<span class="item-title no-wrap" data-bind="text: Property.State"></span>
+											</div>
+										</div>
+									</li>
+									<li class="item">
+										<div class="item-row">
+											<div class="item-col item-col-title no-overflow">
+												<h4 class="item-title no-wrap">Construction Year</h4>
+											</div>
+											<div class="item-col item-col-title no-overflow">
+												<span class="item-title no-wrap" data-bind="text: Property.YearConstructed"></span>
+											</div>
+										</div>
+									</li>
+									<li class="item">
+										<div class="item-row">
+											<div class="item-col item-col-title no-overflow">
+												<h4 class="item-title no-wrap">Nr. of Stories</h4>
+											</div>
+											<div class="item-col item-col-title no-overflow">
+												<span class="item-title no-wrap" data-bind="text: Property.Stories"></span>
+											</div>
+										</div>
+									</li>
+									<li class="item">
+										<div class="item-row">
+											<div class="item-col item-col-title no-overflow">
+												<h4 class="item-title no-wrap">Construction Type</h4>
+											</div>
+											<div class="item-col item-col-title no-overflow">
+												<span class="item-title no-wrap" data-bind="text: ConstructionType.Title"></span>
+											</div>
+										</div>
+									</li>
+									<li class="item">
+										<div class="item-row">
+											<div class="item-col item-col-title no-overflow">
+												<h4 class="item-title no-wrap">Occupancy Type</h4>
+											</div>
+											<div class="item-col item-col-title no-overflow">
+												<span class="item-title no-wrap" data-bind="text: OccupancyType.Title"></span>
+											</div>
+										</div>
+									</li>
+									<li class="item">
+										<div class="item-row">
+											<div class="item-col item-col-title no-overflow">
+												<h4 class="item-title no-wrap">Contacts</h4>
+											</div>
+											<div class="item-col item-col-title no-overflow" data-bind="foreach: Property.Contacts">
+												<span class="item-title no-wrap" data-bind="text:Title"></span> &emsp;(<span class="item-title no-wrap" data-bind="text:Phone"></span>) &emsp;<span class="item-title no-wrap" data-bind="text:Email"></span>
+											</div>
+										</div>
+									</li>
+									<li class="item">
+										<div class="item-row">
+											<div class="item-col item-col-title no-overflow">
+												<h4 class="item-title no-wrap">Map</h4>
+											</div>
+											<div class="item-col item-col-title no-overflow">
+												<a href="javascript:;;" data-bind="attr: {target:'_blank', href:Property.Map}" class="userlink">Show</a>
+											</div>
+										</div>
+									</li>
+									<li class="item">
+										<div class="item-row">
+											<div class="item-col item-col-title no-overflow">
+												<h4 class="item-title no-wrap">Picture</h4>
+											</div>
+											<div class="item-col item-col-title no-overflow">
+												<a href="javascript:;;" data-bind="attr: {target:'_blank', href:Property.Picture}" class="userlink">Show</a>
+											</div>
+										</div>
+									</li>
+								</ul>
+							</div>
+						</div>
+					</div>
+				</section>
+			</article>
+			<footer class="footer"></footer>
+		</div>
+	</div>
+	<!-- Reference block for JS -->
+	<div class="ref" id="ref">
+		<div class="color-primary"></div>
+		<div class="chart">
+			<div class="color-primary"></div>
+			<div class="color-secondary"></div>
+		</div>
+	</div>
+	<script src="/admin/js/vendor.js"></script>
+	<script src="/admin/js/app.js"></script>
+	<script src="/admin/js/custom.js"></script>
+	<script type="text/javascript">
+		$(function () {
+			Site.init();
+			var ID = QueryString("i");
+			var Model = {};
+
+			API.property(ID, function (data) {
+				Model.Property = data;
+				var i = 0;
+
+				API.constructiontype(data.ConstructionType, function (data) {
+					Model.ConstructionType = data;
+					i++;
+				});	
+				API.organization(data.Organization, function (data) {
+					Model.Organization = data;
+					i++;
+				});
+
+				API.occupancytype(data.OccupancyUse, function (data) {
+					Model.OccupancyType = data;
+					i++;
+				});
+
+				API.user(data.PropertyManager, function (data) {
+					Model.PropertyManager = data;
+					i++;
+				});
+
+				var Loader = setInterval(function(){if(i == 4){ko.applyBindings(Model); clearInterval(Loader);}},100);
+			});
+
+		});
+
+	</script>
+</body>
+</html>
