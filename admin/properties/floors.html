@@ -94,7 +94,7 @@
 
 									</div>
 									<div class="header-block pull-right" data-bind="text: Building.Title">
-										
+
 									</div>
 								</div>
 								<ul class="item-list striped" data-bind="foreach: Building.Floors">
@@ -104,7 +104,10 @@
 												<h4 class="item-title no-wrap" data-bind="text: Title"></h4>
 											</div>
 											<div class="item-col text-right">
-												<div><a href="javascript:;;" data-bind="attr: {href:'devices.html?i='+_id+'&p='+$parent.Property._id+'&b='+$parent.Building._id}" class="userlink">Devices (<span data-bind="text:Devices.length"></span>)</a></div>
+												<div>
+													<a href="javascript:;;" data-bind="attr: {href:'devices.html?i='+_id+'&p='+$parent.Property._id+'&b='+$parent.Building._id}" class="userlink">Devices (<span data-bind="text:Devices.length"></span>)</a>
+													<a href="#" data-bind="click: $parent.deleteFloor" class="userlink">Delete</a>
+												</div>
 											</div>
 										</div>
 									</li>
@@ -137,6 +140,26 @@
 			API.property(PropertyID, function (data) {
 				Model.Property = data;
 				Model.Building = _.findWhere(data.Buildings,{_id:ID});
+				Model.Building.Floors = _.filter(Model.Building.Floors, function(floor) {
+					floor.Devices = _.filter(floor.Devices, function(device) {
+						return device.Status > 0;
+					});
+					return floor.Status > 0;
+				});
+				Model.deleteFloor = function(floor, evt) {
+					if (confirm('Are you sure you want to delete?')) {
+						floor.Status = -1;
+						floor.updated_at = new Date();
+						floor.PropertyID = PropertyID;
+						floor.BuildingID = ID;
+						floor.FloorID = floor._id;
+						API.post('/floors/' + floor._id,
+						floor,
+						function (data) {
+							location.reload();
+						});
+					}
+				};
 				ko.applyBindings(Model);
 			});
 		});
