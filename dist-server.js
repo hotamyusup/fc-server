@@ -4,6 +4,7 @@
 var Hapi = require('hapi');
 var server = new Hapi.Server();
 var Routes = require('./routes');
+//var serverport = require('./misc/server_port');
 var db = require('./misc/db');
 var Inert = require('inert');
 
