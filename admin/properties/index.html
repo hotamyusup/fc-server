@@ -94,7 +94,7 @@
 
 									</div>
 									<div class="header-block pull-right">
-										
+
 									</div>
 								</div>
 								<ul class="item-list striped" data-bind="foreach: properties">
@@ -132,7 +132,7 @@
 		</div>
 	</div>
 	<script src="/admin/js/vendor.js"></script>
-		
+
 	<script src="/admin/js/app.js"></script>
 	<script src="/admin/js/custom.js"></script>
 	<script type="text/javascript">
@@ -140,6 +140,11 @@
 			Site.init();
 			API.properties(function (data) {
 				data = _.sortBy(data, 'Title');
+				data.forEach(property => {
+					property.Buildings = _.filter(property.Buildings, function(building) {
+						return building.Status > 0;
+					});
+				});
 				ko.applyBindings({ properties: data });
 			});
 		});

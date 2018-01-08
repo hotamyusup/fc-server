@@ -94,7 +94,7 @@
 
 									</div>
 									<div class="header-block pull-right" data-bind="text: Floor.Title">
-										
+
 									</div>
 								</div>
 								<ul class="item-list striped" data-bind="foreach: Floor.Devices">
@@ -110,7 +110,10 @@
 												<div><a href="javascript:;;" data-bind="attr: {href:'records.html?i='+_id+'&p='+$parent.Property._id+'&b='+$parent.Building._id+'&f='+$parent.Floor._id}" class="userlink">History (<span data-bind="text:Records.length"></span>)</a></div>
 											</div>
 											<div class="item-col text-right">
-												<div><a href="javascript:;;" data-bind="attr: {href:'device.html?i='+_id+'&p='+$parent.Property._id+'&b='+$parent.Building._id+'&f='+$parent.Floor._id}" class="userlink">Details</a></div>
+												<div>
+													<a href="javascript:;;" data-bind="attr: {href:'device.html?i='+_id+'&p='+$parent.Property._id+'&b='+$parent.Building._id+'&f='+$parent.Floor._id}" class="userlink">Details</a>
+													<a href="#" data-bind="click: $parent.deleteDevice" class="userlink">Delete</a>
+												</div>
 											</div>
 										</div>
 									</li>
@@ -145,13 +148,29 @@
 				Model.Property = data;
 				Model.Building = _.findWhere(data.Buildings,{_id:BuildingID});
 				Model.Floor = _.findWhere(Model.Building.Floors,{_id:ID});
+				Model.Floor.Devices = _.filter(Model.Floor.Devices, function(device) {
+					return device.Status > 0;
+				});
+				Model.deleteDevice = function(device, evt) {
+					if (confirm('Are you sure you want to delete?')) {
+						device.Status = -1;
+						device.updated_at = new Date();
+						device.PropertyID = PropertyID;
+						device.BuildingID = BuildingID;
+						device.FloorID = ID;
+						API.post('/devices/' + device._id,
+						device,
+						function (data) {
+							location.reload();
+						});
+					}
+				};
 				API.equipments(function(equipments){
 					Model.Equipments = equipments;
 					ko.applyBindings(Model);
 				});
 			});
 		});
-
 	</script>
 </body>
 </html>

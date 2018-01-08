@@ -94,7 +94,7 @@
 
 									</div>
 									<div class="header-block pull-right" data-bind="text: Property.Title">
-										
+
 									</div>
 								</div>
 								<ul class="item-list striped" data-bind="foreach: Property.Buildings">
@@ -138,6 +138,12 @@
 			var Model = {};
 			API.property(ID, function (data) {
 				Model.Property = data;
+				Model.Property.Buildings = _.filter(data.Buildings, function(building) {
+					building.Floors = _.filter(building.Floors, function(floor) {
+						return floor.Status > 0;
+					});
+					return building.Status > 0;
+				});
 				ko.applyBindings(Model);
 			});
 		});

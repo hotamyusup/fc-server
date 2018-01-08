@@ -1,5 +1,6 @@
 ﻿var User;
 var Config = { APIURL: "http://104.131.141.177", BaseURL: "http://104.131.141.177/admin" }
+// var Config = { APIURL: "http://192.168.1.30:8080", BaseURL: "http://192.168.1.30:8080/admin" }
 
 $(function () {
 	Site = {
@@ -112,13 +113,11 @@ $(function () {
 		},
 		properties: function (callback) {
 			API.get("/properties", function (data) {
-				console.log(data);
 				callback(data);
 			});
 		},
 		property: function (id, callback) {
 			API.get("/properties/"+id, function (data) {
-				console.log(data);
 				callback(data);
 			});
 		},

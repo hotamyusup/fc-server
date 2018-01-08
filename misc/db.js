@@ -17,7 +17,7 @@ exports.db = db;
 */
 
 
-//var db = Mongoose.connect('mongodb://localhost:27017/Fire', {useMongoClient: true});
+// var db = Mongoose.connect('mongodb://localhost:27017/Fire', {useMongoClient: true});
 var db = Mongoose.connect('mongodb://localhost:37017/Firedev', {useMongoClient: true});
 
 db.on('error', console.error.bind(console, 'connection error'));
@@ -27,4 +27,3 @@ db.once('open', function callback() {
 
 exports.Mongoose = Mongoose;
 exports.db = db;
-
