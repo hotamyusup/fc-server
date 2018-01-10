@@ -12,9 +12,9 @@ var User = require('../schema/user').User;
 exports.all = {
     handler: function (request, reply) {
         var hash = request.query.hash;
-        
+
         if(!hash){return reply(Boom.unauthorized());}
-        
+
         User.findOne({ '_id' : hash }, function (err, user) {
         	if (!user) {
         		return reply(Boom.unauthorized());
@@ -85,7 +85,7 @@ exports.update = {
                     return reply(Boom.forbidden(err)); // HTTP 403
                 });
             }
-            else {  
+            else {
                 return reply(Boom.badImplementation(err)); // 500 error
             }
         });
@@ -108,8 +108,9 @@ exports.upsertdevice = {
                     var device = new Device(request.payload);
                     device.Status = 1;
                     equipment.Devices.push(device);
-                    equipment.save();
-                    return reply(equipment);
+                    equipment.save(function(err) {
+                      return reply(equipment);
+                    });
                 }else{
                     _Device.Title = request.payload.Title;
                     _Device.Status = request.payload.Status;
@@ -119,10 +120,9 @@ exports.upsertdevice = {
                     return reply(equipment);
                 }
             }
-            else {  
+            else {
                 return reply(Boom.badImplementation(err)); // 500 error
             }
         });
     }
 };
-

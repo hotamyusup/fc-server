@@ -10,11 +10,15 @@ var DeviceSchema = new schema({
     Title: {type: String},
     Color:{type:String},
     Status:{type: Number}
+}, {
+  usePushEach: true
 });
 
 var EquipmentSchema = new schema({
     Title: {type: String},
     Devices: [DeviceSchema]
+}, {
+  usePushEach: true
 });
 
 var equipment = mongoose.model('Equipments', EquipmentSchema);
