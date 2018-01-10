@@ -1,2 +1,4 @@
-/img
+img/*
+data/*
+log/*
 node_modules

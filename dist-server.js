@@ -4,11 +4,12 @@
 var Hapi = require('hapi');
 var server = new Hapi.Server();
 var Routes = require('./routes');
+//var serverport = require('./misc/server_port');
 var db = require('./misc/db');
 var Inert = require('inert');
 
 server.register(Inert, function () {
-    server.connection({port: 80,routes: { cors: true }});
+    server.connection({port: 8080,routes: { cors: true }});
     server.route(Routes.endpoints);
     //server.timeout = 120000;
     server.start(function(e) { console.log('Loud and clear: http://104.131.141.177') });
