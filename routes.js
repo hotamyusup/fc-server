@@ -129,7 +129,11 @@ exports.endpoints = [
     path: "/equipments/{EquipmentID}",
     config: Equipment.update
   },
-
+  {
+    method: "POST",
+    path: "/equipments/delete/{EquipmentID}",
+    config: Equipment.delete
+  },
   {
     method: "POST",
     path: "/equipments/device/{EquipmentID}",

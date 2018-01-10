@@ -127,3 +127,19 @@ exports.upsertdevice = {
         });
     }
 };
+
+exports.delete = {
+  handler: function (request, reply) {
+      var hash = request.query.hash;
+      if(!hash){return reply(Boom.unauthorized());}
+      User.findOne({ '_id' : hash }, function (err, user) {
+          if (!user) {return reply(Boom.unauthorized());}
+      });
+      Equipment.remove({ '_id' : request.params.EquipmentID }, function (err) {
+          if (!err) {
+              return reply();
+          }
+          return reply(Boom.badImplementation(err)); // 500 error
+      });
+  }
+};
