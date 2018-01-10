@@ -116,8 +116,9 @@ exports.upsertdevice = {
                     _Device.Status = request.payload.Status;
                     _Device.Color = request.payload.Color;
 
-                    equipment.save();
-                    return reply(equipment);
+                    equipment.save(function(err) {
+                      return reply(equipment);
+                    });
                 }
             }
             else {
