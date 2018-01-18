@@ -23,8 +23,15 @@ exports.upsert = {
                 if(!_Building){
                     var building = new Building(request.payload);
                     property.Buildings.push(building);
-                    property.save();
-                    return reply(property);
+                    property.save(function (err, property) {
+                        if (!err) {
+                            return reply(property); // HTTP 201
+                        }
+                        if (11000 === err.code || 11001 === err.code) {
+                            return reply(Boom.forbidden("please provide another id, it already exist"));
+                        }
+                        return reply(Boom.forbidden(err)); // HTTP 403
+                    });
                 }else{
                     _Building.Title = request.payload.Title;
                     _Building.Map = request.payload.Map;
@@ -34,12 +41,17 @@ exports.upsert = {
                     _Building.Status = request.payload.Status;
                     _Building.updated_at = request.payload.updated_at;
 
-                    property.save();
-                    return reply(property);
+                    property.save(function (err, property) {
+                        if (!err) {
+                            return reply(property); // HTTP 201
+                        }
+                        if (11000 === err.code || 11001 === err.code) {
+                            return reply(Boom.forbidden("please provide another id, it already exist"));
+                        }
+                        return reply(Boom.forbidden(err)); // HTTP 403
+                    });
                 }
             }
-
-            return reply(Boom.badImplementation(err)); // 500 error
         });
     }
 };

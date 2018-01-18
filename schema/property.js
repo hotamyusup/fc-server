@@ -48,6 +48,8 @@ var DeviceSchema = new schema({
     Status: {type:Number},
     created_at: {type: Date},
     updated_at: {type: Date}
+}, {
+  usePushEach: true
 });
 
 var FloorSchema = new schema({
@@ -59,6 +61,8 @@ var FloorSchema = new schema({
     Status: {type:Number},
     created_at: {type: Date},
     updated_at: {type: Date}
+}, {
+  usePushEach: true
 });
 
 var BuildingSchema = new schema({
@@ -71,6 +75,8 @@ var BuildingSchema = new schema({
     Status: {type:Number},
     created_at: {type: Date},
     updated_at: {type: Date}
+}, {
+  usePushEach: true
 });
 
 var ContactSchema = new schema({
@@ -104,6 +110,8 @@ var PropertySchema = new schema({
     Status:{type:Number},
     created_at: {type: Date},
     updated_at: {type: Date}
+}, {
+  usePushEach: true
 });
 
 var property = mongoose.model('Properties', PropertySchema);
