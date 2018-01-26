@@ -57,8 +57,6 @@ exports.upsert = {
     }
 };
 
-
-
 exports.create = {
     handler: function (request, reply) {
         var hash = request.query.hash;
@@ -71,6 +69,29 @@ exports.create = {
             if (!err) {
                 var _Building = property.Buildings.id(request.payload.BuildingID);
                 var floor = new Floor(request.payload);
+                _Building.Floors.push(floor);
+                property.save();
+                return reply(property);
+            }
+
+            return reply(Boom.badImplementation(err)); // 500 error
+        });
+    }
+};
+
+exports.duplicate = {
+    handler: function (request, reply) {
+        var hash = request.query.hash;
+        if(!hash){return reply(Boom.unauthorized());}
+        User.findOne({ '_id' : hash }, function (err, user) {
+            if (!user) {return reply(Boom.unauthorized());}
+        });
+
+        var newFloor = JSON.parse(request.payload.content);
+        Property.findOne({ '_id' : newFloor.PropertyID }, function (err, property) {
+            if (!err) {
+                var _Building = property.Buildings.id(newFloor.BuildingID);
+                var floor = new Floor(newFloor);
                 _Building.Floors.push(floor);
                 property.save();
                 return reply(property);

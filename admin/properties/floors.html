@@ -105,6 +105,7 @@
 											</div>
 											<div class="item-col text-right">
 												<div>
+													<a href="#" data-bind="click: $parent.copyFloor" class="userlink">Copy</a>
 													<a href="javascript:;;" data-bind="attr: {href:'devices.html?i='+_id+'&p='+$parent.Property._id+'&b='+$parent.Building._id}" class="userlink">Devices (<span data-bind="text:Devices.length"></span>)</a>
 													<a href="#" data-bind="click: $parent.deleteFloor" class="userlink">Delete</a>
 												</div>
@@ -160,6 +161,23 @@
 						});
 					}
 				};
+				Model.copyFloor = function(floor, evt) {
+					if (confirm('Are you sure you want to copy?')) {
+						floor.Title = 'Copy of ' + floor.Title;
+						floor.created_at = new Date();
+						floor.updated_at = new Date();
+						floor.PropertyID = PropertyID;
+						floor.BuildingID = ID;
+						delete floor._id;
+						var data = new Object();
+						data.content = JSON.stringify(floor);
+						API.post('/floors/duplicate',
+						data,
+						function (data) {
+							location.reload();
+						});
+					}
+				};	
 				ko.applyBindings(Model);
 			});
 		});

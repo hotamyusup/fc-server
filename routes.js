@@ -59,6 +59,7 @@ exports.endpoints = [
 
   { method: "POST", path: "/floors", config: Floor.upsert },
   { method: "POST", path: "/floors/{FloorID}", config: Floor.update },
+  { method: "POST", path: "/floors/duplicate", config: Floor.duplicate },
 
   { method: "POST", path: "/buildings", config: Building.upsert },
   { method: "POST", path: "/buildings/{BuildingID}", config: Building.update },
