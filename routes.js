@@ -49,20 +49,25 @@ exports.endpoints = [
   },
   { method: "POST", path: "/properties", config: Property.upsert },
   { method: "POST", path: "/properties/{PropertyID}", config: Property.update },
+  { method: "POST", path: "/properties/batch", config: Property.batch },
   { method: "GET", path: "/properties", config: Property.all },
   { method: "GET", path: "/properties/{PropertyID}", config: Property.get },
 
   { method: "POST", path: "/records", config: Record.create },
+  { method: "POST", path: "/records/batch", config: Record.batch },
 
   { method: "POST", path: "/devices", config: Device.upsert },
   { method: "POST", path: "/devices/{DeviceID}", config: Device.update },
+  { method: "POST", path: "/devices/batch", config: Device.batch },
 
   { method: "POST", path: "/floors", config: Floor.upsert },
   { method: "POST", path: "/floors/{FloorID}", config: Floor.update },
+  { method: "POST", path: "/floors/batch", config: Floor.batch },
   { method: "POST", path: "/floors/duplicate", config: Floor.duplicate },
 
   { method: "POST", path: "/buildings", config: Building.upsert },
   { method: "POST", path: "/buildings/{BuildingID}", config: Building.update },
+  { method: "POST", path: "/buildings/batch", config: Building.batch },
 
   { method: "GET", path: "/organizations", config: Organization.all },
   {
