@@ -1,5 +1,6 @@
 <!doctype html>
 <html class="no-js" lang="en">
+
 <head>
 	<meta charset="utf-8">
 	<meta http-equiv="x-ua-compatible" content="ie=edge">
@@ -10,21 +11,20 @@
 	<link rel="stylesheet" href="/admin/css/vendor.css">
 	<link rel="stylesheet" href="/admin/css/app.css">
 	<script>
-		var themeSettings = (localStorage.getItem('themeSettings')) ? JSON.parse(localStorage.getItem('themeSettings')) :
-            {};
+		var themeSettings = (localStorage.getItem('themeSettings')) ? JSON.parse(localStorage.getItem('themeSettings')) : {};
 		var themeName = themeSettings.themeName || 'red';
 		if (themeName) {
 			document.write('<link rel="stylesheet" id="theme-style" href="/admin/css/app-' + themeName + '.css">');
-		}
-		else {
+		} else {
 			document.write('<link rel="stylesheet" id="theme-style" href="/admin/css/app.css">');
 		}
 	</script>
 </head>
+
 <body>
 	<div class="main-wrapper">
 		<div class="app" id="app">
-		<header class="header">
+			<header class="header">
 				<div class="header-block header-block-collapse d-lg-none d-xl-none">
 					<button class="collapse-btn" id="sidebar-collapse-btn">
 						<i class="fa fa-bars"></i>
@@ -108,6 +108,7 @@
 											</div>
 											<div class="item-col text-right">
 												<div><a href="javascript:;;" data-bind="attr: {id:_id, href:'property.html?i='+_id}" class="userlink">Details</a></div>
+												<div><a href="#" data-bind="click: $data.exportCsv" class="userlink">Export</a></div>
 											</div>
 											<div class="item-col text-right">
 												<div><a href="javascript:;;" data-bind="attr: {id:_id, href:'buildings.html?i='+_id}" class="userlink">Buildings (<span data-bind="text:Buildings.length"></span>)</a></div>
@@ -136,19 +137,83 @@
 	<script src="/admin/js/app.js"></script>
 	<script src="/admin/js/custom.js"></script>
 	<script type="text/javascript">
-		$(function () {
+		function download(filename, text) {
+			var element = document.createElement('a');
+			element.setAttribute('href', 'data:text/csv;charset=utf-8,' + encodeURIComponent(text));
+			element.setAttribute('download', filename);
+
+			element.style.display = 'none';
+			document.body.appendChild(element);
+
+			element.click();
+
+			document.body.removeChild(element);
+		}
+		$(function() {
 			Site.init();
-			API.properties(function (data) {
+			API.properties(function(data) {
 				data = _.sortBy(data, 'Title');
 				data.forEach(property => {
 					property.Buildings = _.filter(property.Buildings, function(building) {
 						return building.Status > 0;
 					});
+					property.exportCsv = (property) => {
+						// Start file download.
+						API.equipments((equipments) => {
+							API.users((users) => {
+								let content = '';
+								const frequencies = {
+									'0': 'Quarterly',
+									'1': 'Semi',
+									'2': 'Annually',
+									'3': '5 Yearly'
+								}
+								_.each(property.Buildings, (building) => {
+									if (building.Status <= 0) return;
+									_.each(building.Floors, (floor) => {
+										if (floor.Status <= 0) return;
+										content = content.concat(property.Title, ',', building.Title, ',', floor.Title, '\n');
+										_.each(floor.Devices, (device) => {
+											if (device.Status <= 0) return;
+											let deviceTitle = _.findWhere(_.findWhere(equipments, {
+												_id: device.EquipmentType
+											}).Devices, {
+												_id: device.DeviceType
+											}).Title;
+											_.each(device.Records, (record) => {
+												let status;
+												switch (record.DeviceStatus) {
+													case 0:
+														status = "Pass";
+														break;
+													case 1:
+														status = "Fail";
+														break;
+													case 2:
+														status = "Pending";
+														break;
+													default:
+														status = "N/A";
+												}
+												content = content.concat(deviceTitle, ',', record.InspectionDate, ',', frequencies[record.Frequency], ',', _.findWhere(users, {
+													_id: record.User
+												}).Title, ',', status, ',', record.Reason, ',', record.Note, ',', record.Photos.length > 0 ? record.Photos[0].URL : '', '\n');
+											});
+										});
+									});
+								});
+
+								download(`${property.Title}.csv`, content)
+							});
+						});
+					}
 				});
-				ko.applyBindings({ properties: data });
+				ko.applyBindings({
+					properties: data
+				});
 			});
 		});
-
 	</script>
 </body>
+
 </html>
