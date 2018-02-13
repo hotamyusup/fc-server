@@ -9,6 +9,7 @@ var geocoder = require('node-geocoder')("google", "http");
 var Property = require('../schema/property').Property;
 var Floor = require('../schema/property').Floor;
 var User = require('../schema/user').User;
+var async = require('async');
 
 exports.all = {
   handler: function(request, reply) {
