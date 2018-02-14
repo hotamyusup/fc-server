@@ -1,7 +1,5 @@
-'use strict';
-
-var Mongoose = require('mongoose');
-var config = require('./config');
+const Mongoose = require('mongoose');
+const logger = require('../logger');
 
 //Mongoose.connect(config.database.url);
 
@@ -15,13 +13,16 @@ db.once('open', function callback() {
 exports.Mongoose = Mongoose;
 exports.db = db;
 */
+logger.info('connecting database...');
+var db = Mongoose.connect('mongodb://localhost:27017/Fire', {
+  useMongoClient: true,
+});
 
-
-var db = Mongoose.connect('mongodb://localhost:27017/Fire', {useMongoClient: true});
-
-db.on('error', console.error.bind(console, 'connection error'));
+db.on('error', function(err) {
+  logger.error(`connection error ${err}`);
+});
 db.once('open', function callback() {
-	console.log("Connection with database succeeded!");
+  logger.info('Connection with database succeeded!');
 });
 
 exports.Mongoose = Mongoose;

@@ -1,17 +1,22 @@
 /**
  * Created by Zeus on 09/03/16.
  */
-var Hapi = require('hapi');
-var server = new Hapi.Server();
-var Routes = require('./routes');
-var db = require('./misc/db');
-var Inert = require('inert');
 
-server.register(Inert, function () {
-    server.connection({port: 80,routes: { cors: true }});
-    server.route(Routes.endpoints);
-    //server.timeout = 120000;
-    server.start(function(e) { console.log('Loud and clear: http://104.131.141.177') });
+const Hapi = require('hapi');
+const Routes = require('./routes');
+const Inert = require('inert');
+const logger = require('./logger');
+require('./misc/db');
+
+const server = new Hapi.Server();
+
+server.register(Inert, function() {
+  server.connection({ port: 80, routes: { cors: true } });
+  server.route(Routes.endpoints);
+  // server.timeout = 120000;
+  server.start(function() {
+    logger.info('Loud and clear: http://104.131.141.177');
+  });
 });
 
 module.exports = server;
