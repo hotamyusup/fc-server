@@ -6,6 +6,7 @@ var Boom = require('boom');
 var Property = require('../schema/property').Property;
 var Inspection = require('../schema/property').Inspection;
 var User = require('../schema/user').User;
+const logger = require('../logger');
 
 exports.create = {
   handler: function(request, reply) {

@@ -7,6 +7,7 @@ const Property = require('../schema/property').Property;
 const Floor = require('../schema/property').Floor;
 const User = require('../schema/user').User;
 const async = require('async');
+const logger = require('../logger');
 
 exports.upsert = {
   handler: function(request, reply) {
