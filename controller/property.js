@@ -532,16 +532,18 @@ const getRecords = function () {
             return records;
         })
 };
-const calculateRepairAndInspectState = (Properties, Buildings, Floors, Devices)=> {
+const calculateRepairAndInspectState = (Properties, Buildings, Floors, Devices, Records)=> {
     const Quarter = moment().subtract(3, 'months').format('YYYY-MM-DD');
     const Semi    = moment().subtract(6, 'months').format('YYYY-MM-DD');
     const Annual  = moment().subtract(1, 'years').format('YYYY-MM-DD');
     const Last    = moment().subtract(5, 'years').format('YYYY-MM-DD');
 
     const convertToIdMap = (id2object, object)=> (id2object[object._id] = object) && id2object;
+
     const PropertyById = Properties.reduce(convertToIdMap, {});
     const BuildingById = Buildings.reduce(convertToIdMap, {});
     const FloorById    = Floors.reduce(convertToIdMap, {});
+    const RecordById   = Records.reduce(convertToIdMap, {});
 
     for (let l = 0; l < Devices.length; l++) {
         const Device = Devices[l];
@@ -552,10 +554,10 @@ const calculateRepairAndInspectState = (Properties, Buildings, Floors, Devices)=
         const Building  = BuildingById[Device.BuildingID];
         const Floor     = FloorById[Device.FloorID];
 
-        Device.Records = _.sortBy(Device.Records, 'InspectionDate').reverse();
+        const deviceRecords = _.sortBy(Device.Records.map(recordId => RecordById[recordId]), 'InspectionDate').reverse();
 
-        if (Device.Records.length > 0) {
-            const LastRecord = Device.Records[0];
+        if (deviceRecords.length > 0) {
+            const LastRecord = deviceRecords[0];
             if (LastRecord.DeviceStatus == 1) {
                 Property.HasRepair  = 1;
                 Building.HasRepair  = 1;
