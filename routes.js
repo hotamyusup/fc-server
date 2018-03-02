@@ -50,6 +50,7 @@ exports.endpoints = [
   { method: 'POST', path: '/properties', config: Property.upsert },
   { method: 'POST', path: '/properties/{PropertyID}', config: Property.update },
   { method: 'POST', path: '/properties/batch', config: Property.batch },
+  { method: 'GET', path: '/properties/processed', config: Property.processed },
   { method: 'GET', path: '/properties', config: Property.all },
   { method: 'GET', path: '/properties/{PropertyID}', config: Property.get },
 

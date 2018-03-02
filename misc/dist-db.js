@@ -25,5 +25,8 @@ db.once('open', function callback() {
   logger.info('Connection with database succeeded!');
 });
 
+
+Mongoose.Promise = require('bluebird');
+
 exports.Mongoose = Mongoose;
 exports.db = db;
