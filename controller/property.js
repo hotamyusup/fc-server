@@ -563,6 +563,7 @@ const calculateRepairAndInspectState = (Properties, Buildings, Floors, Devices, 
                 Building.HasRepair  = 1;
                 Floor.HasRepair     = 1;
                 Device.HasRepair    = 1;
+                Property.RepairCount = Property.RepairCount || 0;
                 Property.RepairCount++;
             }
             LastFrequency = LastRecord.Frequency;
@@ -576,6 +577,7 @@ const calculateRepairAndInspectState = (Properties, Buildings, Floors, Devices, 
                 Building.HasInspect = 1;
                 Floor.HasInspect    = 1;
                 Device.HasInspect   = 1;
+                Property.InspectCount = Property.InspectCount || 0;
                 Property.InspectCount++;
             }
         }
