@@ -5,12 +5,12 @@ const Hapi = require('hapi');
 const Routes = require('./routes');
 const Inert = require('inert');
 const logger = require('./logger');
-require('./misc/dist-db');
+require('./misc/db');
 
 const server = new Hapi.Server();
 
 server.register(Inert, function() {
-  server.connection({ port: 8080, routes: { cors: true } });
+  server.connection({ port: 80, routes: { cors: true } });
   server.route(Routes.endpoints);
   // server.timeout = 120000;
   server.start(function() {
