@@ -6,16 +6,19 @@ const Hapi = require('hapi');
 const Routes = require('./routes');
 const Inert = require('inert');
 const logger = require('./logger');
+const config = require('./misc/config');
 require('./misc/db');
+
+//console.log(config.server.url);
 
 const server = new Hapi.Server();
 
 server.register(Inert, function() {
-  server.connection({ port: 80, routes: { cors: true } });
+  server.connection({ port: config.server.port, routes: { cors: true } });
   server.route(Routes.endpoints);
   // server.timeout = 120000;
   server.start(function() {
-    logger.info('Loud and clear: http://104.131.141.177');
+    logger.info('Server is listening: ' + config.server.url);
   });
 });
 
