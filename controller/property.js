@@ -586,7 +586,10 @@ exports.processed = {
     handler: (request, reply) => {
         const {hash} = request.query;
         logger.info(`properties.processed ${hash} request`);
-
+        let {layer} = request.query;
+        if (layer && typeof layer === 'string') {
+            layer = [layer];
+        }
         console.time('processed.handler.get');
         callIfAuthorized(request, reply, () => {
             return Promise
@@ -605,7 +608,23 @@ exports.processed = {
                         response.Devices,
                         response.Records
                     );
-                    return reply(response);
+
+                    let pickedResponse;
+                    if (layer) {
+                        pickedResponse = _.pick(response, layer);
+                    } else {
+                        pickedResponse = response;
+                    }
+
+                    if (pickedResponse.Devices) {
+                        let {DeviceID} = request.query || request.params;
+                        if (DeviceID) {
+                            pickedResponse.Devices = pickedResponse.Devices.filter(device => device && device._id.toString() === DeviceID);
+                        }
+                    }
+
+                    return reply(pickedResponse);
+
                 })
                 .catch(err => reply(Boom.badImplementation(err)));
         }).finally(() => {
