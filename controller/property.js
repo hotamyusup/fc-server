@@ -538,7 +538,12 @@ const calculateRepairAndInspectState = (Properties, Buildings, Floors, Devices, 
     const Annual  = moment().subtract(1, 'years').format('YYYY-MM-DD');
     const Last    = moment().subtract(5, 'years').format('YYYY-MM-DD');
 
-    const convertToIdMap = (id2object, object)=> (id2object[object._id] = object) && id2object;
+    const convertToIdMap = (id2object, object)=> {
+        let objectId = object._id.toString();
+        id2object[objectId] = object;
+        object._id = objectId;
+        return id2object;
+    };
 
     const PropertyById = Properties.reduce(convertToIdMap, {});
     const BuildingById = Buildings.reduce(convertToIdMap, {});
@@ -554,7 +559,7 @@ const calculateRepairAndInspectState = (Properties, Buildings, Floors, Devices, 
         const Building  = BuildingById[Device.BuildingID];
         const Floor     = FloorById[Device.FloorID];
 
-        const deviceRecords = _.sortBy(Device.Records.map(recordId => RecordById[recordId]), 'InspectionDate').reverse();
+        const deviceRecords = _.sortBy(Device.Records.map(recordId => RecordById[recordId.toString()]), 'InspectionDate').reverse();
 
         if (deviceRecords.length > 0) {
             const LastRecord = deviceRecords[0];
