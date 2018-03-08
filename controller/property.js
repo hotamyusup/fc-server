@@ -554,7 +554,7 @@ const calculateRepairAndInspectState = (Properties, Buildings, Floors, Devices, 
 
     for (let l = 0; l < Devices.length; l++) {
         const Device = Devices[l];
-        const InstallDate = ('' + Device.InstallationDate).substr(0, 'YYYY-MM-DD'.length);
+        const InstallDate = moment(Device.InstallationDate).format('YYYY-MM-DD');
         let LastFrequency;
 
         const Property  = PropertyById[Device.PropertyID];
