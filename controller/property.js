@@ -550,6 +550,8 @@ const calculateRepairAndInspectState = (Properties, Buildings, Floors, Devices, 
     const FloorById    = Floors.reduce(convertToIdMap, {});
     const RecordById   = Records.reduce(convertToIdMap, {});
 
+    var InspectedPropertyCounter = {};
+
     for (let l = 0; l < Devices.length; l++) {
         const Device = Devices[l];
         const InstallDate = ('' + Device.InstallationDate).substr(0, 'YYYY-MM-DD'.length);
@@ -576,19 +578,44 @@ const calculateRepairAndInspectState = (Properties, Buildings, Floors, Devices, 
             LastFrequency = -1;
         }
 
+        var validDevices = [
+          "5a70dec2fd28218813310d13",
+          "5a70c86ac0557a2ed236bacb",
+          "5a504322a8bb171c09a590d1",
+          "5a7345987a943dd5b21cd108",
+          "5a7345db07ea4acd56eacd24",
+          "5a7351cacc19ee05bc1a0d9c",
+        ];
+        if (validDevices.indexOf(Device._id.toString()) > -1) {
+          logger.info('\nValid device: ' + Device._id + ' on Property: ' + Property._id);
+          logger.info(Device._id + ': LastFrequency  = ' + LastFrequency);
+          logger.info(Device._id + ': InstallDate  = ' + InstallDate);
+          logger.info(Device._id + ': deviceRecords.length = ' + deviceRecords.length);
+        }
         if (LastFrequency != 1) {
+            if (validDevices.indexOf(Device._id.toString()) > -1) {
+                logger.info(Device._id + ': LastFrequency[' + LastFrequency + '] is OK');
+            }
             if ((InstallDate < Last && LastFrequency < 3) || (InstallDate < Annual && LastFrequency < 2) || (InstallDate < Semi && LastFrequency < 1) || (InstallDate < Quarter && LastFrequency < 0)) {
+
+                if (validDevices.indexOf(Device._id.toString()) > -1) {
+                    logger.info(Device._id + ': InstallDate[' + InstallDate + '] is OK');
+                }
                 Property.HasInspect = 1;
                 Building.HasInspect = 1;
                 Floor.HasInspect    = 1;
                 Device.HasInspect   = 1;
                 Property.InspectCount = Property.InspectCount || 0;
                 Property.InspectCount++;
+                InspectedPropertyCounter[Property._id] = Property.InspectCount;
             }
         }
 
     }
+
+    logger.info('InspectedPropertyCounter === ' + JSON.stringify(InspectedPropertyCounter));
 };
+
 exports.processed = {
     handler: (request, reply) => {
         const {hash} = request.query;
