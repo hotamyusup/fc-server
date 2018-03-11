@@ -420,57 +420,82 @@ exports.update = {
 };
 
 
-
 const getProperties = function () {
     console.time('getProperties');
-    return Property
-        .aggregate([{$addFields: {"Buildings": "$Buildings._id"}} , {$match: {Status: {$gt: -1}}}])
-        .exec()
+    return (
+        new Promise((resolve, reject) => {
+            const data = [];
+            Property
+                .aggregate([
+                    {$match: {Status: {$gt: -1}}},
+                    {$addFields: {"Buildings": "$Buildings._id"}}
+                ])
+                .cursor({})
+                .exec()
+                .on('data', doc => data.push(doc))
+                .on('end', () => resolve(data))
+        }))
         .then(properties => {
             console.timeEnd('getProperties');
             console.log('properties.length = ' + properties.length)
             return properties;
-        })
+        });
 };
 const getBuildings = function () {
     console.time('getBuildings');
-    return Property
-        .aggregate([
-            {$unwind: "$Buildings"},
-            {$match: {"Buildings.Status": {$gt:-1}}},
-            {
-                $addFields: {
-                    "Buildings.PropertyID": "$_id",
-                    "Buildings.Floors": "$Buildings.Floors._id"
-                }
-            },
-            {$replaceRoot: {newRoot: "$Buildings"}}
-        ])
-        .exec()
+    return (
+        new Promise((resolve, reject) => {
+            const data = [];
+            Property
+                .aggregate([
+                    {$match: {"Status": {$gt: -1}}},
+                    {$unwind: "$Buildings"},
+                    {$match: {"Buildings.Status": {$gt: -1}}},
+                    {
+                        $addFields: {
+                            "Buildings.PropertyID": "$_id",
+                            "Buildings.Floors": "$Buildings.Floors._id"
+                        }
+                    },
+                    {$replaceRoot: {newRoot: "$Buildings"}}
+                ])
+                .cursor({})
+                .exec()
+                .on('data', doc => data.push(doc))
+                .on('end', () => resolve(data))
+        }))
         .then(buildings => {
             console.timeEnd('getBuildings');
             console.log('buildings.length = ' + buildings.length)
             return buildings;
-        })
+        });
 };
 const getFloors = function () {
     console.time('getFloors');
-    return Property
-        .aggregate([
-            {$unwind: "$Buildings"},
-            {$match: {"Buildings.Status": {$gt:-1}}},
-            {$unwind: "$Buildings.Floors"},
-            {$match: {"Buildings.Floors.Status": {$gt:-1}}},
-            {
-                $addFields: {
-                    "Buildings.Floors.PropertyID": "$_id",
-                    "Buildings.Floors.BuildingID": "$Buildings._id",
-                    "Buildings.Floors.Devices": "$Buildings.Floors.Devices._id"
-                }
-            },
-            {$replaceRoot: {newRoot: "$Buildings.Floors"}}
-        ])
-        .exec()
+    return (
+        new Promise((resolve, reject) => {
+            const data = [];
+            Property
+                .aggregate([
+                    {$match: {"Status": {$gt: -1}}},
+                    {$unwind: "$Buildings"},
+                    {$match: {"Buildings.Status": {$gt: -1}}},
+                    {$unwind: "$Buildings.Floors"},
+                    {$match: {"Buildings.Floors.Status": {$gt: -1}}},
+                    {
+                        $addFields: {
+                            "Buildings.Floors.PropertyID": "$_id",
+                            "Buildings.Floors.BuildingID": "$Buildings._id",
+                            "Buildings.Floors.Devices": "$Buildings.Floors.Devices._id"
+                        }
+                    },
+                    {$replaceRoot: {newRoot: "$Buildings.Floors"}}
+                ])
+                .cursor({})
+                .exec()
+                .on('data', doc => data.push(doc))
+                .on('end', () => resolve(data))
+        }))
         .then(floors => {
             console.timeEnd('getFloors');
             console.log('floors.length = ' + floors.length)
@@ -479,25 +504,33 @@ const getFloors = function () {
 };
 const getDevices = function () {
     console.time('getDevices');
-    return Property
-        .aggregate([
-            {$unwind: "$Buildings"},
-            {$match: {"Buildings.Status": {$gt:-1}}},
-            {$unwind: "$Buildings.Floors"},
-            {$match: {"Buildings.Floors.Status": {$gt:-1}}},
-            {$unwind: "$Buildings.Floors.Devices"},
-            {$match: {"Buildings.Floors.Devices.Status": {$gt: -1}}},
-            {
-                $addFields: {
-                    "Buildings.Floors.Devices.PropertyID": "$_id",
-                    "Buildings.Floors.Devices.BuildingID": "$Buildings._id",
-                    "Buildings.Floors.Devices.FloorID": "$Buildings.Floors._id",
-                    "Buildings.Floors.Devices.Records": "$Buildings.Floors.Devices.Records._id"
-                }
-            },
-            {$replaceRoot: {newRoot: "$Buildings.Floors.Devices"}}
-        ])
-        .exec()
+    return (
+        new Promise((resolve, reject) => {
+            const data = [];
+            Property
+                .aggregate([
+                    {$match: {Status: {$gt: -1}}},
+                    {$unwind: "$Buildings"},
+                    {$match: {"Buildings.Status": {$gt: -1}}},
+                    {$unwind: "$Buildings.Floors"},
+                    {$match: {"Buildings.Floors.Status": {$gt: -1}}},
+                    {$unwind: "$Buildings.Floors.Devices"},
+                    {$match: {"Buildings.Floors.Devices.Status": {$gt: -1}}},
+                    {
+                        $addFields: {
+                            "Buildings.Floors.Devices.PropertyID": "$_id",
+                            "Buildings.Floors.Devices.BuildingID": "$Buildings._id",
+                            "Buildings.Floors.Devices.FloorID": "$Buildings.Floors._id",
+                            "Buildings.Floors.Devices.Records": "$Buildings.Floors.Devices.Records._id"
+                        }
+                    },
+                    {$replaceRoot: {newRoot: "$Buildings.Floors.Devices"}}
+                ])
+                .cursor({})
+                .exec()
+                .on('data', doc => data.push(doc))
+                .on('end', () => resolve(data))
+        }))
         .then(devices => {
             console.timeEnd('getDevices');
             console.log('devices.length = ' + devices.length)
@@ -506,26 +539,34 @@ const getDevices = function () {
 };
 const getRecords = function () {
     console.time('getRecords');
-    return Property
-        .aggregate([
-            {$unwind: "$Buildings"},
-            {$match: {"Buildings.Status": {$gt:-1}}},
-            {$unwind: "$Buildings.Floors"},
-            {$match: {"Buildings.Floors.Status": {$gt:-1}}},
-            {$unwind: "$Buildings.Floors.Devices"},
-            {$match: {"Buildings.Floors.Devices.Status": {$gt: -1}}},
-            {$unwind: "$Buildings.Floors.Devices.Records"},
-            {
-                $addFields: {
-                    "Buildings.Floors.Devices.Records.PropertyID": "$_id",
-                    "Buildings.Floors.Devices.Records.BuildingID": "$Buildings._id",
-                    "Buildings.Floors.Devices.Records.FloorID": "$Buildings.Floors._id",
-                    "Buildings.Floors.Devices.Records.DeviceID": "$Buildings.Floors.Devices._id"
-                }
-            },
-            {$replaceRoot: {newRoot: "$Buildings.Floors.Devices.Records"}}
-        ])
-        .exec()
+    return (
+        new Promise((resolve, reject) => {
+            const data = [];
+            Property
+                .aggregate([
+                    {$match: {"Status": {$gt: -1}}},
+                    {$unwind: "$Buildings"},
+                    {$match: {"Buildings.Status": {$gt: -1}}},
+                    {$unwind: "$Buildings.Floors"},
+                    {$match: {"Buildings.Floors.Status": {$gt: -1}}},
+                    {$unwind: "$Buildings.Floors.Devices"},
+                    {$match: {"Buildings.Floors.Devices.Status": {$gt: -1}}},
+                    {$unwind: "$Buildings.Floors.Devices.Records"},
+                    {
+                        $addFields: {
+                            "Buildings.Floors.Devices.Records.PropertyID": "$_id",
+                            "Buildings.Floors.Devices.Records.BuildingID": "$Buildings._id",
+                            "Buildings.Floors.Devices.Records.FloorID": "$Buildings.Floors._id",
+                            "Buildings.Floors.Devices.Records.DeviceID": "$Buildings.Floors.Devices._id"
+                        }
+                    },
+                    {$replaceRoot: {newRoot: "$Buildings.Floors.Devices.Records"}}
+                ])
+                .cursor({})
+                .exec()
+                .on('data', doc => data.push(doc))
+                .on('end', () => resolve(data))
+        }))
         .then(records => {
             console.timeEnd('getRecords');
             console.log('records.length = ' + records.length)
@@ -559,33 +600,38 @@ const calculateRepairAndInspectState = (Properties, Buildings, Floors, Devices, 
         const Building  = BuildingById[Device.BuildingID];
         const Floor     = FloorById[Device.FloorID];
 
-        const deviceRecords = _.sortBy(Device.Records.map(recordId => RecordById[recordId.toString()]), 'InspectionDate').reverse();
+        if (Property && Building && Floor) {
+            const deviceRecords = _.sortBy(Device.Records.map(recordId => RecordById[recordId.toString()]), 'InspectionDate').reverse();
 
-        if (deviceRecords.length > 0) {
-            const LastRecord = deviceRecords[0];
-            if (LastRecord.DeviceStatus == 1) {
-                Property.HasRepair  = 1;
-                Building.HasRepair  = 1;
-                Floor.HasRepair     = 1;
-                Device.HasRepair    = 1;
-                Property.RepairCount = Property.RepairCount || 0;
-                Property.RepairCount++;
+            if (deviceRecords.length > 0) {
+                const LastRecord = deviceRecords[0];
+                if (LastRecord.DeviceStatus == 1) {
+                    Property.HasRepair  = 1;
+                    Building.HasRepair  = 1;
+                    Floor.HasRepair     = 1;
+                    Device.HasRepair    = 1;
+                    Property.RepairCount = Property.RepairCount || 0;
+                    Property.RepairCount++;
+                }
+                LastFrequency = LastRecord.Frequency;
+            } else {
+                LastFrequency = -1;
             }
-            LastFrequency = LastRecord.Frequency;
+
+            if (LastFrequency != 1) {
+                if ((InstallDate < Last && LastFrequency < 3) || (InstallDate < Annual && LastFrequency < 2) || (InstallDate < Semi && LastFrequency < 1) || (InstallDate < Quarter && LastFrequency < 0)) {
+                    Property.HasInspect = 1;
+                    Building.HasInspect = 1;
+                    Floor.HasInspect    = 1;
+                    Device.HasInspect   = 1;
+                    Property.InspectCount = Property.InspectCount || 0;
+                    Property.InspectCount++;
+                }
+            }
         } else {
-            LastFrequency = -1;
+            logger.error(`Wrong behaviour. Device ${Device._id} without ${JSON.stringify({Property: !!Property, Building: !!Building , Floor: !!Floor})}, ids: ${JSON.stringify({ PropertyID : Device.PropertyID, BuildingID: Device.BuildingID, FloorID: Device.FloorID})}`);
         }
 
-        if (LastFrequency != 1) {
-            if ((InstallDate < Last && LastFrequency < 3) || (InstallDate < Annual && LastFrequency < 2) || (InstallDate < Semi && LastFrequency < 1) || (InstallDate < Quarter && LastFrequency < 0)) {
-                Property.HasInspect = 1;
-                Building.HasInspect = 1;
-                Floor.HasInspect    = 1;
-                Device.HasInspect   = 1;
-                Property.InspectCount = Property.InspectCount || 0;
-                Property.InspectCount++;
-            }
-        }
     }
 };
 
