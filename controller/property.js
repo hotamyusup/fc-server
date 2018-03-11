@@ -12,6 +12,10 @@ const _ = require('lodash');
 const moment = require('moment');
 const Promise = require('bluebird');
 
+const {db, Mongoose} = require('../misc/db');
+
+const cache = {};
+
 const checkAccess = (_id) => User
     .findOne({_id})
     .exec()
@@ -115,6 +119,7 @@ exports.upsert = {
                         property.save(function (err, property) {
                             if (!err) {
                                 logger.info(`properties.upsert ${hash} saved new`);
+                                recalculateProcessedCache();
                                 return reply(property).created('/property/' + property._id); // HTTP 201
                             }
                             logger.info(`properties.upsert ${hash} ${err}`);
@@ -171,6 +176,7 @@ exports.upsert = {
                                 property.save(function (err, property) {
                                     if (!err) {
                                         logger.info(`properties.upsert ${hash} updated`);
+                                        recalculateProcessedCache();
                                         return reply(property); // HTTP 201
                                     }
                                     logger.info(`properties.upsert ${hash} update ${err}`);
@@ -227,6 +233,7 @@ exports.batch = {
                         if (!err) {
                             if (!property) {
                                 var property = new Property(data);
+                                recalculateProcessedCache();
                                 property.save();
                             } else {
                                 property.Title = data.Title;
@@ -271,6 +278,7 @@ exports.batch = {
                                             property.Longitude = res[0].longitude;
                                         }
 
+                                        recalculateProcessedCache();
                                         property.save();
                                     }
                                 );
@@ -312,6 +320,7 @@ exports.create = {
         var property = new Property(request.payload);
         property.save(function (err, property) {
             if (!err) {
+                recalculateProcessedCache();
                 logger.info(`properties.create ${hash} saved new`);
                 return reply(property).created('/property/' + property._id); // HTTP 201
             }
@@ -396,6 +405,7 @@ exports.update = {
                             property.save(function (err, property) {
                                 if (!err) {
                                     logger.info(`properties.update ${hash} saved`);
+                                    recalculateProcessedCache();
                                     return reply(property); // HTTP 201
                                 }
                                 logger.info(`properties.update ${hash} ${err}`);
@@ -635,6 +645,43 @@ const calculateRepairAndInspectState = (Properties, Buildings, Floors, Devices, 
     }
 };
 
+const getPropertiesEntitiesFlat = ()=> {
+    return Promise
+        .props({
+            Properties: getProperties(),
+            Buildings: getBuildings(),
+            Floors: getFloors(),
+            Devices: getDevices(),
+            Records: getRecords()
+        })
+        .then((response) => {
+            calculateRepairAndInspectState(
+                response.Properties,
+                response.Buildings,
+                response.Floors,
+                response.Devices,
+                response.Records
+            );
+
+            return response;
+        });
+};
+const recalculateProcessedCache = ()=> {
+    console.log('recalculate cache');
+    cache.processed = null;
+    getPropertiesEntitiesFlat().then(response => {
+        cache.processed = response;
+    });
+};
+
+db.once('open', (e)=> {
+    try {
+        recalculateProcessedCache();
+    } catch (err) {
+        console.log(err);
+    }
+});
+
 exports.processed = {
     handler: (request, reply) => {
         const {hash} = request.query;
@@ -645,22 +692,8 @@ exports.processed = {
         }
         console.time('processed.handler.get');
         callIfAuthorized(request, reply, () => {
-            return Promise
-                .props({
-                    Properties: getProperties(),
-                    Buildings: getBuildings(),
-                    Floors: getFloors(),
-                    Devices: getDevices(),
-                    Records: getRecords()
-                })
-                .then((response) => {
-                    calculateRepairAndInspectState(
-                        response.Properties,
-                        response.Buildings,
-                        response.Floors,
-                        response.Devices,
-                        response.Records
-                    );
+            return (cache.processed ? Promise.resolve(cache.processed) : getPropertiesEntitiesFlat()).then((response) => {
+                    cache.processed = response;
 
                     let pickedResponse;
                     if (layer) {
