@@ -35,6 +35,13 @@ exports.endpoints = [
   },
   {
     method: 'GET',
+    path: '/assets/img/{param*}',
+    handler: {
+      directory: { path: Path.normalize(__dirname + '/assets/img') },
+    },
+  },
+  {
+    method: 'GET',
     path: '/admin/{param*}',
     handler: {
       directory: { path: Path.normalize(__dirname + '/admin') },
