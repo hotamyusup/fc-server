@@ -692,7 +692,7 @@ exports.processed = {
         }
         console.time('processed.handler.get');
         callIfAuthorized(request, reply, () => {
-            return (cache.processed ? Promise.resolve(cache.processed) : getPropertiesEntitiesFlat()).then((response) => {
+            return getPropertiesEntitiesFlat().then((response) => {
                     cache.processed = response;
 
                     let pickedResponse;
