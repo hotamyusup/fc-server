@@ -9,6 +9,8 @@ var User = require('../schema/user').User;
 var async = require('async');
 const logger = require('../logger');
 
+const Promise = require('bluebird');
+
 exports.upsert = {
   handler: function(request, reply) {
     var hash = request.query.hash;
@@ -69,76 +71,83 @@ exports.upsert = {
   },
 };
 
+
 exports.batch = {
-  handler: function(request, reply) {
-    var hash = request.query.hash;
-    if (!hash) {
-      logger.info('device.batch unauthorized no hash');
-      return reply(Boom.unauthorized());
-    }
-    logger.info(`device.batch ${hash} request`);
-    User.findOne(
-      {
-        _id: hash,
-      },
-      function(err, user) {
-        if (!user) {
-          logger.info(`device.batch ${hash} unauthorized no user`);
-          return reply(Boom.unauthorized());
+    handler: function(request, reply) {
+        var hash = request.query.hash;
+        if (!hash) {
+            logger.info('device.batch unauthorized no hash');
+            return reply(Boom.unauthorized());
         }
-      }
-    );
-
-    var devices = request.payload.devices;
-    async.eachSeries(
-      devices,
-      function(data, callback) {
-        Property.findOne(
-          {
-            _id: data.PropertyID,
-          },
-          function(err, property) {
-            if (!err) {
-              var _Device = property.Buildings.id(data.BuildingID)
-                .Floors.id(data.FloorID)
-                .Devices.id(data._id);
-              if (!_Device) {
-                var _Floor = property.Buildings.id(data.BuildingID).Floors.id(
-                  data.FloorID
-                );
-                var device = new Device(data);
-                _Floor.Devices.push(device);
-                property.save();
-              } else {
-                _Device.EquipmentType = data.EquipmentType;
-                _Device.DeviceType = data.DeviceType;
-                _Device.ModelNumber = data.ModelNumber;
-                _Device.SerialNumber = data.SerialNumber;
-                _Device.InstallationDate = data.InstallationDate;
-                _Device.DeviceLocation = data.DeviceLocation;
-                _Device.Notes = data.Notes;
-                _Device.QRCode = data.QRCode;
-                _Device.Picture = data.Picture;
-                _Device.Status = data.Status;
-                _Device.XPos = data.XPos;
-                _Device.YPos = data.YPos;
-
-                _Device.updated_at = data.updated_at;
-                property.save();
-              }
-            } else {
-              logger.info(`device.batch ${hash} error ${err}`);
+        logger.info(`device.batch ${hash} request`);
+        User.findOne(
+            {
+                _id: hash,
+            },
+            function(err, user) {
+                if (!user) {
+                    logger.info(`device.batch ${hash} unauthorized no user`);
+                    return reply(Boom.unauthorized());
+                }
             }
-            callback(null);
-          }
         );
-      },
-      function(err) {
-        logger.info(`device.batch ${hash} finish`);
-        return reply({});
-      }
-    );
-  },
+
+        var devices = request.payload.devices;
+        const alreadyFoundProperties = {};
+        const getProperty = (_id)=> {
+            if (!alreadyFoundProperties[_id]) {
+                alreadyFoundProperties[_id] = Property.findOne({_id,}).then(property => {
+                    alreadyFoundProperties[_id] = property;
+                    return property;
+                })
+            }
+            return Promise.resolve(alreadyFoundProperties[_id]);
+        };
+        Promise
+            .map(devices, (data) => {
+                return getProperty(data.PropertyID)
+                    .then(property => {
+                        var _Device = property.Buildings.id(data.BuildingID)
+                            .Floors.id(data.FloorID)
+                            .Devices.id(data._id);
+                        if (!_Device) {
+                            var _Floor = property.Buildings.id(data.BuildingID).Floors.id(
+                                data.FloorID
+                            );
+                            var device = new Device(data);
+                            _Floor.Devices.push(device);
+                        } else {
+                            _Device.EquipmentType = data.EquipmentType;
+                            _Device.DeviceType = data.DeviceType;
+                            _Device.ModelNumber = data.ModelNumber;
+                            _Device.SerialNumber = data.SerialNumber;
+                            _Device.InstallationDate = data.InstallationDate;
+                            _Device.DeviceLocation = data.DeviceLocation;
+                            _Device.Notes = data.Notes;
+                            _Device.QRCode = data.QRCode;
+                            _Device.Picture = data.Picture;
+                            _Device.Status = data.Status;
+                            _Device.XPos = data.XPos;
+                            _Device.YPos = data.YPos;
+
+                            _Device.updated_at = data.updated_at;
+                        }
+                    });
+            })
+            .then(()=> {
+                return Promise.map(Object.keys(alreadyFoundProperties), _id => {
+                    return alreadyFoundProperties[_id].save()
+                })
+            })
+            .then(()=> {
+                logger.info(`device.batch ${hash} finish`);
+                return reply({});
+            })
+            .catch(error=> {
+                logger.info(`device.batch ${hash} error:\n`, error);
+                return reply({error : error})
+            })
+    },
 };
 
 exports.create = {
