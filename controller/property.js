@@ -15,26 +15,7 @@ const Promise = require('bluebird');
 const {db, Mongoose} = require('../misc/db');
 
 const cache = {};
-
-const checkAccess = (_id) => User
-    .findOne({_id})
-    .exec()
-    .then(user => {
-        if (!user) {
-            throw new Error("unauthorized")
-        }
-        return user;
-    });
-
-const callIfAuthorized = (request, reply, action) => {
-    const {hash} = request.query;
-    return checkAccess(hash)
-        .then(action)
-        .catch(e => {
-            logger.error(`properties.get ${hash} unauthorized no user`);
-            reply(Boom.unauthorized());
-        });
-};
+const {isAuthorized} = require('../user-access');
 
 exports.all = {
     handler: (request, reply) => {
@@ -446,8 +427,8 @@ const getProperties = function () {
                 .on('end', () => resolve(data))
         }))
         .then(properties => {
-            console.timeEnd('getProperties');
-            console.log('properties.length = ' + properties.length)
+            // console.timeEnd('getProperties');
+            // console.log('properties.length = ' + properties.length)
             return properties;
         });
 };
@@ -475,8 +456,8 @@ const getBuildings = function () {
                 .on('end', () => resolve(data))
         }))
         .then(buildings => {
-            console.timeEnd('getBuildings');
-            console.log('buildings.length = ' + buildings.length)
+            // console.timeEnd('getBuildings');
+            // console.log('buildings.length = ' + buildings.length)
             return buildings;
         });
 };
@@ -507,8 +488,8 @@ const getFloors = function () {
                 .on('end', () => resolve(data))
         }))
         .then(floors => {
-            console.timeEnd('getFloors');
-            console.log('floors.length = ' + floors.length)
+            // console.timeEnd('getFloors');
+            // console.log('floors.length = ' + floors.length)
             return floors;
         })
 };
@@ -542,8 +523,8 @@ const getDevices = function () {
                 .on('end', () => resolve(data))
         }))
         .then(devices => {
-            console.timeEnd('getDevices');
-            console.log('devices.length = ' + devices.length)
+            // console.timeEnd('getDevices');
+            // console.log('devices.length = ' + devices.length)
             return devices;
         })
 };
@@ -578,8 +559,8 @@ const getRecords = function () {
                 .on('end', () => resolve(data))
         }))
         .then(records => {
-            console.timeEnd('getRecords');
-            console.log('records.length = ' + records.length)
+            // console.timeEnd('getRecords');
+            // console.log('records.length = ' + records.length)
             return records;
         })
 };
@@ -667,11 +648,12 @@ const getPropertiesEntitiesFlat = ()=> {
         });
 };
 const recalculateProcessedCache = ()=> {
-    console.log('recalculate cache');
-    cache.processed = null;
-    getPropertiesEntitiesFlat().then(response => {
-        cache.processed = response;
-    });
+    // This is too simple, need to use something like redis
+    // console.log('recalculate cache');
+    // cache.processed = null;
+    // getPropertiesEntitiesFlat().then(response => {
+    //     cache.processed = response;
+    // });
 };
 
 db.once('open', (e)=> {
@@ -690,31 +672,33 @@ exports.processed = {
         if (layer && typeof layer === 'string') {
             layer = [layer];
         }
-        console.time('processed.handler.get');
-        callIfAuthorized(request, reply, () => {
-            return getPropertiesEntitiesFlat().then((response) => {
-                    cache.processed = response;
+        console.time(`properties.processed ${hash} request`);
+        isAuthorized(request, reply)
+            .then(() => {
+                return getPropertiesEntitiesFlat()
+                    .then((response) => {
+                        cache.processed = response;
 
-                    let pickedResponse;
-                    if (layer) {
-                        pickedResponse = _.pick(response, layer);
-                    } else {
-                        pickedResponse = response;
-                    }
-
-                    if (pickedResponse.Devices) {
-                        let {DeviceID} = request.query || request.params;
-                        if (DeviceID) {
-                            pickedResponse.Devices = pickedResponse.Devices.filter(device => device && device._id.toString() === DeviceID);
+                        let pickedResponse;
+                        if (layer) {
+                            pickedResponse = _.pick(response, layer);
+                        } else {
+                            pickedResponse = response;
                         }
-                    }
 
-                    return reply(pickedResponse);
+                        if (pickedResponse.Devices) {
+                            let {DeviceID} = request.query || request.params;
+                            if (DeviceID) {
+                                pickedResponse.Devices = pickedResponse.Devices.filter(device => device && device._id.toString() === DeviceID);
+                            }
+                        }
 
-                })
-                .catch(err => reply(Boom.badImplementation(err)));
-        }).finally(() => {
-            console.timeEnd('processed.handler.get');
-        });
+                        return reply(pickedResponse);
+                    })
+                    .catch(err => reply(Boom.badImplementation(err)));
+            })
+            .finally(() => {
+                console.timeEnd(`properties.processed ${hash} request`);
+            });
     }
 };
