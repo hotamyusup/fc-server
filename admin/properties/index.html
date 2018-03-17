@@ -172,7 +172,12 @@
 									if (building.Status <= 0) return;
 									_.each(building.Floors, (floor) => {
 										if (floor.Status <= 0) return;
-										content = content.concat(property.Title, ',', building.Title, ',', floor.Title, '\n');
+										//content = content.concat(property.Title, ',', building.Title, ',', floor.Title, '\n');
+										content = content.concat('device', ',', 'property', ',', 'building', ',', 'floor', ',',
+													'location', ',', 'installation date', ',', 'inspection date', 
+													',', 'inspection frequency', ',', 'inspector', ',', 'pass/fail',
+													',', 'reason', ',', 'inspector note', ',', 'image url','\n');
+
 										_.each(floor.Devices, (device) => {
 											if (device.Status <= 0) return;
 											let deviceTitle = _.findWhere(_.findWhere(equipments, {
@@ -195,7 +200,9 @@
 													default:
 														status = "N/A";
 												}
-												content = content.concat(deviceTitle, ',', record.InspectionDate, ',', frequencies[record.Frequency], ',', _.findWhere(users, {
+												content = content.concat(deviceTitle, ',', property.Title, ',', building.Title, ',', floor.Title,
+													',', device.DeviceLocation, ',', device.InstallationDate, ',', record.InspectionDate, ',', 
+													frequencies[record.Frequency], ',', _.findWhere(users, {
 													_id: record.User
 												}).Title, ',', status, ',', record.Reason, ',', record.Note, ',', record.Photos.length > 0 ? record.Photos[0].URL : '', '\n');
 											});
