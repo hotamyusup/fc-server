@@ -594,7 +594,7 @@ const calculateRepairAndInspectState = (Properties, Buildings, Floors, Devices, 
         if (Property && Building && Floor) {
             const deviceRecords = _.sortBy(Device.Records.map(recordId => RecordById[recordId.toString()]), 'InspectionDate').reverse();
 
-            if (deviceRecords.length > 0) {
+            if (deviceRecords.length > 0 && deviceRecords[0]) {
                 const LastRecord = deviceRecords[0];
                 if (LastRecord.DeviceStatus == 1) {
                     Property.HasRepair  = 1;
