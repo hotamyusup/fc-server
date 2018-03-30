@@ -609,7 +609,14 @@ const calculateRepairAndInspectState = (Properties, Buildings, Floors, Devices, 
                 LastFrequency = -1;
             }
 
-            if (LastFrequency != 1) {
+            if (Device.Status === 2) {
+                Property.HasInspect = 1;
+                Building.HasInspect = 1;
+                Floor.HasInspect = 1;
+                Device.HasInspect = 1;
+                Property.InspectCount = Property.InspectCount || 0;
+                Property.InspectCount++;
+            } else if (LastFrequency != 1) {
                 if ((InstallDate < Last && LastFrequency < 3) || (InstallDate < Annual && LastFrequency < 2) || (InstallDate < Semi && LastFrequency < 1) || (InstallDate < Quarter && LastFrequency < 0)) {
                     Property.HasInspect = 1;
                     Building.HasInspect = 1;
