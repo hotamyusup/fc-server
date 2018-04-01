@@ -112,6 +112,8 @@ exports.send = {
         request.payload.EquipmentType +
         '<br><b>Installation Date:</b> ' +
         request.payload.InstallationDate +
+        '<br><b>Expiration Type:</b> ' +
+        request.payload.ExpirationType +
         '<br><b>Location:</b> ' +
         request.payload.Device.DeviceLocation +
         '<br><b>Notes:</b> ' +

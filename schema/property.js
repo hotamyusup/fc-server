@@ -34,6 +34,7 @@ var MapSchema = new schema({
 
 var DeviceSchema = new schema({
     EquipmentType: {type: String},
+    ExpirationType: {type: String},
     DeviceType: {type: String},
     ModelNumber: {type: String},
     SerialNumber: {type: String},
