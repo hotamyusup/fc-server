@@ -2,12 +2,8 @@
 
 const mongoose = require('mongoose');
 const Promise = require('bluebird');
-const geocoder = require('node-geocoder')('google', 'http');
-
-const logger = require("./logger");
 
 class BaseDAO {
-
     constructor(model) {
         this.model = model;
     }
@@ -21,15 +17,28 @@ class BaseDAO {
     }
 
     create(dataObject) {
-        const property = new PropertyModel(dataObject);
-        return property.save();
+        const newModel = new this.model(dataObject);
+        return newModel.save();
     }
 
-    update(dataObject, upsert) {
-        const _id = dataObject._id;
+    prepareUpdateObject(dataObject) {
         delete dataObject._id;
+        delete dataObject.created_at;
+        return Promise.resolve(dataObject);
+    }
 
-        return this.model.update({_id}, dataObject, {upsert: !!upsert});
+    async update(dataObject, upsert) {
+        const _id = dataObject._id;
+        const preparedJSON = await this.prepareUpdateObject(dataObject);
+        return this.model.update({_id}, preparedJSON, {upsert: !!upsert});
+    }
+
+    upsert(dataObject) {
+        return this.update(dataObject, true);
+    }
+
+    delete(id) {
+        return this.model.remove({_id : id});
     }
 }
 

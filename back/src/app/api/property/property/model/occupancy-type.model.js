@@ -8,5 +8,5 @@ const OccupancyTypeSchema = new Schema({
     Title: {type: String, required: true}
 });
 
-const OccupancyModel = mongoose.model('OccupancyType', OccupancyTypeSchema);
-module.exports = OccupancyModel;
+const OccupancyTypeModel = mongoose.model('OccupancyType', OccupancyTypeSchema);
+module.exports = OccupancyTypeModel;

@@ -3,6 +3,8 @@
 const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 
+const InspectionModel = require("../../inspection/model/inpsection.model");
+
 const DeviceSchema = new Schema({
     EquipmentType: {type: String},
     DeviceType: {type: String},
@@ -15,7 +17,7 @@ const DeviceSchema = new Schema({
     Picture: {type: String},
     XPos: {type: Number},
     YPos: {type: Number},
-    Records: [{type: Schema.Types.ObjectId, ref: 'Inspection'}],
+    Records: [InspectionModel],
     Status: {type: Number},
     created_at: {type: Date},
     updated_at: {type: Date}
@@ -24,4 +26,4 @@ const DeviceSchema = new Schema({
 });
 
 const DeviceModel = mongoose.model('Devices', DeviceSchema);
-module.exports = DeviceModel;
+module.exports = DeviceModel

@@ -11,5 +11,4 @@ const MapSchema = new Schema({
     Top: {type: Number}
 });
 
-
 module.exports = MapSchema;
