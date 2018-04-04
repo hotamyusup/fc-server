@@ -5,7 +5,8 @@
   "main": "yes",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "node src/server.js"
+    "start": "node src/server.js",
+    "tool": "node tools/run.tool.js"
   },
   "author": "",
   "license": "ISC",
@@ -18,7 +19,6 @@
     "hapi": "^16.6.0",
     "imagemagick": "^0.1.3",
     "inert": "^4.2.1",
-    "lodash": "^4.17.5",
     "moment": "^2.20.1",
     "mongodb": "^2.2.31",
     "mongoose": "^4.11.11",

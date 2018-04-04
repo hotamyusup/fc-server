@@ -7,6 +7,6 @@ const OrganizationSchema = new Schema({
     Title: {type: String, required: true}
 });
 
-const OrganizationModel = mongoose.model('Organizations', OrganizationSchema)
+const OrganizationModel = mongoose.model('Organization', OrganizationSchema);
 
 module.exports = OrganizationModel;

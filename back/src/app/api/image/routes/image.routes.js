@@ -8,7 +8,7 @@ const IMAGE_ROUTES = [
         method: 'GET',
         path: '/img/{param*}',
         handler: {
-            directory: {path: Path.normalize(__dirname + '/img')},
+            directory: {path: Path.normalize(__dirname + '/public/img')},
         },
     },
 

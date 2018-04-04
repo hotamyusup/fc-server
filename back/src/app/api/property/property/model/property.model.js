@@ -21,7 +21,7 @@ const PropertySchema = new Schema({
     QRCode: {type: String},
     Map: {type: String},
     Picture: {type: String},
-    Buildings: [{type: Schema.Types.ObjectId, ref: 'Building'}],
+    // Buildings: [{type: Schema.Types.ObjectId, ref: 'Building'}],
     Contacts: [ContactSchema],
     Latitude: {type: String},
     Longitude: {type: String},

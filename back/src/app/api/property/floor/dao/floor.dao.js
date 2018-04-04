@@ -3,4 +3,5 @@
 const BaseDAO = require("../../../../core/base.dao");
 const FloorModel = require("../model/floor.model");
 
-module.exports = new BaseDAO(FloorModel);
+const FloorDAO = new BaseDAO(FloorModel);
+module.exports = FloorDAO;

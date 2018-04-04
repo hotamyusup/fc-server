@@ -10,7 +10,7 @@ const FloorSchema = new Schema({
     Map: MapSchema,
     XPos: {type: Number},
     YPos: {type: Number},
-    Devices: [{ type: Schema.Types.ObjectId, ref: 'Device'}],
+    // Devices: [{ type: Schema.Types.ObjectId, ref: 'Device'}],
     Status: {type: Number},
     created_at: {type: Date},
     updated_at: {type: Date}

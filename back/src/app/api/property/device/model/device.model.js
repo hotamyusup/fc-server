@@ -15,7 +15,7 @@ const DeviceSchema = new Schema({
     Picture: {type: String},
     XPos: {type: Number},
     YPos: {type: Number},
-    Records: [{type: Schema.Types.ObjectId, ref: 'Inspection'}],
+    // Records: [{type: Schema.Types.ObjectId, ref: 'Inspection'}],
     Status: {type: Number},
     created_at: {type: Date},
     updated_at: {type: Date}
