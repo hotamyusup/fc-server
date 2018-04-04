@@ -15,8 +15,14 @@ const InspectionSchema = new Schema({
     User: {type: Schema.Types.ObjectId, ref: 'User'},
     Photos: [PhotoSchema],
     created_at: {type: Date},
-    updated_at: {type: Date}
+    updated_at: {type: Date},
+    DeviceID: {type: Schema.Types.ObjectId, ref: 'Device'},
+    FloorID: {type: Schema.Types.ObjectId, ref: 'Floor'},
+    BuildingID: {type: Schema.Types.ObjectId, ref: 'Building'},
+    PropertyID: {type: Schema.Types.ObjectId, ref: 'Property'}
 });
+
+InspectionSchema.index({PropertyID: 1, BuildingID: 1, FloorID: 1, DeviceID: 1});
 
 const InspectionModel = mongoose.model('Inspection', InspectionSchema);
 module.exports = InspectionModel;

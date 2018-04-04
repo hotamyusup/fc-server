@@ -3,7 +3,8 @@
 const BuildingController = require("../controller/building.controller");
 
 const BUILDING_ROUTES = [
-    {method: 'POST', path: '/buildings', config: BuildingController.upsert},
+    {method: 'GET', path: '/buildings', config: BuildingController.all},
+    {method: 'GET', path: '/buildings/{BuildingID}', config: BuildingController.get},
     {method: 'POST', path: '/buildings/{BuildingID}', config: BuildingController.update},
     {method: 'POST', path: '/buildings/batch', config: BuildingController.batch},
 ];

@@ -14,10 +14,13 @@ const BuildingSchema = new Schema({
     // Floors: [{ type: Schema.Types.ObjectId, ref: 'Floor' }],
     Status: {type: Number},
     created_at: {type: Date},
-    updated_at: {type: Date}
+    updated_at: {type: Date},
+    PropertyID: {type: Schema.Types.ObjectId, ref: 'Property'}
 }, {
     usePushEach: true
 });
+
+BuildingSchema.index({PropertyID: 1});
 
 const BuildingModel = mongoose.model('Building', BuildingSchema);
 module.exports = BuildingModel;
