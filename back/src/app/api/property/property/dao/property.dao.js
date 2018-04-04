@@ -18,8 +18,8 @@ class PropertyDAO extends BaseDAO {
         return PropertyModel.find({}).where('Status').gt(-1);
     }
 
-    async prepareUpdateObject(dataObject) {
-        const preparedDataObject = await super.prepareUpdateObject(dataObject);
+    async prepareUpdateObject(propertyJSON) {
+        const property = await super.prepareUpdateObject(propertyJSON);
 
         const coords = await geocode({
             address: property.Street + ', ' + property.City + ', ' + property.zipcode + ', ' + property.State,
@@ -28,11 +28,11 @@ class PropertyDAO extends BaseDAO {
         });
 
         if (coords) {
-            preparedDataObject.Latitude = coords.latitude;
-            preparedDataObject.Longitude = coords.longitude;
+            property.Latitude = coords.latitude;
+            property.Longitude = coords.longitude;
         }
 
-        return preparedDataObject;
+        return property;
     }
 }
 

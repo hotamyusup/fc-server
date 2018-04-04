@@ -18,5 +18,5 @@ const InspectionSchema = new Schema({
     updated_at: {type: Date}
 });
 
-const InspectionModel = mongoose.model('Inspections', InspectionSchema);
+const InspectionModel = mongoose.model('Inspection', InspectionSchema);
 module.exports = InspectionModel;

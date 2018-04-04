@@ -10,7 +10,7 @@ class ConstructionTypeController extends RedirectOnCreateController {
         this.requestIDKey = 'ConstructionTypeID';
         this.batchEntitiesKey = '';
 
-        this.redirectUrl = 'constructiontype';
+        this.redirectUrl = '/constructiontype/';
     }
 }
 

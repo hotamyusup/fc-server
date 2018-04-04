@@ -18,5 +18,5 @@ const FloorSchema = new Schema({
     usePushEach: true
 });
 
-const FloorModel = mongoose.model('Floors', FloorSchema);
+const FloorModel = mongoose.model('Floor', FloorSchema);
 module.exports = FloorModel;

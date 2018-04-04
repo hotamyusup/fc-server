@@ -14,6 +14,12 @@ class FloorController extends BaseController {
         this.requestIDKey = 'FloorID';
         this.batchEntitiesKey = 'floors';
     }
+
+    get duplicate() {
+        return {
+            handler: (request, reply) => this.handle('duplicate', request, reply, this.DAO.create(request.payload.content))
+        }
+    }
 }
 
 module.exports = new FloorController();

@@ -3,23 +3,14 @@
 const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 
-const DeviceSchema = new Schema({
-    Title: {type: String},
-    Color:{type:String},
-    Status:{type: Number}
-}, {
-  usePushEach: true
-});
+const EquipmentDeviceSchema = require("./equipment-device.model").schema;
 
 const EquipmentSchema = new Schema({
     Title: {type: String},
-    Devices: [DeviceSchema]
+    Devices: [EquipmentDeviceSchema]
 }, {
-  usePushEach: true
+    usePushEach: true
 });
 
-
-module.exports = {
-    EquipmentModel : mongoose.model('Equipments', EquipmentSchema),
-    EquipmentDeviceModel: mongoose.model('EquipmentDevices', DeviceSchema)
-};
+const EquipmentModel = mongoose.model('Equipments', EquipmentSchema);
+module.exports = EquipmentModel;

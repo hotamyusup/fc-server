@@ -10,7 +10,7 @@ class OccupancyTypeController extends RedirectOnCreateController {
         this.requestIDKey = 'OccupancyTypeID';
         this.batchEntitiesKey = '';
 
-        this.redirectUrl = 'occupancytype';
+        this.redirectUrl = '/occupancytype/';
     }
 }
 

@@ -13,13 +13,12 @@ const UserSchema = new Schema({
     Picture: {type: String}
 });
 
-const LoginSchema = new schema({
-    Email: {type: String},
-    Password: {type: String}
+UserSchema.set('toJSON', {
+    transform: function (doc, ret, options) {
+        ret.Password = '*****';
+        return ret;
+    }
 });
 
-
-module.exports = {
-    UserModel: mongoose.model('Users', UserSchema),
-    LoginModel: mongoose.model('Login', LoginSchema)
-};
+const UserModel = mongoose.model('User', UserSchema);
+module.exports = UserModel;

@@ -7,6 +7,7 @@ const logger = require("../../../../core/logger");
 const BaseDAO = require("../../../../core/base.dao");
 
 const EquipmentModel = require("../model/equipment.model");
+const EquipmentDeviceModel = require("../model/equipment-device.model");
 
 class EquipmentDAO extends BaseDAO {
     constructor() {
@@ -24,7 +25,7 @@ class EquipmentDAO extends BaseDAO {
             .then(equipment => {
                 const _Device = equipment.Devices.id(deviceID);
                 if (!_Device) {
-                    var device = new Device(deviceJSON);
+                    var device = new EquipmentDeviceModel(deviceJSON);
                     device.Status = 1;
                     equipment.Devices.push(device);
                 } else {

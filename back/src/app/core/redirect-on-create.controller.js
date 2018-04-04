@@ -3,7 +3,7 @@
 const Promise = require('bluebird');
 const Boom = require('boom');
 
-const BaseController = require(".base.controller");
+const BaseController = require("./base.controller");
 const logger = require("./logger");
 
 class RedirectOnCreateController extends BaseController {
@@ -67,7 +67,7 @@ class RedirectOnCreateController extends BaseController {
     }
 }
 
-module.exports = new PropertyController();
+module.exports = RedirectOnCreateController;
 
 
 
