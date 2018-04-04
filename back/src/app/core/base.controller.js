@@ -21,7 +21,7 @@ class BaseController {
             })
             .catch(err => {
                 logger.error(`sessionId: ${hash} ${this.controllerName}.${action} error ${err}`);
-                if (err && (11000 === err.code || 11001 === err.code)) {
+                if (err && (11000 == err.code || 11001 == err.code)) {
                     return reply(Boom.forbidden('please provide another id, it already exist'));
                 }
                 return reply(Boom.badImplementation(err)); // 500 error
