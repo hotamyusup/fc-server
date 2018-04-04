@@ -4,8 +4,8 @@ const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 
 const DeviceSchema = new Schema({
-    EquipmentType: {type: String},
-    DeviceType: {type: String},
+    EquipmentType: {type: Schema.Types.ObjectId, ref: 'Equipment'},
+    DeviceType: {type: Schema.Types.ObjectId, ref: 'EquipmentDevice'},
     ModelNumber: {type: String},
     SerialNumber: {type: String},
     InstallationDate: {type: Date},

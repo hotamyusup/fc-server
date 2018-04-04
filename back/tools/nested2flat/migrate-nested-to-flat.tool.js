@@ -73,6 +73,7 @@ const EquipmentDAO = require('../../src/app/api/property/device/dao/equipment.da
 const OrganizationDAO = require('../../src/app/api/organization/dao/organization.dao');
 
 const PropertyDAO = require('../../src/app/api/property/property/dao/property.dao');
+const OccupancyTypeDAO = require('../../src/app/api/property/property/dao/occupancy-type.dao');
 const BuildingDAO = require('../../src/app/api/property/building/dao/building.dao');
 const FloorDAO = require('../../src/app/api/property/floor/dao/floor.dao');
 const DeviceDAO = require('../../src/app/api/property/device/dao/device.dao');
@@ -81,6 +82,7 @@ const InspectionDAO = require('../../src/app/api/property/inspection/dao/inspect
 
 const MIGRATE_QUEUE = [
     [EquipmentDAO, 'equipments'],
+    [OccupancyTypeDAO, 'occupancytypes'],
     [OrganizationDAO, 'organizations'],
     [PropertyDAO, 'properties/processed', '&layer=Properties', ({Properties}) => Properties],
     [BuildingDAO, 'properties/processed', '&layer=Buildings', ({Buildings}) => Buildings],

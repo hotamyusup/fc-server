@@ -5,7 +5,7 @@ const Schema = mongoose.Schema;
 
 const UserSchema = new Schema({
     Type: {type: String},
-    Organization: {type: String},
+    Organization: {type: Schema.Types.ObjectId, ref: 'Organization'},
     Title: {type: String},
     Email: {type: String},
     Phone: {type: String},

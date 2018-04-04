@@ -12,7 +12,7 @@ const InspectionSchema = new Schema({
     Note: {type: String},
     InspectionDate: {type: Date},
     Status: {type: Number},
-    User: {type: String},
+    User: {type: Schema.Types.ObjectId, ref: 'User'},
     Photos: [PhotoSchema],
     created_at: {type: Date},
     updated_at: {type: Date}
