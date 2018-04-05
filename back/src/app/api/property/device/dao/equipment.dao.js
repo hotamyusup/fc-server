@@ -7,7 +7,7 @@ const logger = require("../../../../core/logger");
 const BaseDAO = require("../../../../core/base.dao");
 
 const EquipmentModel = require("../model/equipment.model");
-const EquipmentDeviceModel = require("../model/equipment-device.model");
+const EquipmentDeviceSchema = require("../model/equipment-device.schema");
 
 class EquipmentDAO extends BaseDAO {
     constructor() {
@@ -25,13 +25,13 @@ class EquipmentDAO extends BaseDAO {
             .then(equipment => {
                 const _Device = equipment.Devices.id(deviceID);
                 if (!_Device) {
-                    var device = new EquipmentDeviceModel(deviceJSON);
+                    var device = new EquipmentDeviceSchema(deviceJSON);
                     device.Status = 1;
                     equipment.Devices.push(device);
                 } else {
-                    _Device.Title = device.Title;
-                    _Device.Status = device.Status;
-                    _Device.Color = device.Color;
+                    _Device.Title = deviceJSON.Title;
+                    _Device.Status = deviceJSON.Status;
+                    _Device.Color = deviceJSON.Color;
                 }
 
                 return equipment.save();

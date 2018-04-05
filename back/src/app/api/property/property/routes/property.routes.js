@@ -3,6 +3,7 @@
 const PropertyController = require("../controller/property.controller");
 
 const PROPERTY_ROUTES = [
+    {method: 'GET', path: '/properties/processed', config: PropertyController.processed},
     {method: 'POST', path: '/properties', config: PropertyController.upsert},
     // {method: 'GET', path: '/properties/processed', config: PropertyController.processed},
     {method: 'POST', path: '/properties/{PropertyID}', config: PropertyController.update},

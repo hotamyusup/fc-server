@@ -11,5 +11,5 @@ const EquipmentDeviceSchema = new Schema({
     usePushEach: true
 });
 
-const EquipmentDeviceModel = mongoose.model('EquipmentDevice', EquipmentDeviceSchema);
-module.exports = EquipmentDeviceModel;
+// const EquipmentDeviceModel = mongoose.model('EquipmentDevice', EquipmentDeviceSchema);
+module.exports = EquipmentDeviceSchema;

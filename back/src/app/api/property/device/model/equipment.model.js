@@ -3,7 +3,7 @@
 const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 
-const EquipmentDeviceSchema = require("./equipment-device.model").schema;
+const EquipmentDeviceSchema = require("./equipment-device.schema");
 
 const EquipmentSchema = new Schema({
     Title: {type: String},

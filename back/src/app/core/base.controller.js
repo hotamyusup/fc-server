@@ -1,6 +1,8 @@
 'use strict';
 
+const Promise = require('bluebird');
 const Boom = require('boom');
+
 const logger = require('./logger');
 
 class BaseController {
@@ -14,6 +16,8 @@ class BaseController {
 
     handle(action, request, reply, func) {
         const {hash} = request.query;
+        const timerName = `${hash}.${this.controllerName}.handle.${action}`;
+        console.time(timerName);
         return Promise.resolve(func)
             .then((result) => {
                 logger.info(`sessionId: ${hash} ${this.controllerName}.${action} success`);
@@ -25,6 +29,10 @@ class BaseController {
                     return reply(Boom.forbidden('please provide another id, it already exist'));
                 }
                 return reply(Boom.badImplementation(err)); // 500 error
+            })
+            .finally(result => {
+                console.timeEnd(timerName);
+                return result;
             });
     }
 
