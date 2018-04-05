@@ -5,6 +5,7 @@ const Boom = require('boom');
 class ImageController {
     save() {
         return {
+            auth: false,
             handler: function (request, reply) {
                 var Photo = request.payload.Photo;
                 var uuid = require('node-uuid');

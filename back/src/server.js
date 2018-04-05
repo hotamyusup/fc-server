@@ -11,6 +11,7 @@ const Hapi = require('hapi');
 const Inert = require('inert');
 
 const logger = require('./app/core/logger');
+const hashAuth = require('./app/core/hash-auth-server-plugin');
 const config = require('./config/config');
 require('./config/db');
 
@@ -26,6 +27,10 @@ const start = async() => {
 
     server.connection({port: config.server.port, routes: {cors: true}});
     server.route(APP_ROUTES);
+
+    await server.register(hashAuth);
+    server.auth.strategy('simple', 'hash');
+    server.auth.default('simple');
 
     await server.start();
 

@@ -5,6 +5,7 @@ const nodemailer = require('nodemailer');
 class PasswordController {
     get reset() {
         return {
+            auth: false,
             handler: function (request, reply) {
                 if (request.payload.Email == '') {
                     return reply('0');

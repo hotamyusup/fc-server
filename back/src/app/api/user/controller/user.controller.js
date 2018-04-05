@@ -22,6 +22,7 @@ class UserController extends RedirectOnCreateController {
 
     get login() {
         return {
+            auth : false,
             handler: (request, reply) => {
                 const {hash} = request.query;
                 const action = 'login';

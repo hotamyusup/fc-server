@@ -6,6 +6,7 @@ var gm = require('gm').subClass({imageMagick: true});
 class ServiceController {
     get send() {
         return {
+            auth: false,
             handler: function (request, reply) {
                 var Map = request.payload.Map.replace('http://104.131.141.177', '.');
                 var Map = request.payload.Map.replace('http://fc2.fireprotected.com', '.');
