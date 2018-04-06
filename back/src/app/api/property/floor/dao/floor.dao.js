@@ -1,7 +1,7 @@
 'use strict';
 
-const BaseDAO = require("../../../../core/base.dao");
+const PropertyChildrenBaseDAO = require("../../common/property.children.base.dao");
 const FloorModel = require("../model/floor.model");
 
-const FloorDAO = new BaseDAO(FloorModel);
+const FloorDAO = new PropertyChildrenBaseDAO(FloorModel);
 module.exports = FloorDAO;
