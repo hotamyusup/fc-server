@@ -18,6 +18,7 @@ class BaseController {
         const {hash} = request.query;
         const timerName = `${hash}.${this.controllerName}.handle.${action}`;
         console.time(timerName);
+        logger.info(`sessionId: ${hash} ${this.controllerName}.${action} start`);
         return Promise.resolve(func)
             .then((result) => {
                 logger.info(`sessionId: ${hash} ${this.controllerName}.${action} success`);

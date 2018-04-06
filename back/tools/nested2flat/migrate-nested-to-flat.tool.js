@@ -6,11 +6,29 @@ const _ = require('underscore');
 
 const {db, Mongoose} = require('../../src/config/db');
 
-//localhost/properties/processed?hash=56f3a8d7927b976afff7ab9c&DeviceID=5a959f272f342db6577a8860&layer=Devices
+const config = {
+    prod : {
+        host : 'fc2.fireprotected.com',
+        port : 80,
+        hash: '56f3a8d7927b976afff7ab9c'
+    },
+    dev : {
+        host : 'dev.fc2.fireprotected.com',
+        port : 80,
+        hash: '56f3a8d7927b976afff7ab9c'
+    },
+    local : {
+        host : 'localhost',
+        port : 80,
+        hash: '56f3a8d7927b976afff7ab9c'
+    }
+};
+let configName = 'local';
+
 const getFromURL = (urlPart, urlPropertiesPart) => {
     urlPropertiesPart = urlPropertiesPart || '';
-    // const url = `http://fc2.fireprotected.com/${urlPart}?hash=56f3a8d7927b976afff7ab9c${urlPropertiesPart}`;
-    const url = `http://localhost/${urlPart}?hash=56f3a8d7927b976afff7ab9c${urlPropertiesPart}`;
+    let currentConfig = config[configName];
+    const url = `http://${currentConfig.host}:${currentConfig.port}/${urlPart}?hash=${currentConfig.hash}${urlPropertiesPart}`;
     // console.log('getFromURL === ', url);
     return new Promise((resolve, reject) => {
         request(url, (err, res, body) => {
@@ -40,6 +58,7 @@ const getUsers = () => {
 };
 
 let savedEntitiesCounter = 0;
+let errEntitiesCounter = 0;
 const moveEntityFromURL = (dao, urlPart, urlParams, mapResponse, customCreateEntity) => {
     console.log('moveEntityFromURL: ' + urlPart + '?---> ' + urlParams || '');
     mapResponse = mapResponse || (entitiesJSON => entitiesJSON);
@@ -55,7 +74,8 @@ const moveEntityFromURL = (dao, urlPart, urlParams, mapResponse, customCreateEnt
             if (11000 != err.code && 11001 != err.code) {
                 throw err
             } else {
-                console.log(`err: ${urlPart}?---> ${urlParams} duplicate id ${entityJSON._id} error`)
+                console.log(`err ${++errEntitiesCounter}: ${urlPart}?---> ${urlParams} duplicate id ${entityJSON._id} error`);
+                return null;
             }
         });
 
@@ -96,16 +116,29 @@ const MIGRATE_QUEUE = [
     [InspectionDAO, 'properties/processed', '&layer=Records', ({Records}) => Records],
 ];
 
-const migrate = ()=> {
+const migrate = () => {
     console.time('Migrate data');
     Promise
         .map(MIGRATE_QUEUE, migrateEntityConfig => moveEntityFromURL.apply(null, migrateEntityConfig))
         .then(getUsers)
         .then(() => {
             console.log('\nMigration finished!\n');
+            console.log(`saved: ${savedEntitiesCounter}, dupes: ${errEntitiesCounter}`);
+        })
+        .catch(error => {
+            console.log(`error in migration : `, error);
+        })
+        .finally(()=> {
             console.timeEnd('Migrate data');
         });
 };
 
 
-db.once('open', migrate);
+module.exports = {
+    run: (_configName) => {
+        configName = _configName || configName;
+        console.log('Run web migration - nested to flat tool. Config: ' + configName);
+        db.once('open', migrate);
+    }
+};
+

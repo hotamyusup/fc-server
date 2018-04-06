@@ -1,6 +1,8 @@
 'use strict';
 
 const RedirectOnCreateController = require("../../../core/redirect-on-create.controller");
+const logger = require("../../../core/logger");
+
 const UserDAO = require("../dao/user.dao");
 
 class UserController extends RedirectOnCreateController {
@@ -26,8 +28,10 @@ class UserController extends RedirectOnCreateController {
             handler: (request, reply) => {
                 const {hash} = request.query;
                 const action = 'login';
+                logger.info(`sessionId: ${hash} ${this.controllerName}.${action} start`);
 
                 if (request.payload.Email == '' || request.payload.Password == '') {
+                    logger.info(`sessionId: ${hash} ${this.controllerName}.${action} failed, email ${request.payload.Email} or password ${request.payload.Password} not received`);
                     return reply('0');
                 }
 

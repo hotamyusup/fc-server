@@ -1,5 +1,1 @@
-module.exports = {
-    run: () => {
-        require("./migrate-nested-to-flat.tool");
-    }
-};
+module.exports = require("./migrate-nested-to-flat.tool");

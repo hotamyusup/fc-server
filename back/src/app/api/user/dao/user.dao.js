@@ -28,11 +28,11 @@ class UserDAO extends BaseDAO {
     }
 
     findUserByEmail(email) {
-        return UserModel.find({Email: email});
+        return UserModel.findOne({Email: email});
     }
 
     login(email, password) {
-        return UserModel.find({Email: email, Password: password});
+        return UserModel.findOne({Email: email, Password: password});
     }
 }
 
