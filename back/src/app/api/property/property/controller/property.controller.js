@@ -30,7 +30,7 @@ class PropertyController extends RedirectOnCreateController {
                     Buildings: BuildingDAO.all().then(res => res.map(o => o.toJSON())),
                     Floors: FloorDAO.all().then(res => res.map(o => o.toJSON())),
                     Devices: DeviceDAO.all().then(res => res.map(o => o.toJSON())),
-                    Inspections: InspectionDAO.all().then(res => res.map(o => o.toJSON())),
+                    Records: InspectionDAO.all().then(res => res.map(o => o.toJSON())),
                 })
                 .then((response) => {
                     calculateRepairAndInspectState(
@@ -38,7 +38,7 @@ class PropertyController extends RedirectOnCreateController {
                         response.Buildings,
                         response.Floors,
                         response.Devices,
-                        response.Inspections
+                        response.Records
                     );
 
                     return response;
