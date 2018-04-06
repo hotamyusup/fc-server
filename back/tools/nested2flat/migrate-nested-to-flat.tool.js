@@ -14,8 +14,8 @@ const config = {
     },
     dev : {
         host : 'dev.fc2.fireprotected.com',
-        port : 80,
-        hash: '56f3a8d7927b976afff7ab9c'
+        port : 9999,
+        hash: '57075bf139d1bffb8981e438'
     },
     local : {
         host : 'localhost',
