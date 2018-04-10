@@ -71,18 +71,21 @@ class PropertyController extends RedirectOnCreateController {
                                     device.Records.push(object);
                                 }
                             } else if (object.FloorID) {
+                                object.Records = object.Records || [];
                                 const floor = FloorById[object.FloorID];
                                 if (floor) {
                                     floor.Devices = floor.Devices || [];
                                     floor.Devices.push(object);
                                 }
                             } else if (object.BuildingID) {
+                                object.Devices = object.Devices || [];
                                 const building = BuildingById[object.BuildingID];
                                 if (building) {
                                     building.Floors = building.Floors || [];
                                     building.Floors.push(object);
                                 }
                             } else if (object.PropertyID) {
+                                object.Floors = object.Floors || [];
                                 const property = Property;
                                 if (property) {
                                     property.Buildings = property.Buildings || [];
