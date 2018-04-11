@@ -50,6 +50,7 @@ class ImageController {
                 });
                 //fs.unlink("./img/temp-"+filename+".jpg");
 
+                logger.info(`${this.controllerName}.${action} finish`);
                 return reply(filename + '.jpg');
             },
             payload: {
