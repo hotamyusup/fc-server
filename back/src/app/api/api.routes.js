@@ -13,6 +13,7 @@ const API_ROUTES = [
 
     ...require("./service/routes/service.routes"),
     ...require("./user/routes/user.routes"),
+    ...require("./user/routes/password.routes"),
 ];
 
 module.exports = API_ROUTES;
