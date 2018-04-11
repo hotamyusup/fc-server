@@ -14,7 +14,7 @@
     "async": "^2.6.0",
     "bluebird": "^3.5.1",
     "boom": "^5.2.0",
-    "easyimage": "^2.1.0",
+    "easyimage": "^2.2.1",
     "gm": "^1.23.0",
     "hapi": "^16.6.0",
     "imagemagick": "^0.1.3",

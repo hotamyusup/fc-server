@@ -1,35 +1,50 @@
 'use strict';
 
-const Boom = require('boom');
+const fs = require('fs');
+const easyimg = require('easyimage');
+const uuid = require('node-uuid');
+const path = require('path');
 
 class ImageController {
-    save() {
+
+    get get() {
         return {
             auth: false,
-            handler: function (request, reply) {
-                var Photo = request.payload.Photo;
-                var uuid = require('node-uuid');
-                var filename = uuid.v4();
-                //console.log(filename+":"+Photo.length);
+            handler: {
+                directory: {path: path.normalize(__dirname + '/../public/img')},
+            }
+        }
+    }
 
-                var Fs = require('fs');
+    get save() {
+        return {
+            auth: false,
+            handler: async(request, reply) => {
+                const Photo = request.payload.Photo;
+                const filename = uuid.v4();
 
-                Fs.writeFile('./img/' + filename + '.jpg', Photo, function (err) {
+                const imagesDirPath = path.normalize(__dirname + '/../public/img/');
+                const imagePath = imagesDirPath + filename + '.jpg';
+                const tumbPath = imagesDirPath + filename + '-t.jpg';
+
+                fs.writeFile(imagePath, Photo, function (err) {
                     if (err) {
-                        console.log('E:' + err);
+                        console.log('write image file error: ' + err);
                     }
                 });
 
-                var easyimg = require('easyimage');
-                //var Enlarge = easyimg.thumbnail({src:"./img/temp-"+filename+".jpg", dst:"./img/"+filename+".jpg",width:768,height:1024});
-                var Thumbnail = easyimg.thumbnail({
-                    src: './img/' + filename + '.jpg',
-                    dst: './img/' + filename + '-t.jpg',
+                const Thumbnail = await easyimg.thumbnail({
+                    src: imagePath,
+                    dst: tumbPath,
                     width: 250,
                     height: 250,
                     quality: 100,
+                }).catch(thumbErr => {
+                    console.log('creating thumbnail error: ', thumbErr);
                 });
-                //Fs.unlink("./img/temp-"+filename+".jpg");
+                //fs.unlink("./img/temp-"+filename+".jpg");
+
+                console.log('imagePath === ', imagePath);
 
                 return reply(filename + '.jpg');
             },
