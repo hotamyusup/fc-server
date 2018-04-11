@@ -1,4 +1,5 @@
 'use strict';
+
 const ImageController = require("../controller/image.controller");
 
 const IMAGE_ROUTES = [

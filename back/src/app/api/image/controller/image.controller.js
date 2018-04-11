@@ -1,11 +1,14 @@
 'use strict';
-
+const logger = require('../../../core/logger')
 const fs = require('fs');
 const easyimg = require('easyimage');
 const uuid = require('node-uuid');
 const path = require('path');
 
 class ImageController {
+    constructor() {
+        this.controllerName = 'ImageController';
+    }
 
     get get() {
         return {
@@ -20,6 +23,9 @@ class ImageController {
         return {
             auth: false,
             handler: async(request, reply) => {
+                const action = 'save';
+                logger.info(`${this.controllerName}.${action} start`);
+
                 const Photo = request.payload.Photo;
                 const filename = uuid.v4();
 
@@ -29,7 +35,7 @@ class ImageController {
 
                 fs.writeFile(imagePath, Photo, function (err) {
                     if (err) {
-                        console.log('write image file error: ' + err);
+                        logger.error(`${this.controllerName}.${action} write image file error: ${err}`);
                     }
                 });
 
@@ -40,11 +46,9 @@ class ImageController {
                     height: 250,
                     quality: 100,
                 }).catch(thumbErr => {
-                    console.log('creating thumbnail error: ', thumbErr);
+                    logger.error(`${this.controllerName}.${action} creating thumbnail error: ${thumbErr}`);
                 });
                 //fs.unlink("./img/temp-"+filename+".jpg");
-
-                console.log('imagePath === ', imagePath);
 
                 return reply(filename + '.jpg');
             },
