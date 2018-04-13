@@ -197,6 +197,9 @@
 												<div class="item-col item-col-title no-overflow">
 													<a href="javascript:;;" data-bind="attr: {href:((typeof(Device.Picture) != 'undefined') ?  Device.Picture : ''),target:'_blank'}, text:((typeof(Device.Picture) != 'undefined') ?  'Show' : 'N/A')" class="userlink"></a>
 												</div>
+												<div class="item-col item-col-title no-overflow">
+													<a href="javascript:;;" data-bind="click : generateThumb(Device.Picture)" class="userlink">Generate thumb</a>
+												</div>
 											</div>
 										</li>
 									</ul>
@@ -233,6 +236,11 @@
 				Model.Floor = _.findWhere(Model.Building.Floors,{_id:FloorID});
 				Model.Device = _.findWhere(Model.Floor.Devices,{_id:ID});
 				console.log(Model.Device);
+
+                Model.generateThumb = function(imageLink) {
+                    API.createThumbnail(imageLink);
+                };
+
 				API.equipments(function(equipments){
 					Model.Equipments = equipments;
 					ko.applyBindings(Model);
