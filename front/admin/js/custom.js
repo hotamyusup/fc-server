@@ -156,6 +156,11 @@ $(function () {
 				callback(data);
 			});
 		},
+		createThumbnail: function (imageLink, callback) {
+			API.get("/image/generate-thumbnail/" + imageLink, function (data) {
+                callback && callback(data);
+			});
+		},
 		updateOrganization: function (id, organization, callback) {
 			API.post("/organizations/" + id, organization, function (data) {
 				callback(data);
