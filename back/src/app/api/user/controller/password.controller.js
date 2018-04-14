@@ -16,18 +16,22 @@ class PasswordController {
                     return reply('0');
                 }
 
-                const name = 'Fire Cloud';
-                const from = 'fireclouddigitalocean@gmail.com';
+                const name = 'FireCloud System';
+                const from = 'noreply_firecloud@fireprotected.com';
                 const password = Math.floor(Math.random() * (99999 - 11111)) + 11111;
                 const email = request.payload.Email;
                 const smtpTransport = nodemailer.createTransport({
                     service: 'Gmail',
                     host: 'smtp.gmail.com',
                     auth: {
+                        //user: 'firecloud_smtp@fireprotected.com',
+                       //pass: 'Poh23320',
                         user: 'fireclouddigitalocean@gmail.com',
                         pass: 'Fc161020',
                     },
                 });
+
+                logger.info(`smtp settings ${smtpTransport} `);
 
                 const resetPasswordForUserEntity = () => UserDAO
                     .findUserByEmail(email)

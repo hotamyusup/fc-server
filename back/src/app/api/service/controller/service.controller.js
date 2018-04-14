@@ -27,16 +27,18 @@ class ServiceController {
                         //console.log(this.outname + ' created  :: ' + arguments[3])
                     });
 
-                var name = 'Fire Cloud';
-                var from = 'fireclouddigitalocean@gmail.com';
+                var name = 'FireCloud System';
+                var from = 'noreply_firecloud@fireprotected.com';
                 var to = 'firecloudservice@fireprotected.com';
 
                 var smtpTransport = nodemailer.createTransport({
-                    service: 'Gmail',
-                    host: 'smtp.gmail.com',
+                    service: 'Outlook',
+                    host: 'smtp.office365.com',
                     auth: {
-                        user: 'fireclouddigitalocean@gmail.com',
-                        pass: 'Fc161020',
+                        user: 'firecloud_smtp@fireprotected.com',
+//fireclouddigitalocean@gmail.com',
+                        //pass: 'Fc161020',
+                        pass: 'Poh23320',
                     },
                 });
 

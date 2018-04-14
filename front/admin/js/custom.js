@@ -1,5 +1,5 @@
 ﻿var User;
-var Config = { APIURL: "http://104.131.141.177", BaseURL: "http://104.131.141.177/admin" }
+var Config = { APIURL: "http://firecloud3.fireprotected.com", BaseURL: "http://firecloud3.fireprotected.com/admin" }
 // var Config = { APIURL: "http://192.168.1.30:8080", BaseURL: "http://192.168.1.30:8080/admin" }
 
 $(function () {
