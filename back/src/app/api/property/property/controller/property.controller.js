@@ -4,6 +4,7 @@ const Promise = require("bluebird");
 const moment = require("moment");
 const _ = require("underscore");
 
+const logger = require("../../../../core/logger");
 const RedirectOnCreateController = require("../../../../core/redirect-on-create.controller");
 
 const PropertyDAO = require("../dao/property.dao");
