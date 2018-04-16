@@ -8,14 +8,11 @@ const logger = require("../../../../core/logger");
 const BaseDAO = require("../../../../core/base.dao");
 
 const PropertyModel = require("../model/property.model");
+const PropertyChildrenBaseDAO = require("../../common/property.children.base.dao");
 
-class PropertyDAO extends BaseDAO {
+class PropertyDAO extends PropertyChildrenBaseDAO {
     constructor() {
         super(PropertyModel);
-    }
-
-    all() {
-        return PropertyModel.find({}).where('Status').gt(-1);
     }
 
     async prepareUpdateObject(propertyJSON) {
