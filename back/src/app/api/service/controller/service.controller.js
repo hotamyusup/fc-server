@@ -1,51 +1,67 @@
 'use strict';
-var Boom = require('boom');
-var nodemailer = require('nodemailer');
 var gm = require('gm').subClass({imageMagick: true});
 
-class ServiceController {
+const logger = require('../../../core/logger');
+const BaseController = require('../../../core/base.controller');
+const MailService = require('../../../core/mail.service');
+
+class ServiceController extends BaseController {
+    constructor() {
+        super(null);
+        this.controllerName = 'ServiceController';
+        this.requestIDKey = '';
+        this.batchEntitiesKey = '';
+    }
+
+    get callback() {
+        return {
+            auth: false,
+            handler: (request, reply) => {
+                const userInfo = request.payload;
+                logger.info(`${this.controllerName}.callback payload === ${JSON.stringify(request.payload)}`);
+
+                this.handle('callback', request, reply, MailService.send(
+                    'firecloudservice@fireprotected.com',
+                    'Callback Request: ' + userInfo.Title,
+                    `${userInfo.Title} requested callback, phone: ${userInfo.Phone}, email: ${userInfo.Email}`
+                ));
+            }
+        }
+    }
+
     get send() {
         return {
             auth: false,
             handler: function (request, reply) {
-                var Map = request.payload.Map.replace('http://104.131.141.177', '.');
-                var Map = request.payload.Map.replace('http://fc2.fireprotected.com', '.');
-                //var Target = Map.replace("./img/","./temp/"+(Math.random() * (9999 - 1111) + 1111)+"-";
-                var Target = './img/' + request.payload.Device._id + '.png';
-                gm(Map)
-                    .fill('red')
-                    .stroke('white', 2)
-                    .drawCircle(
-                        request.payload.PosX,
-                        request.payload.PosY,
-                        request.payload.PosX + 10,
-                        request.payload.PosY + 10
-                    )
-                    .resize(800, null)
-                    .write(Target, function (err) {
-                        if (err) return console.dir(arguments);
-                        //console.log(this.outname + ' created  :: ' + arguments[3])
-                    });
+                console.log('request.payload === ', request.payload);
+                if (request.payload.Map) {
+                    var Map = request.payload.Map.replace('http://104.131.141.177', '.');
+                    var Map = request.payload.Map.replace('http://fc2.fireprotected.com', '.');
 
-                var name = 'FireCloud System';
-                var from = 'noreply_firecloud@fireprotected.com';
-                var to = 'firecloudservice@fireprotected.com';
-
-                var smtpTransport = nodemailer.createTransport({
-                    service: 'Outlook',
-                    host: 'smtp.office365.com',
-                    auth: {
-                        user: 'firecloud_smtp@fireprotected.com',
-//fireclouddigitalocean@gmail.com',
-                        //pass: 'Fc161020',
-                        pass: 'Poh23320',
-                    },
-                });
+                    //var Target = Map.replace("./img/","./temp/"+(Math.random() * (9999 - 1111) + 1111)+"-";
+                    if (request.payload.Device._id) {
+                        var Target = './img/' + request.payload.Device._id + '.png';
+                        gm(Map)
+                            .fill('red')
+                            .stroke('white', 2)
+                            .drawCircle(
+                                request.payload.PosX,
+                                request.payload.PosY,
+                                request.payload.PosX + 10,
+                                request.payload.PosY + 10
+                            )
+                            .resize(800, null)
+                            .write(Target, function (err) {
+                                if (err) return console.dir(arguments);
+                                //console.log(this.outname + ' created  :: ' + arguments[3])
+                            });
+                    }
+                }
 
                 var Photo = 'N/A';
                 var History = 'N/A';
 
-                if (request.payload.Device.Records.length > 0) {
+                if (request.payload.Device && request.payload.Device.Records && request.payload.Device.Records.length > 0) {
                     History = '<hr />';
                     for (var i = 0; i < request.payload.Device.Records.length; i++) {
                         var Record = request.payload.Device.Records[i];
@@ -79,16 +95,15 @@ class ServiceController {
                     Photo = '<img src="' + request.payload.Photo + '" width="90%" />';
                 }
 
-                var Pointer =
-                    '<img src="' +
-                    Target.replace('./', 'http://104.131.141.177/') +
-                    '" width="90%" />';
+                if (Target) {
+                    var Pointer =
+                        '<img src="' +
+                        Target.replace('./', 'http://104.131.141.177/') +
+                        '" width="90%" />';
+                }
 
-                var mailOptions = {
-                    from: from,
-                    to: to,
-                    subject: 'Service Reqest: ' + request.payload.User,
-                    html: '<b>Request Service Details:</b><br /><br /><b>User:</b> ' +
+                const subject = 'Service Reqest: ' + request.payload.User;
+                const html = '<b>Request Service Details:</b><br /><br /><b>User:</b> ' +
                     request.payload.User +
                     '<br><b>E-Mail:</b> ' +
                     request.payload.Email +
@@ -119,8 +134,7 @@ class ServiceController {
                     '<br><br><b>Photo:</b> <br>' +
                     Photo +
                     '<br><br><b>Map:</b> <br>' +
-                    Pointer,
-                };
+                    Pointer;
 
                 /*
                  if(Photo != "N/A"){
@@ -132,13 +146,14 @@ class ServiceController {
                  }
                  */
 
-                smtpTransport.sendMail(mailOptions, function (error, response) {
-                    if (error) {
-                        return reply(error);
-                    } else {
-                        return reply('{}');
-                    }
-                });
+                const to = 'firecloudservice@fireprotected.com';
+
+                this.handle(
+                    'send',
+                    request,
+                    reply,
+                    MailService.send(to, subject, html)
+                );
             },
         };
     }
