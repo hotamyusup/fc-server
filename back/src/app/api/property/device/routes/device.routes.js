@@ -3,6 +3,7 @@
 const DeviceController = require("../controller/device.controller");
 
 const DEVICE_ROUTES = [
+    {method: 'GET', path: '/devices/qr/{QRCode}', config: DeviceController.findByQR},
     {method: 'GET', path: '/devices', config: DeviceController.all},
     {method: 'GET', path: '/devices/{DeviceID}', config: DeviceController.get},
     {method: 'POST', path: '/devices', config: DeviceController.upsert},

@@ -3,6 +3,7 @@
 const ServiceController = require("../controller/service.controller");
 
 const SERVICE_ROUTES = [
+    {method: 'POST', path: '/service/callback', config: ServiceController.callback},
     {method: 'POST', path: '/service', config: ServiceController.send},
     {method: 'GET', path: '/service', config: ServiceController.send},
 ];

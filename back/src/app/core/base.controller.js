@@ -15,7 +15,9 @@ class BaseController {
     }
 
     handle(action, request, reply, func) {
-        const {hash} = request.query;
+        let {hash} = request.query;
+        hash = hash || '';
+
         const timerName = `${hash}.${this.controllerName}.handle.${action}`;
         console.time(timerName);
         logger.info(`sessionId: ${hash} ${this.controllerName}.${action} start`);
