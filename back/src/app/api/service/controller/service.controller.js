@@ -41,8 +41,8 @@ class ServiceController extends BaseController {
             handler: (request, reply) => {
                 let Target;
                 if (request.payload.Map) {
-                    let Map = request.payload.Map.replace('http://104.131.141.177/img', IMG_PUBLIC_DIR);
-                    Map = Map.replace('http://fc2.fireprotected.com/img', IMG_PUBLIC_DIR);
+                    let Map = request.payload.Map.replace('http://35.194.63.160/img', IMG_PUBLIC_DIR);
+                    Map = Map.replace('http://firecloud3.fireprotected.com/img', IMG_PUBLIC_DIR);
                     //var Target = Map.replace("./img/","./temp/"+(Math.random() * (9999 - 1111) + 1111)+"-";
                     if (request.payload.Device._id && fs.existsSync(Map)) {
                         Target = `${IMG_PUBLIC_DIR}/${request.payload.Device._id}.png`;
@@ -102,7 +102,7 @@ class ServiceController extends BaseController {
 
                 let Pointer;
                 if (Target) {
-                    Pointer = `<img src="${Target.replace('./', 'http://104.131.141.177/')}" width="90%" />`;
+                    Pointer = `<img src="${Target.replace('./', 'http://firecloud3.fireprotected.com/')}" width="90%" />`;
                 }
 
                 const subject = 'Service Reqest: ' + request.payload.User;
