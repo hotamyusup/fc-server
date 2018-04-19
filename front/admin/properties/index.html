@@ -158,64 +158,67 @@
 						return building.Status > 0;
 					});
 					property.exportCsv = (property) => {
+                        API.property(property._id, (property) => {
+
 						// Start file download.
-						API.equipments((equipments) => {
-							API.users((users) => {
-								let content = '';
-								const frequencies = {
-									'0': 'Quarterly',
-									'1': 'Semi',
-									'2': 'Annually',
-									'3': '5 Yearly'
-								}
-								_.each(property.Buildings, (building) => {
-									if (building.Status <= 0) return;
-									_.each(building.Floors, (floor) => {
-										if (floor.Status <= 0) return;
-										//content = content.concat(property.Title, ',', building.Title, ',', floor.Title, '\n');
-										content = content.concat('device', ',', 'property', ',', 'building', ',', 'floor',
-													',','location', ',', 'installation date', ',', 'inspection date', 
-													',','model no', ',', 'serial no', 
-													',', 'inspection frequency', ',', 'inspector', ',', 'pass/fail',
-													',', 'reason', ',', 'inspector note', ',', 'image url','\n');
+							API.equipments((equipments) => {
+								API.users((users) => {
+									let content = '';
+									const frequencies = {
+										'0': 'Quarterly',
+										'1': 'Semi',
+										'2': 'Annually',
+										'3': '5 Yearly'
+									}
+									_.each(property.Buildings, (building) => {
+										if (building.Status <= 0) return;
+										_.each(building.Floors, (floor) => {
+											if (floor.Status <= 0) return;
+											//content = content.concat(property.Title, ',', building.Title, ',', floor.Title, '\n');
+											content = content.concat('device', ',', 'property', ',', 'building', ',', 'floor',
+														',','location', ',', 'installation date', ',', 'inspection date',
+														',','model no', ',', 'serial no',
+														',', 'inspection frequency', ',', 'inspector', ',', 'pass/fail',
+														',', 'reason', ',', 'inspector note', ',', 'image url','\n');
 
-										_.each(floor.Devices, (device) => {
-											if (device.Status <= 0) return;
+											_.each(floor.Devices, (device) => {
+												if (device.Status <= 0) return;
 
-											let deviceTitle = _.findWhere(_.findWhere(equipments, {
-												_id: device.EquipmentType
-											}).Devices, {
-												_id: device.DeviceType
-											}).Title;
-											_.each(device.Records, (record) => {
-												let status;
-												switch (record.DeviceStatus) {
-													case 0:
-														status = "Pass";
-														break;
-													case 1:
-														status = "Fail";
-														break;
-													case 2:
-														status = "Pending";
-														break;
-													default:
-														status = "N/A";
-												}
-												content = content.concat(deviceTitle, ',', property.Title, ',', building.Title, ',', floor.Title,
-													',', device.DeviceLocation, ',', device.InstallationDate, ',', record.InspectionDate,  
-													',', device.ModelNumber, ',', device.SerialNumber, ',', 
-													frequencies[record.Frequency], ',', _.findWhere(users, {
-													_id: record.User
-												}).Title, ',', status, ',', record.Reason, ',', record.Note, ',', record.Photos.length > 0 ? record.Photos[0].URL : '', '\n');
+												let deviceTitle = _.findWhere(_.findWhere(equipments, {
+													_id: device.EquipmentType
+												}).Devices, {
+													_id: device.DeviceType
+												}).Title;
+												_.each(device.Records, (record) => {
+													let status;
+													switch (record.DeviceStatus) {
+														case 0:
+															status = "Pass";
+															break;
+														case 1:
+															status = "Fail";
+															break;
+														case 2:
+															status = "Pending";
+															break;
+														default:
+															status = "N/A";
+													}
+													content = content.concat(deviceTitle, ',', property.Title, ',', building.Title, ',', floor.Title,
+														',', device.DeviceLocation, ',', device.InstallationDate, ',', record.InspectionDate,
+														',', device.ModelNumber, ',', device.SerialNumber, ',',
+														frequencies[record.Frequency], ',', _.findWhere(users, {
+														_id: record.User
+													}).Title, ',', status, ',', record.Reason, ',', record.Note, ',', record.Photos.length > 0 ? record.Photos[0].URL : '', '\n');
+												});
 											});
 										});
 									});
-								});
 
-								download(`${property.Title}.csv`, content)
+									download(`${property.Title}.csv`, content)
+								});
 							});
-						});
+                        });
 					}
 				});
 				ko.applyBindings({
