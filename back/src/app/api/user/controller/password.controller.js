@@ -21,16 +21,12 @@ class PasswordController {
                 const password = Math.floor(Math.random() * (99999 - 11111)) + 11111;
                 const email = request.payload.Email;
                 const smtpTransport = nodemailer.createTransport({
-                    service: 'SendGrid',
-                    host: 'smtp.sendgrid.net',
-                    auth: {
-                        //user: 'firecloud_smtp@fireprotected.com',
-                       //pass: 'Poh23320',
-                        //user: 'fireclouddigitalocean@gmail.com',
-                        //pass: 'Fc161020',
-                        user: 'apikey',
-                        pass: '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',
-                    },
+		    host: 'smtp.sendgrid.net',
+		    port: 2525,
+		    auth: {
+			user: 'apikey',
+			pass: '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'
+		    },
                 });
 
                 logger.info(`smtp settings ${smtpTransport} `);
