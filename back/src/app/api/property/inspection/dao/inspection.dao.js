@@ -7,10 +7,6 @@ class InspectionDAO extends PropertyChildrenBaseDAO {
     constructor() {
         super(InspectionModel);
     }
-
-    all() {
-        return this.model.find({});
-    }
 }
 
 module.exports = new InspectionDAO(InspectionModel);

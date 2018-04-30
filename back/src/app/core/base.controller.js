@@ -1,6 +1,7 @@
 'use strict';
 
 const Promise = require('bluebird');
+const moment = require('moment');
 const Boom = require('boom');
 
 const logger = require('./logger');
@@ -42,7 +43,15 @@ class BaseController {
     get all() {
         return {
             handler: (request, reply) => {
-                this.handle('all', request, reply, this.DAO.all());
+                const {from} = request.query;
+                const conditions = {};
+                if (from) {
+                    conditions.updated_at = {
+                        $gt: moment(from).toDate()
+                    }
+                }
+
+                this.handle('all', request, reply, this.DAO.all(conditions));
             }
         };
     }
@@ -69,6 +78,7 @@ class BaseController {
             }
         }
     }
+
     get create() {
         return {
             handler: (request, reply) => this.handle('create', request, reply, this.DAO.create(request.payload))

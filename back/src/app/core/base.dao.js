@@ -9,8 +9,9 @@ class BaseDAO {
         this.model = model;
     }
 
-    all() {
-        return this.model.find({});
+    all(conditions) {
+        conditions = conditions || {};
+        return this.model.find(conditions);
     }
 
     get(id) {
