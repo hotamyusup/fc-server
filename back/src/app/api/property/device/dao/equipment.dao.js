@@ -25,9 +25,8 @@ class EquipmentDAO extends BaseDAO {
             .then(equipment => {
                 const _Device = equipment.Devices.id(deviceID);
                 if (!_Device) {
-                    var device = new EquipmentDeviceSchema(deviceJSON);
-                    device.Status = 1;
-                    equipment.Devices.push(device);
+                    deviceJSON.Status = 1;
+                    equipment.Devices.push(deviceJSON);
                 } else {
                     _Device.Title = deviceJSON.Title;
                     _Device.Status = deviceJSON.Status;
