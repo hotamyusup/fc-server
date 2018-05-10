@@ -23,13 +23,12 @@ class PropertyController extends RedirectOnCreateController {
         this.redirectUrl = '/property/';
     }
 
-
     get all() {
-        const getPropertiesWithChildrenBuildings = () => {
+        const getPropertiesWithChildrenBuildings = conditions => {
             const mapToJSON = res => res.map(o => o.toJSON());
             return Promise
                 .props({
-                    Properties: PropertyDAO.all().then(mapToJSON),
+                    Properties: PropertyDAO.all(conditions).then(mapToJSON),
                     Buildings: BuildingDAO.all().then(mapToJSON),
                 })
                 .then(({Properties, Buildings}) => {
@@ -42,7 +41,15 @@ class PropertyController extends RedirectOnCreateController {
 
         return {
             handler: (request, reply) => {
-                this.handle('all', request, reply, getPropertiesWithChildrenBuildings());
+                const {from} = request.query;
+                const conditions = {};
+                console.log('from === ', from);
+                if (from) {
+                    conditions.updated_at = {
+                        $gt: moment(from).toDate()
+                    };
+                }
+                this.handle('all', request, reply, getPropertiesWithChildrenBuildings(conditions));
             }
         }
     }
@@ -51,7 +58,6 @@ class PropertyController extends RedirectOnCreateController {
     get get() {
         const getPropertyWithTreeOfChildren = (PropertyID) => {
             const mapToJSON = res => res.map(o => o.toJSON());
-
             return Promise
                 .props({
                     Property: PropertyDAO.get(PropertyID).then(o => o.toJSON()),
@@ -113,8 +119,7 @@ class PropertyController extends RedirectOnCreateController {
         }
     }
 
-    get
-    processed() {
+    get processed() {
         const getPropertiesEntitiesFlat = () => {
             const mapToJSON = res => res.map(o => o.toJSON());
 
@@ -135,7 +140,7 @@ class PropertyController extends RedirectOnCreateController {
                         response.Records
                     );
 
-                    return response;
+                    return response.Properties;
                 });
         };
 
@@ -148,6 +153,11 @@ class PropertyController extends RedirectOnCreateController {
 }
 
 module.exports = new PropertyController();
+
+
+
+
+
 
 
 const calculateRepairAndInspectState = (Properties, Buildings, Floors, Devices, Records) => {
@@ -224,10 +234,15 @@ const calculateRepairAndInspectState = (Properties, Buildings, Floors, Devices, 
                     Device.HasRepair = 1;
                     Property.RepairCount = Property.RepairCount || 0;
                     Property.RepairCount++;
+                    Property.RepairInspections = Property.RepairInspections || [];
+                    Property.RepairInspections.push(LastRecord);
                 }
                 LastFrequency = LastRecord.Frequency;
             } else {
                 LastFrequency = -1;
+                if (Device.PropertyID === "5a4e6c74ade4ff780ab9084f ") {
+                    console.log('no REPAIR deviceRecords === ', deviceRecords);
+                }
             }
 
             if (Device.Status === 2) {

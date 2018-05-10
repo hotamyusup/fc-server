@@ -9,8 +9,9 @@ class PropertyChildrenBaseDAO extends BaseDAO {
         super(model);
     }
 
-    all() {
-        return this.model.find({Status : {$gt : -1}});
+    all(conditions) {
+        conditions = conditions || {};
+        return this.model.find(conditions);
     }
 
     forProperty(PropertyID){
