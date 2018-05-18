@@ -173,6 +173,7 @@
 									_.each(property.Buildings, (building) => {
 										if (building.Status <= 0) return;
 										_.each(building.Floors, (floor) => {
+
 											if (floor.Status <= 0) return;
 											//content = content.concat(property.Title, ',', building.Title, ',', floor.Title, '\n');
 											content = content.concat('device', ',', 'property', ',', 'building', ',', 'floor',
@@ -189,8 +190,11 @@
 												}).Devices, {
 													_id: device.DeviceType
 												}).Title;
+
+												//this gets records only
+												let status;
 												_.each(device.Records, (record) => {
-													let status;
+													status = "N/A";
 													switch (record.DeviceStatus) {
 														case 0:
 															status = "Pass";
@@ -211,6 +215,13 @@
 														_id: record.User
 													}).Title, ',', status, ',', record.Reason, ',', record.Note, ',', record.Photos.length > 0 ? record.Photos[0].URL : '', '\n');
 												});
+
+												//add device even if no record
+												content = content.concat(deviceTitle, ',', property.Title, ',', building.Title, ',', floor.Title,
+													',', device.DeviceLocation, ',', device.InstallationDate,
+													',', device.ModelNumber, ',', device.SerialNumber, ',','\n'
+												);
+
 											});
 										});
 									});
