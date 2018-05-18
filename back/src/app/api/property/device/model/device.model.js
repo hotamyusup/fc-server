@@ -10,6 +10,7 @@ const DeviceSchema = new Schema({
     SerialNumber: {type: String},
     InstallationDate: {type: Date},
     DeviceLocation: {type: String},
+    ExpirationType: {type: String},
     Notes: {type: String},
     QRCode: {type: String},
     Picture: {type: String},
