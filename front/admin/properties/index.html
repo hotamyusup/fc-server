@@ -178,7 +178,7 @@
 											//content = content.concat(property.Title, ',', building.Title, ',', floor.Title, '\n');
 											content = content.concat('device', ',', 'property', ',', 'building', ',', 'floor',
 														',','location', ',', 'installation date', ',', 'inspection date',
-														',','model no', ',', 'serial no',
+														',','equipment type', ',','model no', ',', 'serial no',
 														',', 'inspection frequency', ',', 'inspector', ',', 'pass/fail',
 														',', 'reason', ',', 'inspector note', ',', 'image url','\n');
 
@@ -189,6 +189,10 @@
 													_id: device.EquipmentType
 												}).Devices, {
 													_id: device.DeviceType
+												}).Title;
+
+												let deviceEquipmentType = _.findWhere(equipments, {
+													_id: device.EquipmentType
 												}).Title;
 
 												//this gets records only
@@ -210,17 +214,20 @@
 													}
 													content = content.concat(deviceTitle, ',', property.Title, ',', building.Title, ',', floor.Title,
 														',', device.DeviceLocation, ',', device.InstallationDate, ',', record.InspectionDate,
-														',', device.ModelNumber, ',', device.SerialNumber, ',',
+														',', deviceEquipmentType, ',', device.ModelNumber, ',', device.SerialNumber, ',',
 														frequencies[record.Frequency], ',', _.findWhere(users, {
 														_id: record.User
 													}).Title, ',', status, ',', record.Reason, ',', record.Note, ',', record.Photos.length > 0 ? record.Photos[0].URL : '', '\n');
 												});
 
+
 												//add device even if no record
-												content = content.concat(deviceTitle, ',', property.Title, ',', building.Title, ',', floor.Title,
-													',', device.DeviceLocation, ',', device.InstallationDate,
-													',', device.ModelNumber, ',', device.SerialNumber, ',','\n'
-												);
+												if (device.Records.length <= 0) {
+													content = content.concat(deviceTitle, ',', property.Title, ',', building.Title, ',', floor.Title,
+														',', device.DeviceLocation, ',', device.InstallationDate, ',',
+														',', deviceEquipmentType, ',', device.ModelNumber, ',', device.SerialNumber, ',','\n'
+													);
+												}
 
 											});
 										});
