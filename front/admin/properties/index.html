@@ -159,7 +159,7 @@
 					});
 					property.exportCsv = (property) => {
                         API.property(property._id, (property) => {
-
+				let deviceCount = 0;
 						// Start file download.
 							API.equipments((equipments) => {
 								API.users((users) => {
@@ -212,6 +212,7 @@
 														default:
 															status = "N/A";
 													}
+													deviceCount++;
 													content = content.concat(deviceTitle, ',', property.Title, ',', building.Title, ',', floor.Title,
 														',', device.DeviceLocation, ',', device.InstallationDate, ',', record.InspectionDate,
 														',', deviceEquipmentType, ',', device.ModelNumber, ',', device.SerialNumber, ',',
@@ -223,6 +224,7 @@
 
 												//add device even if no record
 												if (device.Records.length <= 0) {
+													deviceCount++;
 													content = content.concat(deviceTitle, ',', property.Title, ',', building.Title, ',', floor.Title,
 														',', device.DeviceLocation, ',', device.InstallationDate, ',',
 														',', deviceEquipmentType, ',', device.ModelNumber, ',', device.SerialNumber, ',','\n'
@@ -232,7 +234,8 @@
 											});
 										});
 									});
-
+									//add total device count as last row
+									content = content.concat('\n', 'Total devices: ', deviceCount, ',', '\n');
 									download(`${property.Title}.csv`, content)
 								});
 							});
