@@ -25,7 +25,7 @@ class BaseDAO {
 
     prepareUpdateObject(dataObject) {
         delete dataObject._id;
-        delete dataObject.created_at;
+        // delete dataObject.created_at;
         delete dataObject.__v;
         return Promise.resolve(dataObject);
     }
