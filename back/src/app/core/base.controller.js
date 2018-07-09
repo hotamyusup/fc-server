@@ -87,7 +87,7 @@ class BaseController {
 
     get update() {
         return {
-            handler: (request, reply) => this.handle('update', request, reply, this.DAO.update(request.params))
+            handler: (request, reply) => this.handle('update', request, reply, this.DAO.update(request.payload))
         };
     }
 
