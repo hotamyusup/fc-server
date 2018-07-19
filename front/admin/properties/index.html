@@ -185,15 +185,31 @@
 											_.each(floor.Devices, (device) => {
 												if (device.Status <= 0) return;
 
-												let deviceTitle = _.findWhere(_.findWhere(equipments, {
+												const equipmentDevices = _.findWhere(equipments, {
 													_id: device.EquipmentType
-												}).Devices, {
-													_id: device.DeviceType
-												}).Title;
+												}).Devices;
 
-												let deviceEquipmentType = _.findWhere(equipments, {
-													_id: device.EquipmentType
-												}).Title;
+												const equipmentDevice = _.findWhere(equipmentDevices, {
+													_id: device.DeviceType
+												});
+														let deviceTitle = "NOTFOUND";
+														let deviceEquipmentType = "NOTFOUND"; 
+
+													if (!equipmentDevice) {
+														console.log(`device._id === ${device._id}`);
+														console.log(`device.EquipmentType === ${device.EquipmentType}`);
+														console.log(`device.DeviceType === ${device.DeviceType}`);
+														console.log(`equipmentDevices === `, equipmentDevices);
+							                        	                        console.log(`equipmentDevice === `, equipmentDevice);
+
+													}else{
+
+														let deviceTitle = equipmentDevice.Title;
+
+														let deviceEquipmentType = _.findWhere(equipments, {
+															_id: device.EquipmentType
+														}).Title;
+													}
 
 												//this gets records only
 												let status;
