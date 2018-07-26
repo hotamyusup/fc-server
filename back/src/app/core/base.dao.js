@@ -1,6 +1,7 @@
 'use strict';
 
 const mongoose = require('mongoose');
+const moment = require('moment');
 const Promise = require('bluebird');
 
 class BaseDAO {
@@ -24,9 +25,17 @@ class BaseDAO {
     }
 
     prepareUpdateObject(dataObject) {
-        delete dataObject._id;
+        // delete dataObject._id;
         // delete dataObject.created_at;
-        delete dataObject.__v;
+        // delete dataObject.__v;
+
+        // hack for devices with corrupted InstallationDate
+        if (dataObject.InstallationDate === 'Invalid date') {
+            if (dataObject.created_at || dataObject.updated_at) {
+                dataObject.InstallationDate = moment(dataObject.created_at || dataObject.updated_at).toISOString();
+            }
+        }
+
         return Promise.resolve(dataObject);
     }
 
