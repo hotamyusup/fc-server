@@ -72,7 +72,10 @@ class BaseController {
         return {
             payload: {
                 maxBytes: 1000 * 1000 * 50, // 50 Mb
-                timeout: 1000 * 60 * 1.5, // 1.5 min, should be less 2 min - socket timeout
+                timeout: 1000 * 60 * 6, // 1.5 min, should be less 2 min - socket timeout
+            },
+            timeout: {
+                socket: 1000 * 60 * 8 // 8 min, socket timeout
             },
             handler: (request, reply) => {
                 this.handle('batch', request, reply,
