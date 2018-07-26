@@ -192,24 +192,24 @@
 												const equipmentDevice = _.findWhere(equipmentDevices, {
 													_id: device.DeviceType
 												});
-														let deviceTitle = "NOTFOUND";
-														let deviceEquipmentType = "NOTFOUND"; 
+												let deviceTitle = "NOTFOUND";
+												let deviceEquipmentType = "NOTFOUND"; 
 
-													if (!equipmentDevice) {
-														console.log(`device._id === ${device._id}`);
-														console.log(`device.EquipmentType === ${device.EquipmentType}`);
-														console.log(`device.DeviceType === ${device.DeviceType}`);
-														console.log(`equipmentDevices === `, equipmentDevices);
-							                        	                        console.log(`equipmentDevice === `, equipmentDevice);
+												if (!equipmentDevice) {
+													console.log(`device._id === ${device._id}`);
+													console.log(`device.EquipmentType === ${device.EquipmentType}`);
+													console.log(`device.DeviceType === ${device.DeviceType}`);
+													console.log(`equipmentDevices === `, equipmentDevices);
+													console.log(`equipmentDevice === `, equipmentDevice);
 
-													}else{
+												}else{
 
-														let deviceTitle = equipmentDevice.Title;
+													deviceTitle = equipmentDevice.Title;
 
-														let deviceEquipmentType = _.findWhere(equipments, {
-															_id: device.EquipmentType
-														}).Title;
-													}
+													deviceEquipmentType = _.findWhere(equipments, {
+														_id: device.EquipmentType
+													}).Title;
+												}
 
 												//this gets records only
 												let status;
