@@ -5,6 +5,9 @@ const Schema = mongoose.Schema;
 
 const ContactSchema = require("./contact.schema");
 
+const updatedAtValidator = require("../../../../core/validators/updated-at.validator");
+const validateUpdatedAt = [updatedAtValidator, 'newer version of entity already stored, updated_at > new value'];
+
 const PropertySchema = new Schema({
     Title: {type: String},
     Street: {type: String},
@@ -29,7 +32,7 @@ const PropertySchema = new Schema({
     UpdateDate: {type: Date},
     Status: {type: Number},
     created_at: {type: Date},
-    updated_at: {type: Date}
+    updated_at: {type: Date, validate: validateUpdatedAt},
 }, {
     usePushEach: true
 });

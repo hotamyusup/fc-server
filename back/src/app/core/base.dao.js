@@ -24,16 +24,16 @@ class BaseDAO {
     }
 
     prepareUpdateObject(dataObject) {
-        delete dataObject._id;
+        // delete dataObject._id;
         // delete dataObject.created_at;
-        delete dataObject.__v;
+        // delete dataObject.__v;
         return Promise.resolve(dataObject);
     }
 
     async update(dataObject, upsert) {
         const _id = dataObject._id;
         const preparedJSON = await this.prepareUpdateObject(dataObject);
-        return this.model.findOneAndUpdate({_id}, preparedJSON, {upsert: !!upsert});
+        return this.model.findOneAndUpdate({_id}, preparedJSON, {runValidators : true, upsert: !!upsert});
     }
 
     upsert(dataObject) {
