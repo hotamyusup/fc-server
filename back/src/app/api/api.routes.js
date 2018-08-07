@@ -1,4 +1,6 @@
 const API_ROUTES = [
+    ...require("./document/fire-safety/routes/fire-safety.document.routes"),
+
     ...require("./file/routes/file.routes"),
     ...require("./image/routes/image.routes"),
     ...require("./organization/routes/organization.routes"),
