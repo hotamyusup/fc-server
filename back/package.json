@@ -16,6 +16,7 @@
     "boom": "^5.2.0",
     "canvas-prebuilt": "^1.6.5-prerelease.1",
     "easyimage": "^2.2.1",
+    "filereader": "^0.10.3",
     "gm": "^1.23.0",
     "hapi": "^16.6.0",
     "imagemagick": "^0.1.3",
