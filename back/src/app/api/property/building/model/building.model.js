@@ -5,6 +5,9 @@ const Schema = mongoose.Schema;
 
 const MapSchema = require("../../common/map/model/map.schema");
 
+const updatedAtValidator = require("../../../../core/validators/updated-at.validator");
+const validateUpdatedAt = [updatedAtValidator, 'newer version of entity already stored, updated_at > new value'];
+
 const BuildingSchema = new Schema({
     Title: {type: String},
     Map: MapSchema,
@@ -14,7 +17,7 @@ const BuildingSchema = new Schema({
     // Floors: [{ type: Schema.Types.ObjectId, ref: 'Floor' }],
     Status: {type: Number},
     created_at: {type: Date},
-    updated_at: {type: Date},
+    updated_at: {type: Date, validate: validateUpdatedAt},
     PropertyID: {type: Schema.Types.ObjectId, ref: 'Property'}
 }, {
     usePushEach: true
