@@ -17,17 +17,6 @@ class FireSafetyDocumentController extends BaseController {
         this.requestIDKey = 'DocumentID';
     }
 
-    get signDocument() {
-        return {
-            handler: async(request, reply) => {
-                const hash = request.query.hash || '';
-                const action = 'signDocument';
-                logger.info(`sessionId: ${hash} ${this.controllerName}.${action} start ${JSON.stringify(request.params)}`);
-                const documentID = request.params.DocumentID;
-            }
-        }
-    }
-
     get getDocument() {
         return {
             handler: async(request, reply) => {
@@ -56,7 +45,7 @@ class FireSafetyDocumentController extends BaseController {
                 const action = 'generateDocument';
                 logger.info(`sessionId: ${hash} ${this.controllerName}.${action} start ${JSON.stringify(request.params)}`);
 
-                const {FloorID} = request.query;
+                const {FloorID, tenant, language} = request.payload;
 
                 if (!FloorID) {
                     logger.error(`sessionId: ${hash} ${this.controllerName}.${action} FloorID must be defined`);
@@ -70,7 +59,9 @@ class FireSafetyDocumentController extends BaseController {
                 const newDocument = {
                     type: 'fire-safety-disclosure',
                     title: 'TENANT FIRE SAFETY DISCLOSURE INFORMATION',
+                    options: {language},
                     definition: docDefinition,
+                    signer: tenant,
                     created_at: new Date(),
                     updated_at: new Date(),
                     PropertyID: floor.PropertyID,

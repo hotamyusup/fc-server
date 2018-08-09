@@ -244,7 +244,7 @@ class TenantFireSafetyDisclosureDocumentBuilder {
             if (canvasWidth > canvasHeight) {
                 mapImageRow.width = image.width < 520 * scale / 2 ? 300 : 520;
             } else {
-                mapImageRow.width = 400; //image.height < 520 * scale / 2 ? 300 : 520;
+                mapImageRow.width = 300; //image.height < 520 * scale / 2 ? 300 : 520;
             }
 
             const documentDefinition = {
@@ -306,6 +306,7 @@ class TenantFireSafetyDisclosureDocumentBuilder {
                             [
                                 {
                                     text: `Date: ${moment().format("DD MMMM YYYY")}`,
+                                    alignment: "center"
                                 }
                             ],
                             [

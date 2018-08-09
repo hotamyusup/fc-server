@@ -3,7 +3,7 @@
 var nodemailer = require('nodemailer');
 
 class MailService {
-    send(to, subject, html) {
+    send(to, subject, html, attachments) {
         const name = 'FireCloud';
         const from = 'noreply_firecloud@fireprotected.com';
 
@@ -16,7 +16,7 @@ class MailService {
             },
         });
 
-        const mailOptions = {from, to, subject, html};
+        const mailOptions = {from, to, subject, html, attachments};
 
         return new Promise((resolve, reject) => {
             smtpTransport.sendMail(mailOptions, function (error, response) {

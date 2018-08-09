@@ -31,7 +31,7 @@ const styles = {
     },
     "signature": {
         "fontSize": 10,
-        "alignment": "left",
+        "alignment": "center",
     },
     "legendImage": {
     },
