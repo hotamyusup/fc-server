@@ -5,6 +5,9 @@ const Schema = mongoose.Schema;
 
 const PhotoSchema = require("./photo.schema");
 
+const updatedAtValidator = require("../../../../core/validators/updated-at.validator");
+const validateUpdatedAt = [updatedAtValidator, 'newer version of entity already stored, updated_at > new value'];
+
 const InspectionSchema = new Schema({
     Frequency: {type: String},
     DeviceStatus: {type: Number},
@@ -15,7 +18,7 @@ const InspectionSchema = new Schema({
     User: {type: Schema.Types.ObjectId, ref: 'User'},
     Photos: [PhotoSchema],
     created_at: {type: Date},
-    updated_at: {type: Date},
+    updated_at: {type: Date, validate: validateUpdatedAt},
     DeviceID: {type: Schema.Types.ObjectId, ref: 'Device'},
     FloorID: {type: Schema.Types.ObjectId, ref: 'Floor'},
     BuildingID: {type: Schema.Types.ObjectId, ref: 'Building'},

@@ -42,7 +42,7 @@ class BaseDAO {
     async update(dataObject, upsert) {
         const _id = dataObject._id;
         const preparedJSON = await this.prepareUpdateObject(dataObject);
-        return this.model.findOneAndUpdate({_id}, preparedJSON, {upsert: !!upsert});
+        return this.model.findOneAndUpdate({_id}, preparedJSON, {runValidators : true, upsert: !!upsert});
     }
 
     upsert(dataObject) {

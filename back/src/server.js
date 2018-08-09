@@ -18,7 +18,16 @@ require('./config/db');
 
 const APP_ROUTES = require("./app/app.routes");
 
-const server = new Hapi.Server();
+const server = new Hapi.Server({
+    connections: {
+        routes: {
+            timeout: {
+                server: 1000 * 60 * 5,
+                socket: 1000 * 60 * 8
+            }
+        }
+    }
+});
 
 const start = async() => {
     logger.info('Fire Cloud server starting...');

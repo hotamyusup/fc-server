@@ -3,6 +3,9 @@
 const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 
+const updatedAtValidator = require("../../../../core/validators/updated-at.validator");
+const validateUpdatedAt = [updatedAtValidator, 'newer version of entity already stored, updated_at > new value'];
+
 const DeviceSchema = new Schema({
     EquipmentType: {type: Schema.Types.ObjectId, ref: 'Equipment'},
     DeviceType: {type: Schema.Types.ObjectId, ref: 'EquipmentDevice'},
@@ -19,7 +22,7 @@ const DeviceSchema = new Schema({
     // Records: [{type: Schema.Types.ObjectId, ref: 'Inspection'}],
     Status: {type: Number},
     created_at: {type: Date},
-    updated_at: {type: Date},
+    updated_at: {type: Date, validate: validateUpdatedAt},
     FloorID: {type: Schema.Types.ObjectId, ref: 'Floor'},
     BuildingID: {type: Schema.Types.ObjectId, ref: 'Building'},
     PropertyID: {type: Schema.Types.ObjectId, ref: 'Property'}
