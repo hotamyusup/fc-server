@@ -21,7 +21,7 @@ const iconsBase64 = require('./base64.icons');
 const styles = require('./pdfmake.styles');
 
 class TenantFireSafetyDisclosureDocumentBuilder {
-    async build(FloorID) {
+    async build(FloorID, tenant) {
 
         const floor = await FloorDAO.get(FloorID);
         const building = await BuildingDAO.get(floor.BuildingID);
@@ -315,7 +315,7 @@ class TenantFireSafetyDisclosureDocumentBuilder {
                                     style: "signature",
                                 },
                                 {
-                                    text: "tenant signature",
+                                    text: `${tenant && tenant.name ? tenant.name : "tenant signature"}`,
                                     style: "signature"
                                 }
                             ],

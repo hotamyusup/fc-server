@@ -52,12 +52,13 @@ class FireSafetyDocumentController extends BaseController {
                     return reply(Boom.badImplementation("FloorID must be defined"));
                 }
 
-                const docDefinition = await TenantFireSafetyDisclosureDocumentBuilder.build(FloorID);
+                const docDefinition = await TenantFireSafetyDisclosureDocumentBuilder.build(FloorID, tenant);
 
                 const floor = await FloorDAO.get(FloorID);
 
                 const newDocument = {
                     type: 'fire-safety-disclosure',
+                    Status: 1,
                     title: 'TENANT FIRE SAFETY DISCLOSURE INFORMATION',
                     options: {language},
                     definition: docDefinition,
