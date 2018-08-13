@@ -121,6 +121,12 @@ class TenantFireSafetyDisclosureDocumentBuilder {
                 "5b32b048bb4475439d7d2239": { // VESDA SMOKE DETECTOR3 - DeviceType
                     type: "smokedetector"
                 },
+                "56fa327ddfe0b75622682666": { // IONIZATION SMOKE DETECTOR - DeviceType
+                    type: "smokedetector"
+                },
+                "56fa327ddfe0b75622682665": { // PHOTO SMOKE DETECTOR - DeviceType
+                    type: "smokedetector"
+                },
 
             };
 
