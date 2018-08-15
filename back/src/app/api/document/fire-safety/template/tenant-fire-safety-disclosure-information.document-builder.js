@@ -87,16 +87,22 @@ class TenantFireSafetyDisclosureDocumentBuilder {
                 "56fa30a9dfe0b75622682662": { // FIRE EXTINGUISHER - DeviceType
                     type: "extinguisher"
                 },
+
                 "56fa2d50dfe0b75622682654": { // EXIT SIGN - DeviceType
                     type: "exit"
                 },
+
                 "56fa327ddfe0b75622682664": { // MANUAL PULL STATION - DeviceType
                     type: "pullstation"
                 },
                 "5a4bf15a4d05b872e7afdfae": { // ADDRESSEBLE MANUAL PULL STATION - DeviceType
                     type: "pullstation"
                 },
+
                 "56fa327ddfe0b7562268266e": { // FIRE ALARM PANEL - DeviceType
+                    type: "alarmpanel"
+                },
+                "5aeb69c13efe111289717df9": { // SMOKE CONTROL PANEL - DeviceType
                     type: "alarmpanel"
                 },
 
@@ -157,13 +163,19 @@ class TenantFireSafetyDisclosureDocumentBuilder {
 
             const device2inspections = _.groupBy(inspectionsForDevices, 'DeviceID');
 
-            const currentDevices = devicesSortedByType.filter(device => device2inspections[device._id]);
+            const annualInspectedDevices = devicesSortedByType.filter(device => {
+                if (device2inspections[device._id]) {
+                    device2inspections[device._id] = _.filter(device2inspections[device._id], inspection => inspection.Frequency == 2 /*Annual*/); // && inspection.DeviceStatus === 0);
+                }
+
+                return device2inspections[device._id] && device2inspections[device._id].length;
+            });
 
             let deviceCounter = 0;
             const deviceLegendRows = [];
             const smokeDetectorsLegendRows = [];
 
-            currentDevices.forEach((device) => {
+            annualInspectedDevices.forEach((device) => {
                 const styleConfig = getStyleFromDevice(device);
                 if (styleConfig) {
                     deviceCounter++;
@@ -228,7 +240,7 @@ class TenantFireSafetyDisclosureDocumentBuilder {
                                     width: 20,
                                 },
                                 {
-                                    text: ` = ${deviceTypeById[device.DeviceType + ''].Title} - Service Date: ${moment(lastDeviceInspection.InspectionDate).format('DD MMM YY')}`,
+                                    text: ` = ${deviceTypeById[device.DeviceType + ''].Title} - Annual service date: ${moment(lastDeviceInspection.InspectionDate).format('DD MMM YY')}`,
                                     style: "legendLabel",
                                     height: 20
                                 }
@@ -256,7 +268,7 @@ class TenantFireSafetyDisclosureDocumentBuilder {
             const documentDefinition = {
                 content: [
                     {
-                        text: "TENANT FIRE SAFETY DISCLOSURE INFORMATION",
+                        text: "RESIDENT FIRE SAFETY DISCLOSURE INFORMATION",
                         style: "header"
                     },
                     {
@@ -321,7 +333,7 @@ class TenantFireSafetyDisclosureDocumentBuilder {
                                     style: "signature",
                                 },
                                 {
-                                    text: `${tenant && tenant.name ? tenant.name : "tenant signature"}`,
+                                    text: `${tenant && tenant.name ? tenant.name : "resident signature"}`,
                                     style: "signature"
                                 }
                             ],

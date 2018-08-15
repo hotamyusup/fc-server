@@ -59,7 +59,7 @@ class FireSafetyDocumentController extends BaseController {
                 const newDocument = {
                     type: 'fire-safety-disclosure',
                     Status: 1,
-                    title: 'TENANT FIRE SAFETY DISCLOSURE INFORMATION',
+                    title: 'RESIDENT FIRE SAFETY DISCLOSURE INFORMATION',
                     options: {language},
                     definition: docDefinition,
                     signer: tenant,
