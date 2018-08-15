@@ -231,12 +231,12 @@ class TenantFireSafetyDisclosureDocumentBuilder {
             };
 
             if (canvasWidth > canvasHeight) {
-                mapImageRow.width = image.width < 520 * scale / 2 ? 300 : 520;
+                mapImageRow.width = 520;
             } else {
-                mapImageRow.width = 300; //image.height < 520 * scale / 2 ? 300 : 520;
+                mapImageRow.width = canvasHeight/canvasWidth > 1.5 ? 300 : 400;
             }
 
-            if (!typeGroupedByDate.pullstation || typeGroupedByDate.pullstation.length === 0) {
+            if (_.keys(typeGroupedByDate).filter(deviceType => equipment2type[deviceType].type === 'pullstation').length === 0){
                 deviceLegendRows.push({
                     type: 'pullstation',
                     columns: [
