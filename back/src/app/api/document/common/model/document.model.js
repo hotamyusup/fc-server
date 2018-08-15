@@ -5,6 +5,7 @@ const Schema = mongoose.Schema;
 
 const DocumentSchema = new Schema({
     type: {type: String}, // e.g. 'fire-safety-disclosure'
+    Status: {type: Number},
     title: {type: String},
     definition: {type: Schema.Types.Object}, // document definition for pdfmake
     options: {type: Schema.Types.Object}, // owner email, to notify, etc.

@@ -117,7 +117,7 @@ class DocumentController extends BaseController {
 
                 return this.handle(action, request, reply, document.save().then((document) => {
                     notifyOnEmail(document);
-                    return {_id : document._id};
+                    return {_id: document._id};
                 }));
             }
         }
@@ -168,15 +168,20 @@ async function notifyOnEmail(document) {
     }
 
     const property = await PropertyDAO.get(document.PropertyID);
-    console.log('property.Contacts[0].Email === ', property.Contacts[0].Email);
+
+    let propertyManagerEmail = property.Contacts[0].Email;
+    const isDebug = true;
+    if (isDebug) {
+        propertyManagerEmail = 'zo0mcfg@gmail.com';
+    }
 
     await MailService.send(
-        [document.signer.email, 'zo0mcfg@gmail.com'],
+        [document.signer.email, propertyManagerEmail],
         title,
         '',
         attachments
     );
 
     document.notified_at = new Date();
-    return document.save().then(d => ({_id : d._id}));
+    return document.save().then(d => ({_id: d._id}));
 }

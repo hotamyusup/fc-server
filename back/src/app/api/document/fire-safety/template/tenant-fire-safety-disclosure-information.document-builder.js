@@ -21,7 +21,7 @@ const iconsBase64 = require('./base64.icons');
 const styles = require('./pdfmake.styles');
 
 class TenantFireSafetyDisclosureDocumentBuilder {
-    async build(FloorID) {
+    async build(FloorID, tenant) {
 
         const floor = await FloorDAO.get(FloorID);
         const building = await BuildingDAO.get(floor.BuildingID);
@@ -119,6 +119,12 @@ class TenantFireSafetyDisclosureDocumentBuilder {
                     type: "smokedetector"
                 },
                 "5b32b048bb4475439d7d2239": { // VESDA SMOKE DETECTOR3 - DeviceType
+                    type: "smokedetector"
+                },
+                "56fa327ddfe0b75622682666": { // IONIZATION SMOKE DETECTOR - DeviceType
+                    type: "smokedetector"
+                },
+                "56fa327ddfe0b75622682665": { // PHOTO SMOKE DETECTOR - DeviceType
                     type: "smokedetector"
                 },
 
@@ -315,7 +321,7 @@ class TenantFireSafetyDisclosureDocumentBuilder {
                                     style: "signature",
                                 },
                                 {
-                                    text: "tenant signature",
+                                    text: `${tenant && tenant.name ? tenant.name : "tenant signature"}`,
                                     style: "signature"
                                 }
                             ],
