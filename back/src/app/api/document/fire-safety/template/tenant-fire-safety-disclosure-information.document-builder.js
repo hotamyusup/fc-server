@@ -110,7 +110,7 @@ class TenantFireSafetyDisclosureDocumentBuilder {
                     device2inspections[device._id] = _.filter(device2inspections[device._id], inspection => inspection.Frequency == 2 /*Annual*/); // && inspection.DeviceStatus === 0);
                 }
 
-                return device2inspections[device._id] && device2inspections[device._id].length;
+                return device2inspections[device._id] && device2inspections[device._id].length || getStyleFromDevice(device).type === 'alarmpanel';
             });
 
             const type2devices = _.groupBy(annualInspectedDevices, 'DeviceType');
@@ -119,15 +119,18 @@ class TenantFireSafetyDisclosureDocumentBuilder {
                 const typeDevices = type2devices[type];
 
                 typeGroupedByDate[type] = _.groupBy(typeDevices, device => {
+                    if (!device2inspections[device._id]) {
+                        return 'none'
+                    }
                     const lastDeviceInspection = _.sortBy(device2inspections[device._id], 'InspectionDate').reverse()[0];
                     return moment(lastDeviceInspection.InspectionDate).format('YYYY-MM-DD');
                 });
+
                 return typeGroupedByDate;
             }, {});
 
             let deviceCounter = 0;
             const deviceLegendRows = [];
-            const smokeDetectorsLegendRows = [];
 
             _.keys(typeGroupedByDate)
                 .sort((deviceType1, deviceType2) => type2sortOrder[equipment2type[deviceType2].type] - type2sortOrder[equipment2type[deviceType1].type])
@@ -212,7 +215,7 @@ class TenantFireSafetyDisclosureDocumentBuilder {
                                     } : undefined
                                 ,
                                 {
-                                    text: ` = ${deviceTypeById[deviceType].Title} - Annual service date: ${moment(inspectionDate).format('DD MMM YY')}`,
+                                    text: ` = ${deviceTypeById[deviceType].Title}${inspectionDate !== 'none' ? ` - Annual service date: ${moment(inspectionDate).format('DD MMM YY')}` : ''}`,
                                     style: "legendLabel",
                                     height: 20
                                 }
@@ -233,32 +236,26 @@ class TenantFireSafetyDisclosureDocumentBuilder {
                 mapImageRow.width = 300; //image.height < 520 * scale / 2 ? 300 : 520;
             }
 
-
-            const type2messages = {
-                extinguisher: [],
-                exit: [{
-                    text: "EXITS SHALL REMAIN UNOBSTRUCTED AT ALL TIMES.",
-                    alignment: 'left',
-                    style: "notice",
-                    color: "red"
-                }],
-                pullstation: [],
-                alarmpanel: [],
-                smokedetector: [
-                    {
-                        text: "SMOKE & CARBON MONOXIDE ALARM DEVICES:",
-                        style: "notice",
-                        alignment: 'left'
-                    },
-                    {
-                        text: "TO CONFIRM ALARMS ARE IN WORKING CONDITION, PUSH “TEST” BUTTON ON EACH DEVICE.",
-                        style: "notice",
-                        fontSize: 10,
-                        alignment: 'left',
-                        margin: [0, 10, 0, 10]
-                    }
-                ]
-            };
+            if (!typeGroupedByDate.pullstation || typeGroupedByDate.pullstation.length === 0) {
+                deviceLegendRows.push({
+                    type: 'pullstation',
+                    columns: [
+                        {
+                            image: iconsBase64.pullstation,
+                            style: "legendImage",
+                            height: 20,
+                            width: 20,
+                        },
+                        {
+                            text: ` PULL STATIONS NOT FOUND`,
+                            style: "legendLabel",
+                            height: 20,
+                            color: "red"
+                        }
+                    ],
+                    margin: [0, 5, 0, 5],
+                });
+            }
 
             const documentDefinition = {
                 content: [
@@ -280,17 +277,42 @@ class TenantFireSafetyDisclosureDocumentBuilder {
                         margin: [0, 20, 0, 20]
                     },
                     mapImageRow,
-                    ...deviceLegendRows.reduce((extendedRows, row)=> { // add notices before device type details
-                        const messages = type2messages[row.type];
+                    ...deviceLegendRows.reduce((extendedRows, row) => { // add notices before device type details
+                        const currentRowExtended = [row];
                         if (extendedRows.length === 0 || extendedRows[extendedRows.length - 1].type !== row.type) {
-                            extendedRows.push(...messages);
+                            if (row.type === 'exit') {
+                                currentRowExtended.push({
+                                    text: "EXITS SHALL REMAIN UNOBSTRUCTED AT ALL TIMES.",
+                                    alignment: 'left',
+                                    style: "notice",
+                                    color: "red"
+                                });
+                            } else if (row.type === 'smokedetector') {
+                                currentRowExtended.unshift({
+                                    text: "SMOKE & CARBON MONOXIDE ALARM DEVICES:",
+                                    style: "notice",
+                                    alignment: 'left'
+                                }, {
+                                    text: "TO CONFIRM ALARMS ARE IN WORKING CONDITION, PUSH “TEST” BUTTON ON EACH DEVICE.",
+                                    style: "notice",
+                                    fontSize: 10,
+                                    alignment: 'left',
+                                    margin: [0, 10, 0, 10]
+                                });
+                            }
+
+                            const nextTypeMargin = currentRowExtended[0].margin || [0, 30, 0, 0];
+                            nextTypeMargin[1] = 30;
+                            currentRowExtended[0].margin = nextTypeMargin;
                         }
-                        extendedRows.push(row);
+                        extendedRows.push(...currentRowExtended);
+
                         return extendedRows;
                     }, []),
                     {
                         text: "TO REPORT A SUSPECTED FIRE CODE VIOLATION, CONTACT THE FIRE DEPARTMENT AT: 415-558-3300.",
-                        style: "notice"
+                        style: "notice",
+                        margin: [0, 20, 0, 4]
                     },
                     {
                         text: "GENERAL FIRE SAFETY GUIDANCE AND FIRE SAFETY TRAINING VIDEO ARE AVAILABLE ON THE SFFD WEBSITE AT: http://sf-fire.org/fire-safety-tips-san-francisco",

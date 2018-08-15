@@ -27,7 +27,7 @@ const styles = {
         "fontSize": 12,
         "bold": true,
         "alignment": "center",
-        "margin": [0, 10, 0, 10]
+        "margin": [0, 4, 0, 4]
     },
     "signature": {
         "fontSize": 10,
