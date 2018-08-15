@@ -34,6 +34,7 @@ const styles = {
         "alignment": "center",
     },
     "legendImage": {
+        alignment: "center"
     },
     "legendLabel": {
         "fontSize": 12,
