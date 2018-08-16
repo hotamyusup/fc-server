@@ -168,7 +168,7 @@ async function notifyOnEmail(document) {
 
         const filesToAttach = [
             'fire alarm sleeping area requirements.pdf',
-            'tenant fire safety disclosure.pdf',
+            'resident fire safety disclosure.pdf',
             'smoke alarm info disclosure.pdf',
         ].map(filename => ({filename, path: path.normalize(`${__dirname}../../../fire-safety/files/${filename}`)}));
 
