@@ -80,7 +80,6 @@ class TenantFireSafetyDisclosureDocumentBuilder {
         });
 
         try {
-
             const getStyleFromDevice = (device) => {
                 const deviceType = `${device.DeviceType}`; // ObjectID to string
                 const equipmentType = `${device.EquipmentType}`; // ObjectID to string
@@ -112,6 +111,8 @@ class TenantFireSafetyDisclosureDocumentBuilder {
 
                 return device2inspections[device._id] && device2inspections[device._id].length || getStyleFromDevice(device).type === 'alarmpanel';
             });
+
+            setAngleForClusteredDevices(annualInspectedDevices);
 
             const type2devices = _.groupBy(annualInspectedDevices, 'DeviceType');
 
@@ -183,9 +184,36 @@ class TenantFireSafetyDisclosureDocumentBuilder {
                                 lastDeviceIcon = iconCanvas.toDataURL();
                             }
 
-                            ctx.drawImage(iconCanvas, device.XPos - imageRadius, device.YPos - imageRadius, imageWidth, imageHeight);
-                        });
+                            const deviceIconLeft = device.XPos - imageRadius;
+                            const deviceIconTop = device.YPos - imageRadius;
 
+                            if (device.clusteredAngle == null) {
+                                ctx.drawImage(iconCanvas, deviceIconLeft, deviceIconTop, imageWidth, imageHeight);
+                            } else {
+                                const center = {
+                                    x: deviceIconLeft,
+                                    y: deviceIconTop
+                                };
+
+                                ctx.fillStyle = "#333333";
+                                ctx.strokeStyle = '#333333';
+
+                                ctx.beginPath();
+                                ctx.arc(deviceIconLeft, deviceIconTop, 8, 0, 2 * Math.PI);
+                                ctx.fill();
+
+                                const lineCirclePoint = getPointOnCircle(center, parseInt(imageRadius * 0.8), device.clusteredAngle);
+
+                                ctx.beginPath();
+                                ctx.lineWidth = 4;
+                                ctx.moveTo(lineCirclePoint.x, lineCirclePoint.y);
+                                ctx.lineTo(deviceIconLeft, deviceIconTop);
+                                ctx.stroke();
+
+                                const deviceOnCirclePoint = getPointOnCircle(center, parseInt(imageRadius * 1.6), device.clusteredAngle);
+                                ctx.drawImage(iconCanvas, deviceOnCirclePoint.x - imageRadius, deviceOnCirclePoint.y - imageRadius, imageWidth, imageHeight);
+                            }
+                        });
 
                         deviceLegendRows.push({
                             type,
@@ -233,10 +261,10 @@ class TenantFireSafetyDisclosureDocumentBuilder {
             if (canvasWidth > canvasHeight) {
                 mapImageRow.width = 520;
             } else {
-                mapImageRow.width = canvasHeight/canvasWidth > 1.5 ? 300 : 400;
+                mapImageRow.width = canvasHeight / canvasWidth > 1.5 ? 300 : 400;
             }
 
-            if (_.keys(typeGroupedByDate).filter(deviceType => equipment2type[deviceType].type === 'pullstation').length === 0){
+            if (_.keys(typeGroupedByDate).filter(deviceType => equipment2type[deviceType].type === 'pullstation').length === 0) {
                 deviceLegendRows.push({
                     type: 'pullstation',
                     columns: [
@@ -429,3 +457,39 @@ const equipment2type = {
         type: "smokedetector"
     },
 };
+
+function setAngleForClusteredDevices(devices) {
+    devices = devices.slice();
+    let i = 0;
+
+    while (devices.length > 0 && i < devices.length) {
+        const device = devices[i];
+        const clustered = _.filter(devices, cluster => (
+            cluster.XPos < device.XPos + 5 &&
+            cluster.XPos > device.XPos - 5 &&
+            cluster.YPos < device.YPos + 5 &&
+            cluster.YPos > device.YPos - 5
+        ));
+
+        if (clustered.length > 1) {
+            const pointsOnCircle = clustered.length;
+            const angleStep = parseInt(360 / pointsOnCircle);
+            clustered.forEach((device, i) => {
+                device.clusteredAngle = angleStep * i;
+            });
+
+            devices = _.difference(devices, clustered);
+            i = 0;
+        } else {
+            i++;
+        }
+    }
+
+    return devices;
+}
+
+function getPointOnCircle(center, radius, angle) {
+    const x = center.x + radius * Math.cos(-angle * Math.PI / 180);
+    const y = center.y + radius * Math.sin(-angle * Math.PI / 180);
+    return {x, y};
+}
