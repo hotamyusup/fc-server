@@ -2,9 +2,9 @@
 
 const nodemailer = require('nodemailer');
 const logger = require('./logger');
+const config = require('../../config/config');
 
-const isDebug = process.env.ENV !== 'production';
-const getMailConfig = () => !isDebug
+const getMailConfig = () => config.NODE_ENV === 'production'
     ? {
         host: 'smtp.sendgrid.net',
         port: 2525,
