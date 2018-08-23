@@ -15,8 +15,8 @@ const hashAuth = require('./app/core/hash-auth-server-plugin');
 const config = require('./config/config');
 require('./config/db');
 
-
 const APP_ROUTES = require("./app/app.routes");
+require("./app/app.schedule");
 
 const server = new Hapi.Server({
     connections: {

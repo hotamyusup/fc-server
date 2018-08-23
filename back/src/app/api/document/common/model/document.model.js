@@ -19,6 +19,8 @@ const DocumentSchema = new Schema({
     FloorID: {type: Schema.Types.ObjectId, ref: 'Floor'},
 });
 
+DocumentSchema.index({notified_at: 1});
+
 const DocumentModel = mongoose.model('Document', DocumentSchema);
 
 module.exports = DocumentModel;

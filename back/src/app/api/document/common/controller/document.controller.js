@@ -16,6 +16,8 @@ const PropertyDAO = require("../../../property/property/dao/property.dao");
 const BaseController = require("../../../../../app/core/base.controller");
 const DocumentDAO = require("../dao/document.dao.instance");
 
+const documentToMailMessage = require('../../fire-safety/mail/documentToMailMessage');
+
 class DocumentController extends BaseController {
     constructor() {
         super(DocumentDAO);
@@ -139,56 +141,25 @@ function getBase64FromBlob(blob) {
     });
 }
 
-
 async function notifyOnEmail(document) {
-    const pdfDoc = await PDFMakeService.createPDFDocument(document.definition);
-
-    const title = `${document.title} - ${document.signer.name}`;
-
-    const attachments = [{
-        filename: `${title}.pdf`,
-        content: pdfDoc
-    }];
-
     if (document.type === 'fire-safety-disclosure') {
-        const language = document.options && document.options.language || 'ENGLISH';
-        const language2fireSafetyDocumentTitle = {
-            ENGLISH: 'Fire Safety Tips for SF (Apr 2017).pdf',
-            CHINESE: 'SFFD Fire Safety Tips (rev. Aug 2017) - CHINESE.pdf',
-            FILIPINO: 'SFFD Fire Safety Tips (rev. Aug 2017) - FILIPINO.pdf',
-            RUSSIAN: 'SFFD Fire Safety Tips (rev. Aug 2017) - RUSSIAN.pdf',
-            SPANISH: 'SFFD Fire Safety Tips (rev. Aug 2017) - SPANISH.pdf',
-            VIETNAMESE: 'SFFD Fire Safety Tips (rev. Aug 2017) - VIETNAMESE.pdf',
-        };
-        const filename = language2fireSafetyDocumentTitle[language];
-        attachments.push({
-            filename,
-            path: path.normalize(`${__dirname}../../../fire-safety/files/${filename}`),
-        });
+        const message = await documentToMailMessage(document);
+        await MailService.sendMessage(message);
+    } else {
+        const pdfDoc = await PDFMakeService.createPDFDocument(document.definition);
+        const title = `${document.title} - ${document.signer.name}`;
+        const attachments = [{
+            filename: `${title}.pdf`,
+            content: pdfDoc
+        }];
 
-        const filesToAttach = [
-            'fire alarm sleeping area requirements.pdf',
-            'resident fire safety disclosure.pdf',
-            'smoke alarm info disclosure.pdf',
-        ].map(filename => ({filename, path: path.normalize(`${__dirname}../../../fire-safety/files/${filename}`)}));
-
-        attachments.push(...filesToAttach);
+        await MailService.send(
+            [document.signer.email],
+            title,
+            '',
+            attachments
+        );
     }
-
-    const property = await PropertyDAO.get(document.PropertyID);
-
-    let propertyManagerEmail = property.Contacts[0].Email;
-    const isDebug = true;
-    if (isDebug) {
-        propertyManagerEmail = 'zo0mcfg@gmail.com';
-    }
-
-    await MailService.send(
-        [document.signer.email, propertyManagerEmail],
-        title,
-        '',
-        attachments
-    );
 
     document.notified_at = new Date();
     return document.save().then(d => ({_id: d._id}));
