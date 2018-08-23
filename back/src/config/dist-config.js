@@ -1,6 +1,7 @@
 'use strict';
 
 var local = {
+	NODE_ENV: 'development',
     name: 'local',
     server: {
         host: '127.0.0.1',
