@@ -307,15 +307,10 @@ class TenantFireSafetyDisclosureDocumentBuilder {
                     mapImageRow,
                     ...deviceLegendRows.reduce((extendedRows, row) => { // add notices before device type details
                         const currentRowExtended = [row];
-                        if (extendedRows.length === 0 || extendedRows[extendedRows.length - 1].type !== row.type) {
-                            if (row.type === 'exit') {
-                                currentRowExtended.push({
-                                    text: "EXITS SHALL REMAIN UNOBSTRUCTED AT ALL TIMES.",
-                                    alignment: 'left',
-                                    style: "notice",
-                                    color: "red"
-                                });
-                            } else if (row.type === 'smokedetector') {
+                        const lastRowType = extendedRows[extendedRows.length - 1] && extendedRows[extendedRows.length - 1].type;
+
+                        if (extendedRows.length === 0 || (lastRowType && lastRowType !== row.type)) {
+                            if (row.type === 'smokedetector') {
                                 currentRowExtended.unshift({
                                     text: "SMOKE & CARBON MONOXIDE ALARM DEVICES:",
                                     style: "notice",
@@ -332,6 +327,16 @@ class TenantFireSafetyDisclosureDocumentBuilder {
                             const nextTypeMargin = currentRowExtended[0].margin || [0, 30, 0, 0];
                             nextTypeMargin[1] = 30;
                             currentRowExtended[0].margin = nextTypeMargin;
+
+                            if (lastRowType && lastRowType === 'exit') {
+                                currentRowExtended.unshift({
+                                    text: "EXITS SHALL REMAIN UNOBSTRUCTED AT ALL TIMES.",
+                                    alignment: 'left',
+                                    style: "notice",
+                                    color: "red",
+                                    margin: [0, 10, 0, 10]
+                                });
+                            }
                         }
                         extendedRows.push(...currentRowExtended);
 
