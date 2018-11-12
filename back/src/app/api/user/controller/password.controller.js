@@ -3,6 +3,7 @@ const Promise = require('bluebird');
 const Boom = require('boom');
 const nodemailer = require('nodemailer');
 
+const MailService = require('../../../core/mail.service');
 const logger = require('../../../core/logger');
 const UserDAO = require("../dao/user.dao");
 
@@ -18,18 +19,8 @@ class PasswordController {
 
                 const name = 'FireCloud System';
                 const from = 'noreply_firecloud@fireprotected.com';
-                const password = Math.floor(Math.random() * (99999 - 11111)) + 11111;
+                const password = generatePassword(6);
                 const email = request.payload.Email;
-                const smtpTransport = nodemailer.createTransport({
-		    host: 'smtp.sendgrid.net',
-		    port: 2525,
-		    auth: {
-			user: 'apikey',
-			pass: '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'
-		    },
-                });
-
-                logger.info(`smtp settings ${smtpTransport} `);
 
                 const resetPasswordForUserEntity = () => UserDAO
                     .findUserByEmail(email)
@@ -55,15 +46,7 @@ class PasswordController {
                             <b>Password:</b> ${password}`
                     };
 
-                    return new Promise((resolve, reject) => {
-                        smtpTransport.sendMail(mailOptions, function (error, response) {
-                            if (error) {
-                                return reject(error);
-                            } else {
-                                return resolve();
-                            }
-                        });
-                    });
+                    return MailService.sendMessage(mailOptions);
                 };
 
                 resetPasswordForUserEntity()
@@ -87,6 +70,22 @@ class PasswordController {
             },
         };
     }
+}
+
+function generatePassword(length = 6) {
+    const CHARSET = ""
+            + "abcdefghijklmnopqrstuvwxyz"
+            + // "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+            + "0123456789"
+            // + "_"
+        ;
+    let randomChars = "";
+
+    for (let i = 0; i < length; ++i) {
+        randomChars += CHARSET.charAt(Math.floor(Math.random() * CHARSET.length));
+    }
+
+    return randomChars;
 }
 
 module.exports = new PasswordController();

@@ -20,8 +20,8 @@ const getMailConfig = () => config.NODE_ENV === 'production'
         host: 'smtp.ethereal.email',
         port: 587,
         auth: {
-            user: 'yihz3yz2g3dh2blk@ethereal.email',
-            pass: 'TFknB88xyDx2UBDzQF'
+            user: 'mvxzc2jrf7ppbjx4@ethereal.email',
+            pass: 'gWQCh7WSSrWpCb12JX'
         }
     };
 

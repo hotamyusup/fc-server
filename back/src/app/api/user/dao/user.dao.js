@@ -28,11 +28,13 @@ class UserDAO extends BaseDAO {
     }
 
     findUserByEmail(email) {
-        return UserModel.findOne({Email: email});
+        const $regex = new RegExp(email, "i");
+        return UserModel.findOne({Email: {$regex}});
     }
 
     login(email, password) {
-        return UserModel.findOne({Email: email, Password: password});
+        const $regex = new RegExp(email, "i");
+        return UserModel.findOne({Email: {$regex}, Password: password});
     }
 }
 
