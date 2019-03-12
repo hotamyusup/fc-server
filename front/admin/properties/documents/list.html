@@ -1,0 +1,214 @@
+<!doctype html>
+<html class="no-js" lang="en">
+<head>
+	<meta charset="utf-8">
+	<meta http-equiv="x-ua-compatible" content="ie=edge">
+	<title>Fire Cloud Admin</title>
+	<meta name="description" content="">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<link rel="apple-touch-icon" href="apple-touch-icon.png">
+	<link rel="stylesheet" href="/admin/css/vendor.css">
+	<link rel="stylesheet" href="/admin/css/app.css">
+	<script>
+		var themeSettings = (localStorage.getItem('themeSettings')) ? JSON.parse(localStorage.getItem('themeSettings')) :
+				{};
+		var themeName = themeSettings.themeName || 'red';
+		if (themeName) {
+			document.write('<link rel="stylesheet" id="theme-style" href="/admin/css/app-' + themeName + '.css">');
+		}
+		else {
+			document.write('<link rel="stylesheet" id="theme-style" href="/admin/css/app.css">');
+		}
+	</script>
+</head>
+<body>
+<div class="main-wrapper">
+	<div class="app" id="app">
+		<header class="header">
+			<div class="header-block header-block-collapse d-lg-none d-xl-none">
+				<button class="collapse-btn" id="sidebar-collapse-btn">
+					<i class="fa fa-bars"></i>
+				</button>
+			</div>
+			<div class="header-block header-block-search"></div>
+			<div class="header-block header-block-buttons"></div>
+			<div class="header-block header-block-nav"></div>
+		</header>
+		<aside class="sidebar">
+			<div class="sidebar-container">
+				<div class="sidebar-header">
+					<div class="brand">Fire Cloud Admin</div>
+				</div>
+				<nav class="menu">
+					<ul class="sidebar-menu metismenu" id="sidebar-menu">
+						<li class="active">
+							<a href="/admin/properties">
+								<i class="fa fa-th-large"></i> Properties
+							</a>
+						</li>
+						<li>
+							<a href="/admin/users">
+								<i class="fa fa-users"></i> Users
+							</a>
+						</li>
+						<li>
+							<a href="/admin/organizations">
+								<i class="fa fa-dot-circle-o"></i> Organizations
+							</a>
+						</li>
+						<li>
+							<a href="/admin/equipments">
+								<i class="fa fa-lightbulb-o"></i> Equipments
+							</a>
+						</li>
+						<li>
+							<a href="/admin/constructiontypes">
+								<i class="fa fa-building-o"></i> Construction Types
+							</a>
+						</li>
+						<li>
+							<a href="/admin/occupancytypes">
+								<i class="fa fa-home"></i> Occupancy Types
+							</a>
+						</li>
+						<li>
+							<a href="/admin/logout.html">
+								<i class="fa fa-lock"></i> Log out
+							</a>
+						</li>
+					</ul>
+				</nav>
+			</div>
+		</aside>
+		<div class="sidebar-overlay" id="sidebar-overlay"></div>
+		<div class="sidebar-mobile-menu-handle" id="sidebar-mobile-menu-handle"></div>
+		<div class="mobile-menu-handle"></div>
+		<article class="content dashboard-page">
+			<section class="section" id="documents" data-bind="if: Documents()">
+				<div class="row">
+					<div class="col-xl-12">
+						<div class="card items" data-exclude="xs,sm,lg">
+							<div class="card-header bordered">
+								<div class="header-block">
+									<h3 class="title">
+										<span>Documents:</span>
+										<span data-bind="text: Property().Title"></span>
+									</h3>
+								</div>
+								<div class="header-block pull-right">
+									<a class="btn btn-primary btn-sm" href="javascript:;;" data-bind="attr: {href:'create.html?i='+Property()._id}" class="userlink">Add</a>
+								</div>
+							</div>
+							<ul class="item-list striped" data-bind="foreach: Documents">
+								<li class="item">
+									<div class="item-row">
+										<div class="item-col no-overflow" title="resident email">
+											<a class="item-title no-wrap" href="javascript:;;" data-bind="attr: {href:'/documents/'+$data._id + '.pdf?hash=' + User._id}" ><i class="fa fa-file"></i></a>
+										</div>
+										<div class="item-col no-overflow" title="resident email">
+											<h4 class="item-title no-wrap" data-bind="text: signer.email"></h4>
+										</div>
+										<div class="item-col no-overflow" title="resident name">
+											<h4 class="item-title no-wrap" data-bind="text: signer.name"></h4>
+										</div>
+										<div class="item-col  no-overflow" title="Building">
+											<h4 class="item-title no-wrap" data-bind="text: $parent.id2building()[BuildingID] && $parent.id2building()[BuildingID].Title"></h4>
+										</div>
+										<div class="item-col no-overflow" title="Floor">
+											<h4 class="item-title no-wrap" data-bind="text: $parent.id2floor()[FloorID] && $parent.id2floor()[FloorID].Title"></h4>
+										</div>
+										<div class="item-col no-overflow" title="language">
+											<h4 class="item-title no-wrap" data-bind="text: $data.options && $data.options.language"></h4>
+										</div>
+										<div class="item-col no-overflow" title="last time notified_at">
+											<h4 class="item-title no-wrap" data-bind="text: $data.notified_at && moment($data.notified_at).format('L')"></h4>
+										</div>
+										<div class="item-col no-overflow">
+											<h4 class="item-title no-wrap" data-bind="if: Status === 1">Scheduled</h4>
+											<h4 class="item-title no-wrap" data-bind="if: Status === 0">Deactivated</h4>
+										</div>
+										<div class="item-col text-right">
+
+											<!-- ko if: Status === 1 -->
+											<a class="userlink" data-bind="click: $root.deactivateDocument" href="javascript:;;">Deactivate</a>
+											<!-- /ko -->
+											<!-- ko if: Status === 0 -->
+											<a class="userlink" data-bind="click: $root.activateDocument" href="javascript:;;">Activate</a>
+											<!-- /ko -->
+										</div>
+									</div>
+								</li>
+							</ul>
+						</div>
+					</div>
+				</div>
+			</section>
+		</article>
+		<footer class="footer"></footer>
+	</div>
+</div>
+<!-- Reference block for JS -->
+<div class="ref" id="ref">
+	<div class="color-primary"></div>
+	<div class="chart">
+		<div class="color-primary"></div>
+		<div class="color-secondary"></div>
+	</div>
+</div>
+<script src="/admin/js/vendor.js"></script>
+<script src="/admin/js/app.js"></script>
+<script src="/admin/js/custom.js"></script>
+<script type="text/javascript">
+	$(function () {
+		Site.init();
+		var PropertyID = QueryString("i");
+		var Model = {
+			User: User,
+
+			id2floor: ko.observable(null),
+			id2building: ko.observable(null),
+			Property: ko.observable(null),
+			Documents: ko.observable(null),
+
+			activateDocument(document) {
+				API.activateDocument(document._id, function () {
+					API.documents(PropertyID, function (documents) {
+						Model.Documents(documents);
+					});
+				})
+			},
+			deactivateDocument(document) {
+				API.deactivateDocument(document._id, function () {
+					API.documents(PropertyID, function (documents) {
+						Model.Documents(documents);
+					});
+				})
+			},
+		};
+		ko.applyBindings(Model);
+
+		API.property(PropertyID, function (property) {
+			Model.Property(property);
+			Model.id2building({});
+			Model.id2floor({});
+
+			_.forEach(property.Buildings, function (building) {
+				if (building) {
+					Model.id2building()[building._id] = building;
+					_.forEach(building.Floors, function (floor) {
+						if (floor) {
+							Model.id2floor()[floor._id] = floor;
+						}
+					});
+				}
+			});
+
+			API.documents(PropertyID, function (documents) {
+				Model.Documents(documents);
+			});
+		});
+	});
+
+</script>
+</body>
+</html>

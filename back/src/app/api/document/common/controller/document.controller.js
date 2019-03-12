@@ -70,6 +70,29 @@ class DocumentController extends BaseController {
         }
     }
 
+    get activate() {
+        return {
+            handler: (request, reply) => {
+                const action = 'activate';
+                return this.handle(action, request, reply, this.DAO.get(request.params[this.requestIDKey]).then(document => {
+                	document.Status = 1;
+                	return document.save();
+				}));
+            }
+        }
+    }
+    get deactivate() {
+        return {
+            handler: (request, reply) => {
+                const action = 'deactivate';
+				return this.handle(action, request, reply, this.DAO.get(request.params[this.requestIDKey]).then(document => {
+					document.Status = 0;
+					return document.save();
+				}));
+			}
+        }
+    }
+
     get notifyOnEmail() {
         return {
             handler: (request, reply) => {

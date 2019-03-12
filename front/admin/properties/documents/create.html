@@ -1,0 +1,523 @@
+<!doctype html>
+<html class="no-js" lang="en">
+<head>
+	<meta charset="utf-8">
+	<meta http-equiv="x-ua-compatible" content="ie=edge">
+	<title>Fire Cloud Admin</title>
+	<meta name="description" content="">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<link rel="apple-touch-icon" href="apple-touch-icon.png">
+	<link rel="stylesheet" href="/admin/css/vendor.css">
+	<link rel="stylesheet" href="/admin/css/app.css">
+	<script>
+		var themeSettings = (localStorage.getItem('themeSettings')) ? JSON.parse(localStorage.getItem('themeSettings')) :
+				{};
+		var themeName = themeSettings.themeName || 'red';
+		if (themeName) {
+			document.write('<link rel="stylesheet" id="theme-style" href="/admin/css/app-' + themeName + '.css">');
+		}
+		else {
+			document.write('<link rel="stylesheet" id="theme-style" href="/admin/css/app.css">');
+		}
+	</script>
+</head>
+<body>
+<div class="main-wrapper">
+	<div class="app" id="app">
+		<header class="header">
+			<div class="header-block header-block-collapse d-lg-none d-xl-none">
+				<button class="collapse-btn" id="sidebar-collapse-btn">
+					<i class="fa fa-bars"></i>
+				</button>
+			</div>
+			<div class="header-block header-block-search"></div>
+			<div class="header-block header-block-buttons"></div>
+			<div class="header-block header-block-nav"></div>
+		</header>
+		<aside class="sidebar">
+			<div class="sidebar-container">
+				<div class="sidebar-header">
+					<div class="brand">Fire Cloud Admin</div>
+				</div>
+				<nav class="menu">
+					<ul class="sidebar-menu metismenu" id="sidebar-menu">
+						<li>
+							<a href="/admin/properties">
+								<i class="fa fa-th-large"></i> Properties
+							</a>
+						</li>
+						<li class="active">
+							<a href="/admin/users">
+								<i class="fa fa-users"></i> Users
+							</a>
+						</li>
+						<li>
+							<a href="/admin/organizations">
+								<i class="fa fa-dot-circle-o"></i> Organizations
+							</a>
+						</li>
+						<li>
+							<a href="/admin/equipments">
+								<i class="fa fa-lightbulb-o"></i> Equipments
+							</a>
+						</li>
+						<li>
+							<a href="/admin/constructiontypes">
+								<i class="fa fa-building-o"></i> Construction Types
+							</a>
+						</li>
+						<li>
+							<a href="/admin/occupancytypes">
+								<i class="fa fa-home"></i> Occupancy Types
+							</a>
+						</li>
+						<li>
+							<a href="/admin/logout.html">
+								<i class="fa fa-lock"></i> Log out
+							</a>
+						</li>
+					</ul>
+				</nav>
+			</div>
+		</aside>
+		<div class="sidebar-overlay" id="sidebar-overlay"></div>
+		<div class="sidebar-mobile-menu-handle" id="sidebar-mobile-menu-handle"></div>
+		<div class="mobile-menu-handle"></div>
+		<article class="content dashboard-page" data-bind="visible: isLoaded">
+			<section id="csvInputFormSection">
+				<div class="card card-block sameheight-item">
+					<div class="title-block">
+						<div class="card-header bordered">
+							<div class="header-block">
+								<h3 class="title">Schedule Document Disclosure Notification</h3>
+							</div>
+							<div class="header-block pull-right" data-bind="if: isLoaded">
+								<a href="javascript:;;" data-bind="attr: {href:'list.html?i='+Property()._id}" class="userlink">Documents</a>
+							</div>
+						</div>
+					</div>
+					<form role="form" id="form">
+						<div class="form-group">
+							<label class="control-label">CSV File</label>
+							<input name="csvFile" id="csvFile" type="file" class="form-control underlined required email">
+						</div>
+						<div class="form-group">
+							<label class="control-label">CSV data</label>
+							<textarea id="csvData"
+									  type="text"
+									  name="csvData"
+									  rows="10"
+									  placeholder="first name, last name, email, building, floor, unit"
+									  class="form-control underlined required"
+									  style="height: 120px;"
+							></textarea>
+						</div>
+
+						<div class="form-group">
+							<a id="prepareCSVDataBtn" class="btn btn-primary btn-sm" href="#">Parse CSV data</a>
+						</div>
+					</form>
+				</div>
+			</section>
+			<section class="section" id="parsedDocuments" data-bind="if: isPreview()">
+				<div class="row">
+					<div class="col-xl-12">
+						<div class="card items" data-exclude="xs,sm,lg">
+							<div class="card-header bordered">
+								<div class="header-block">
+									<h3 class="title">
+										<span>Parsed Documents:</span>
+									</h3>
+								</div>
+							</div>
+							<ul class="item-list striped"  data-bind="foreach: parsedDocuments">
+								<li class="item">
+									<div class="item-row">
+										<div class="item-col no-overflow" title="resident name">
+											<h4 class="item-title no-wrap" data-bind="text: signer.name"></h4>
+										</div>
+										<div class="item-col no-overflow" title="resident email">
+											<h4 class="item-title no-wrap" data-bind="text: signer.email"></h4>
+										</div>
+										<div class="item-col no-overflow" title="resident building">
+											<div class="form-group" style="padding: 0 10px 0 10px">
+												<label class="control-label" data-bind="text: signer.building"></label>
+												<select data-bind="options: $root.Buildings,optionsText: 'Title', optionsValue: '_id', value: $data.BuildingID, optionsCaption: 'select building', event:{ change: $root.buildingSelected}"
+														class="form-control underlined">
+												</select>
+											</div>
+										</div>
+										<div class="item-col no-overflow" title="resident floor">
+											<div class="form-group" style="padding: 0 10px 0 10px">
+												<label class="control-label" data-bind="text: signer.floor"></label>
+												<select class="form-control underlined" data-bind="options: $root.floorsForBuilding($data.BuildingID),optionsText: 'Title', optionsValue: '_id', value: $data.FloorID, optionsCaption: 'select floor', event:{ change: $root.floorSelected}"></select>
+											</div>
+										</div>
+										<div class="item-col no-overflow" title="resident unit">
+											<h4 class="item-title no-wrap" data-bind="text: signer.unit"></h4>
+										</div>
+										<div class="item-col no-overflow" title="document language">
+											<h4 class="item-title no-wrap" data-bind="text: language"></h4>
+										</div>
+										<div class="item-col no-overflow" title="validator result">
+											<div>
+												<h4 class="item-title no-wrap text-success" data-bind="if: $root.isValidDocument($data)">valid</h4>
+												<h4 class="item-title no-wrap text-danger" data-bind="ifnot: $root.isValidDocument($data)">invalid</h4>
+												<ul class="item-list striped"  data-bind="foreach: $data.errors">
+													<li><small data-bind="text: $data"></small></li>
+												</ul>
+											</div>
+										</div>
+									</div>
+								</li>
+							</ul>
+							<div class="card-footer bordered">
+								<div class="header-block pull-right" >
+									<a class="btn btn-primary btn-sm" style="color: white;" data-bind="click: scheduleParsedDocuments">Schedule</a>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</section>
+		</article>
+		<footer class="footer"></footer>
+	</div>
+</div>
+<!-- Reference block for JS -->
+<div class="ref" id="ref">
+	<div class="color-primary"></div>
+	<div class="chart">
+		<div class="color-primary"></div>
+		<div class="color-secondary"></div>
+	</div>
+</div>
+<script src="/admin/js/vendor.js"></script>
+<script src="/admin/js/app.js"></script>
+<script src="/admin/js/custom.js"></script>
+<script type="text/javascript">
+	$(function () {
+		Site.init();
+
+		/*
+		$('#csvData').val(`
+Igor, Kalashnikov, zo0m.cfg@gmail.com, building 1, floor 1, unit124
+Andey, Ivanov, zo0m.cfg@gmail.com, building 2, 1st floor, unit124
+John, Doe, zo0m.cfg@gmail.com, building 1, floor 1, unit124
+Igor, Kalashnikov, zo0m.cfg@gmail.com, building 2, floor 1, unit124
+Igor, Kalashnikov, zo0m.cfg@gmail.com, building 1, floor 1, unit124
+Igor, Kalashnikov, zo0m.cfg@gmail.com, building 3, floor 1, unit124
+Igor, Kalashnikov, zo0m.cfg@gmail.com, building 1, 3rd floor, unit124
+Igor, Kalashnikov, zo0m.cfg@gmail.com, main building 11, 3rd floor, unit124
+Igor, Kalashnikov, zo0m.cfg@gmail.com, main building 11, 11th floor, unit121
+Igor, Kalashnikov, zo0m.cfgmail.com, main building 11, 11th floor, unit121
+`.trim());*/
+		var rootModel = {
+			isLoaded: ko.observable(false),
+			stepName: ko.observable('upload'),
+			isPreview() {
+				return this.stepName() === 'preview'
+			},
+
+			Property: ko.observable(null),
+			Buildings: ko.observableArray([]),
+			Floors: ko.observableArray([]),
+			SUPPORTED_LANGUAGES: ["ENGLISH", "CHINESE", "SPANISH", "FILIPINO", "RUSSIAN", "VIETNAMESE"],
+			id2building: {},
+			id2floor: {},
+			title2building: {},
+			title2floor: {},
+			csvBuilding2buildingId: {},
+			csvFloor2floorId: {},
+
+			Documents: ko.observableArray([]),
+			parsedDocuments: ko.observableArray([]),
+			isAnyParsedDocument() {
+				return this.parsedDocuments().length;
+			},
+			isValidDocument(document) {
+				return validateDocument(document).length === 0;
+			},
+
+			floorsForBuilding(buildingID) {
+				return rootModel.Floors().filter(function (floor) {
+					return floor.BuildingID === buildingID;
+				});
+			},
+			buildingSelected(document, event) {
+				var buildingID = event.target.value;
+				var csvBuildingTitle = document.signer.building;
+				if (buildingID) {
+					var parsedDocuments = rootModel.parsedDocuments();
+					rootModel.parsedDocuments([]);
+					rootModel.parsedDocuments(_.map(parsedDocuments,function (doc) {
+						if (doc.signer.building === csvBuildingTitle) {
+							doc.BuildingID = buildingID;
+							doc.FloorID = getFloorIDByTitle(buildingID, doc.signer.floor);
+						}
+						return doc;
+					}));
+				}
+			},
+			floorSelected(document, event) {
+				var floorID = event.target.value;
+				var csvFloorTitle = document.signer.floor;
+				if (floorID) {
+					var parsedDocuments = rootModel.parsedDocuments();
+					rootModel.parsedDocuments([]);
+					rootModel.parsedDocuments(_.map(parsedDocuments,function (doc) {
+						if (doc.BuildingID === document.BuildingID && doc.signer.floor === csvFloorTitle) {
+							doc.FloorID = floorID;
+						}
+						return doc;
+					}));
+				}
+			},
+
+			scheduleParsedDocuments() {
+				var parsedDocuments = rootModel.parsedDocuments();
+				var docsWithErrors = _.filter(parsedDocuments, function (doc) {
+					return doc.errors && doc.errors.length;
+				});
+
+				if (docsWithErrors.length) {
+					var confirmed = confirm('There are not valid documents, count: ' + docsWithErrors.length);
+					if (!confirmed) {
+						return;
+					}
+
+					confirmed = confirm('Skip invalid documents: ' + docsWithErrors.length);
+					if (confirmed) {
+						parsedDocuments = parsedDocuments.filter(function (doc) {
+							return !doc.errors || doc.errors.length === 0;
+						})
+					}
+				}
+
+				if (parsedDocuments.length) {
+					API.generateDocuments(parsedDocuments, function (data) {
+						alert('Documents scheduled');
+						console.log('scheduled documents: ', data);
+					});
+				} else {
+					alert('No documents to schedule.');
+				}
+
+			}
+		};
+		ko.applyBindings(rootModel);
+
+		var scheduledDocumentsEmails = [];
+
+		var ID = QueryString("i");
+		API.property(ID, function (property) {
+			rootModel.Property(property);
+			rootModel.Buildings(property.Buildings);
+
+			var floors = [];
+			_.forEach(property.Buildings, function (building) {
+				if (building) {
+					rootModel.id2building[building._id] = building;
+					rootModel.title2building[building.Title.toLowerCase()] = building;
+					_.forEach(building.Floors, function (floor) {
+						if (floor && floor.Status > 0) {
+							rootModel.id2floor[floor._id] = floor;
+							var floorTitle = floor.Title.toLowerCase();
+							if (!rootModel.title2floor[floorTitle]) {
+								rootModel.title2floor[floorTitle] = [];
+							}
+							rootModel.title2floor[floorTitle].push(floor);
+							floors.push(floor);
+						}
+					});
+				}
+			});
+			rootModel.Floors(floors);
+
+
+			API.documents(ID, function (documents) {
+				rootModel.Documents(documents || []);
+				_.forEach(documents, function (doc) {
+					if (doc && doc.signer && doc.signer.email) {
+						scheduledDocumentsEmails.push(doc.signer.email);
+					}
+				});
+
+				rootModel.isLoaded(true);
+			});
+		});
+
+		function getBuildingIDByTitle(title) {
+			return title
+					&& rootModel.title2building[title.toLowerCase()]
+					&& rootModel.title2building[title.toLowerCase()]._id
+		}
+
+		function getFloorIDByTitle(buildingID, title) {
+			var floor = title
+					&& rootModel.title2floor[title.toLowerCase()]
+					&& rootModel.title2floor[title.toLowerCase()].filter(function(floor) {
+						return floor.BuildingID === buildingID;
+					})[0];
+
+			return floor && floor._id;
+		}
+
+		var emailRegExp = new RegExp("[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?");
+		function validateDocument(document) {
+			var errors = [];
+			if (document) {
+				if (!document.FloorID) {
+					errors.push('FloorID is empty')
+				}
+				if (!document.language) {
+					errors.push('language is empty')
+				}
+
+				var signer = document.signer;
+				if (signer) {
+					if (signer.email) {
+						if (!emailRegExp.test(signer.email)) {
+							errors.push('email is not valid');
+						}
+						if (scheduledDocumentsEmails.indexOf(signer.email) >= 0) {
+							errors.push('email is already scheduled');
+						}
+					} else {
+						errors.push('email is empty');
+					}
+
+					if (!signer.name) {
+						errors.push('signer name is empty');
+					}
+					if (!signer.first_name) {
+						errors.push('signer first_name is empty');
+					}
+					if (!signer.last_name) {
+						errors.push('signer last_name is empty');
+					}
+				} else {
+					errors.push('signer is empty')
+				}
+			} else {
+				errors.push('document is empty')
+			}
+
+			document.errors = errors;
+
+			// if (errors.length) {
+			// 	console.log('validations failed for document:\n', document);
+			// 	console.log('errors:\n', errors);
+			// }
+			return errors;
+		}
+
+		$("#prepareCSVDataBtn").click(function (e) {
+			var rawCSVData = $('#csvData').val();
+			if (rawCSVData && rawCSVData.length) {
+				const rows = rawCSVData
+						.split('\n')
+						.map(function (line) {
+							var columns = line.split(',').map(function (column) {
+								return column ? column.trim() : null;
+							});
+							return columns;
+						})
+						.filter(function (row) {
+							return row && row.length && row[0];
+						});
+
+				var parsedDocuments = _.map(rows, function (row) {
+					var first_name = (row[0] || '');
+					var last_name = (row[1] || '');
+					var email = (row[2] || '');
+					var building = (row[3] || '');
+					var floor = (row[4] || '');
+					var unit = (row[5] || '');
+					var language = (row[6] || 'ENGLISH');
+
+					var buildingID = getBuildingIDByTitle(building);
+
+					var document = {
+						BuildingID: buildingID,
+						FloorID: getFloorIDByTitle(buildingID, floor),
+						language: language,
+						signer: {
+							first_name: first_name,
+							last_name: last_name,
+							name: first_name + ' ' + last_name,
+							email: email,
+							building: building,
+							floor: floor,
+							unit: unit,
+						}
+					};
+
+					return document;
+				});
+
+				rootModel.parsedDocuments(parsedDocuments);
+				rootModel.stepName('preview')
+
+
+			} else {
+				alert('Ooops, CSV data is empty!')
+			}
+		});
+
+		// $('#csvData')
+		// 		.focus(function () {
+		// 			$(this).animate({height: "300px"}, 500);
+		// 		})
+		// 		.focusout(function () {
+		// 			$(this).animate({height: "120px"}, 500);
+		// 		});
+
+		$("#submit").click(function (e) {
+			e.preventDefault();
+			var valid = Site.validate($("#form"));
+			if (valid) {
+				var User = {
+					Title: $("#title").val(),
+					Email: $("#email").val(),
+					Phone: $("#phone").val(),
+					Type: $("#type").val(),
+					Password: $("#password").val(),
+					Organization: $("#organization").val()
+				};
+
+				API.createUser(User, function (data) {
+					Site.redirect("/users/");
+				});
+			}
+		});
+
+		function readBlob(file, callback) {
+			var start = 0;
+			var stop = file.size - 1;
+
+			var reader = new FileReader();
+
+			// If we use onloadend, we need to check the readyState.
+			reader.onloadend = function(evt) {
+				if (evt.target.readyState == FileReader.DONE) { // DONE == 2
+					callback(evt.target.result);
+				}
+			};
+
+			var blob = file.slice(start, stop + 1);
+			reader.readAsBinaryString(blob);
+		}
+
+		$('input[type="file"]').change(function(e){
+			console.log('e.target === ', e.target);
+			console.log(`e.target.files[0] === `, e.target.files[0]);
+			readBlob(e.target.files[0], function (fileContent) {
+				$(e.target).val('');
+				$('#csvData').val(fileContent);
+			});
+		});
+	});
+</script>
+</body>
+</html>
