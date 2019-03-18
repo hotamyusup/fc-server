@@ -35,7 +35,7 @@ class VideoController extends BaseController {
                 const video = request.payload.media;
                 const filename = `${uuid.v4()}.mp4`;
 
-                const videoPath = publicVideoDir + filename
+                const videoPath = publicVideoDir + '/'+ filename;
                 // const videoPath = publicVideoDir + filename + '.jpg';
                 // const tumbPath = publicVideoDir + filename + '-t.jpg';
 
