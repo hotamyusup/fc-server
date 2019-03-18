@@ -33,7 +33,7 @@ class PropertyController extends RedirectOnCreateController {
                 })
                 .then(({Properties, Buildings}) => {
                     _.forEach(Properties, property => {
-                        property.Buildings = _.filter(Buildings, building => building.PropertyID.toString() === property._id.toString());
+                        property.Buildings = _.filter(Buildings, building => `${building.PropertyID}` === `${property._id}`);
                     });
                     return Properties;
                 }, {});
