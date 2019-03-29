@@ -34,52 +34,52 @@
 				<div class="header-block header-block-buttons"></div>
 				<div class="header-block header-block-nav"></div>
 			</header>
-			<aside class="sidebar">
-				<div class="sidebar-container">
-					<div class="sidebar-header">
-						<div class="brand">Fire Cloud Admin</div>
-					</div>
-					<nav class="menu">
-						<ul class="sidebar-menu metismenu" id="sidebar-menu">
-							<li>
-								<a href="/admin/properties">
-									<i class="fa fa-th-large"></i> Properties
-								</a>
-							</li>
-							<li>
-								<a href="/admin/users">
-									<i class="fa fa-users"></i> Users
-								</a>
-							</li>
-							<li>
-								<a href="/admin/organizations">
-									<i class="fa fa-dot-circle-o"></i> Organizations
-								</a>
-							</li>
-							<li>
-								<a href="/admin/equipments">
-									<i class="fa fa-lightbulb-o"></i> Equipments
-								</a>
-							</li>
-							<li class="active">
-								<a href="/admin/constructiontypes">
-									<i class="fa fa-building-o"></i> Construction Types
-								</a>
-							</li>
-							<li>
-								<a href="/admin/occupancytypes">
-									<i class="fa fa-home"></i> Occupancy Types
-								</a>
-							</li>
-							<li>
-								<a href="/admin/logout.html">
-									<i class="fa fa-lock"></i> Log out
-								</a>
-							</li>
-						</ul>
-					</nav>
-				</div>
-			</aside>
+            <aside class="sidebar">
+                <div class="sidebar-container">
+                    <div class="sidebar-header">
+                        <div class="brand">Fire Cloud Admin</div>
+                    </div>
+                    <nav class="menu">
+                        <ul class="sidebar-menu metismenu" id="sidebar-menu">
+                            <li>
+                                <a href="/admin/properties">
+                                    <i class="fa fa-th-large"></i> Properties
+                                </a>
+                            </li>
+                            <li data-bind="visible: ACL.isAdmin" style="display: none;">
+                                <a href="/admin/users">
+                                    <i class="fa fa-users"></i> Users
+                                </a>
+                            </li>
+                            <li data-bind="visible: ACL.isAdmin" style="display: none;">
+                                <a href="/admin/organizations">
+                                    <i class="fa fa-dot-circle-o"></i> Organizations
+                                </a>
+                            </li>
+                            <li data-bind="visible: ACL.isAdminOrEmployee" style="display: none;">
+                                <a href="/admin/equipments">
+                                    <i class="fa fa-lightbulb-o"></i> Equipments
+                                </a>
+                            </li>
+                            <li data-bind="visible: ACL.isAdminOrEmployee" style="display: none;" class="active">
+                                <a href="/admin/constructiontypes">
+                                    <i class="fa fa-building-o"></i> Construction Types
+                                </a>
+                            </li>
+                            <li data-bind="visible: ACL.isAdminOrEmployee" style="display: none;">
+                                <a href="/admin/occupancytypes">
+                                    <i class="fa fa-home"></i> Occupancy Types
+                                </a>
+                            </li>
+                            <li>
+                                <a href="/admin/logout.html">
+                                    <i class="fa fa-lock"></i> Log out
+                                </a>
+                            </li>
+                        </ul>
+                    </nav>
+                </div>
+            </aside>
 			<div class="sidebar-overlay" id="sidebar-overlay"></div>
 			<div class="sidebar-mobile-menu-handle" id="sidebar-mobile-menu-handle"></div>
 			<div class="mobile-menu-handle"></div>
@@ -115,29 +115,31 @@
 	<script src="/admin/js/custom.js"></script>
 	<script type="text/javascript">
 		$(function () {
-			Site.init();
-			var ID = QueryString("i");
-			var Model = {}
+			var success = Site.init(['Admin', 'Employee']);
+			if (success) {
+				var ID = QueryString("i");
+				var Model = {ACL: Auth.ACL()};
 
-			API.constructiontype(ID, function (data) {
-				Model.ConstructionType = data;
-				ko.applyBindings(Model);
-			});
+				API.constructiontype(ID, function (data) {
+					Model.ConstructionType = data;
+					ko.applyBindings(Model);
+				});
 
-			$("#submit").click(function (e) {
-				e.preventDefault();
-				var valid = Site.validate($("#form"));
-				if (valid) {
-					var ConstructionType = {
-						ConstructionTypeID: $("#id").val(),
-						Title: $("#title").val()
-					};
+				$("#submit").click(function (e) {
+					e.preventDefault();
+					var valid = Site.validate($("#form"));
+					if (valid) {
+						var ConstructionType = {
+							ConstructionTypeID: $("#id").val(),
+							Title: $("#title").val()
+						};
 
-					API.updateConstructiontype($("#id").val(), ConstructionType, function (data) {
-						Site.redirect("/constructiontypes/");
-					});
-				}
-			});
+						API.updateConstructiontype($("#id").val(), ConstructionType, function (data) {
+							Site.redirect("/constructiontypes/");
+						});
+					}
+				});
+			}
 		});
 
 	</script>

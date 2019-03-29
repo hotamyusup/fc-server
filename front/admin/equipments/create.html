@@ -46,27 +46,27 @@
 									<i class="fa fa-th-large"></i> Properties
 								</a>
 							</li>
-							<li>
+							<li data-bind="visible: ACL.isAdmin" style="display: none;">
 								<a href="/admin/users">
 									<i class="fa fa-users"></i> Users
 								</a>
 							</li>
-							<li>
+							<li data-bind="visible: ACL.isAdmin" style="display: none;">
 								<a href="/admin/organizations">
 									<i class="fa fa-dot-circle-o"></i> Organizations
 								</a>
 							</li>
-							<li class="active">
+							<li data-bind="visible: ACL.isAdminOrEmployee" style="display: none;" class="active">
 								<a href="/admin/equipments">
 									<i class="fa fa-lightbulb-o"></i> Equipments
 								</a>
 							</li>
-							<li>
+							<li data-bind="visible: ACL.isAdminOrEmployee" style="display: none;">
 								<a href="/admin/constructiontypes">
 									<i class="fa fa-building-o"></i> Construction Types
 								</a>
 							</li>
-							<li>
+							<li data-bind="visible: ACL.isAdminOrEmployee" style="display: none;">
 								<a href="/admin/occupancytypes">
 									<i class="fa fa-home"></i> Occupancy Types
 								</a>
@@ -117,20 +117,24 @@
 	<script src="/admin/js/custom.js"></script>
 	<script type="text/javascript">
 		$(function () {
-			Site.init();
-			$("#submit").click(function (e) {
-				e.preventDefault();
-				var valid = Site.validate($("#form"));
-				if (valid) {
-					var Equipment = {
-						Title: $("#title").val()
-					};
+			var success = Site.init(['Admin', 'Employee']);
+			if (success) {
+				ko.applyBindings({ACL: Auth.ACL()});
 
-					API.createEquipment(Equipment, function (data) {
-						Site.redirect("/equipments/");
-					});
-				}				
-			});
+				$("#submit").click(function (e) {
+					e.preventDefault();
+					var valid = Site.validate($("#form"));
+					if (valid) {
+						var Equipment = {
+							Title: $("#title").val()
+						};
+
+						API.createEquipment(Equipment, function (data) {
+							Site.redirect("/equipments/");
+						});
+					}
+				});
+			}
 		});
 	</script>
 </body>
