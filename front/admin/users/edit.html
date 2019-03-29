@@ -231,6 +231,7 @@
                     var valid = Site.validate($("#form"));
                     if (valid) {
                         var User = {
+                            _id: $("#id").val(),
                             UserID: $("#id").val(),
                             Title: $("#title").val(),
                             Email: $("#email").val(),
