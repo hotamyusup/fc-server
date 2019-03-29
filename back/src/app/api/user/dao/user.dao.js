@@ -13,7 +13,7 @@ class UserDAO extends BaseDAO {
         super(UserModel);
     }
 
-    async prepareUpdateObjecut(dataObject) {
+    async prepareUpdateObject(dataObject) {
         const preparedDataObject = await super.prepareUpdateObject(dataObject);
 
         if (dataObject.Password == '*****') {
