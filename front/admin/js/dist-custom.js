@@ -5,8 +5,8 @@ var Config = { APIURL: "http://dev.fc2.fireprotected.com:9999", BaseURL: "http:/
 
 $(function () {
 	Site = {
-		init: function () {
-			Auth.check();
+		init: function (userTypesAccessList) {
+			return Auth.check(userTypesAccessList);
 		},
 		validate: function (form) {
 			var t = !1, i = form,
@@ -83,13 +83,36 @@ $(function () {
 		}
 	},
 	Auth = {
-		check: function () {
+	    ACL: function() {
+            var user = (localStorage.getItem('user')) ? JSON.parse(localStorage.getItem('user')) : null;
+            var userType = user && user.Type;
+            var model = {
+                isAdmin: userType === 'Admin',
+                isEmployee: userType === 'Employee',
+                isCustomer: userType === 'Customer',
+                isAdminOrEmployee: ['Admin', 'Employee'].indexOf(userType) > -1,
+                sameOrganization: function (organizationId) {
+                    return user && user.Organization === organizationId;
+                }
+            };
+
+            return model;
+        },
+		check: function (userTypesAccessList = []) {
 			var user = (localStorage.getItem('user')) ? JSON.parse(localStorage.getItem('user')) : null;
 			if (user == null) {
 				console.log("N/A");
-				Site.redirect("/login.html")
+				Site.redirect("/login.html");
+                return false;
 			} else {
 				User = user;
+				if (userTypesAccessList.length && userTypesAccessList.indexOf(User.Type) === -1) {
+				    console.log('User type ' + User.Type + ' is not available to access this page');
+                    Site.redirect("/index.html");
+                    return false;
+                }
+
+				return true;
 			}
 		},
 		save: function () {
@@ -103,7 +126,7 @@ $(function () {
 		login: function (email, password, callback) {
 			User = {};
 			API.post("/users/login", { Email: email, Password: password }, function (user) {
-				if (user && user.Type == "Admin") {
+				if (user && user.Type) {
 					User = user;
 					Auth.save(User);
 					callback(User);
