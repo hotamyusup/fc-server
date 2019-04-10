@@ -24,7 +24,7 @@ class BaseDAO {
         return newModel.save();
     }
 
-    prepareUpdateObject(dataObject) {
+    async prepareUpdateObject(dataObject) {
         // delete dataObject._id;
         // delete dataObject.created_at;
         // delete dataObject.__v;
@@ -35,6 +35,8 @@ class BaseDAO {
                 dataObject.InstallationDate = moment(dataObject.created_at || dataObject.updated_at).toISOString();
             }
         }
+
+        dataObject.updated_at = moment().toISOString();
 
         return Promise.resolve(dataObject);
     }
