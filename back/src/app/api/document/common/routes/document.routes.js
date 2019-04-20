@@ -8,6 +8,7 @@ const DOCUMENT_ROUTES = [
     {method: 'GET', path: '/documents/{DocumentID}/deactivate', config: DocumentController.deactivate},
     {method: 'GET', path: '/documents/{DocumentID}/notify', config: DocumentController.notifyOnEmail},
     {method: 'GET', path: '/documents/{DocumentID}.{format}', config: DocumentController.getFormatted},
+    {method: 'DELETE', path: '/documents/{DocumentID}.{format}', config: DocumentController.delete},
     {method: 'GET', path: '/documents', config: DocumentController.getForProperty},
 ];
 

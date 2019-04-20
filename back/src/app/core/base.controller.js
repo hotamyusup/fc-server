@@ -100,7 +100,7 @@ class BaseController {
 
     get delete() {
         return {
-            handler: (request, reply) => this.handle('update', request, reply, this.DAO.delete(this.requestIDKey))
+            handler: (request, reply) => this.handle('delete', request, reply, this.DAO.delete(request.params[this.requestIDKey]))
         }
     }
 }
