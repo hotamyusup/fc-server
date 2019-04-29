@@ -5,6 +5,7 @@ const API_ROUTES = [
 
     ...require("./file/routes/file.routes"),
     ...require("./image/routes/image.routes"),
+    ...require("./video/routes/video.routes"),
     ...require("./organization/routes/organization.routes"),
 
     ...require("./property/building/routes/building.routes"),
