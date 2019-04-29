@@ -93,9 +93,11 @@
 										<h3 class="title"> Floors </h3>
 
 									</div>
-									<div class="header-block pull-right" data-bind="text: Building.Title">
 
-									</div>
+                                    <div class="header-block pull-right">
+                                        <span data-bind="text: Building.Title"></span>
+                                        <a href="#export-modal-window" data-toggle="modal" data-target="#export-modal-window">Export</a>
+                                    </div>
 								</div>
 								<ul class="item-list striped" data-bind="foreach: Building.Floors">
 									<li class="item">
@@ -121,6 +123,10 @@
 			<footer class="footer"></footer>
 		</div>
 	</div>
+
+    <div data-bind="htmlUrl: exportModal.templateUrl">
+    </div>
+
 	<!-- Reference block for JS -->
 	<div class="ref" id="ref">
 		<div class="color-primary"></div>
@@ -132,7 +138,8 @@
 	<script src="/admin/js/vendor.js"></script>
 	<script src="/admin/js/app.js"></script>
 	<script src="/admin/js/custom.js"></script>
-	<script type="text/javascript">
+    <script src="/admin/parts/export/modal.js"></script>
+    <script type="text/javascript">
 		$(function () {
 			Site.init();
 			var ID = QueryString("i");
@@ -179,7 +186,18 @@
 							location.reload();
 						});
 					}
-				};	
+				};
+
+                setupExportModal(Model, {
+                    title: [Model.Property.Title, Model.Building.Title].map(s => s.trim()).join(' / '),
+                    source: {BuildingID: Model.Building._id},
+                    entities: [
+                        ['Inspections', 'inspections'],
+                        ['Devices', 'devices'],
+                        ['Floors', 'floors'],
+                    ]
+                });
+
 				ko.applyBindings(Model);
 			});
 		});
