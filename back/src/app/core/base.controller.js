@@ -18,7 +18,7 @@ class BaseController {
     }
 
     async handle(action, request, reply, func) {
-        let {hash, format} = request.query;
+        let {hash, format, filename} = request.query;
         hash = hash || '';
 
         const timerName = `${hash}.${this.controllerName}.handle.${action}`;
@@ -32,9 +32,11 @@ class BaseController {
                     const csv = await this.parseCSV(result);
 
                     if (format === 'csv-file') {
+                        const defaultFilename = `${this.batchEntitiesKey}.${action}.report.csv;`;
+
                         return reply(csv)
                             .header('Content-Type', 'application/octet-stream')
-                            .header('content-disposition', `attachment; filename=${this.batchEntitiesKey}.${action}.report.csv;`);
+                            .header('content-disposition', `attachment; filename=${filename || defaultFilename}`);
                     } else {
                         return reply(csv);
                     }

@@ -1,5 +1,6 @@
 function setupExportModal(bindingContext, params = {}) {
-    const {title, dates, entities, source} = params;
+    const {title, dates, entities} = params;
+    const source = params.source || {};
 
     function onChangeBuilder(value) {
         return function (bindings, event) {
@@ -53,14 +54,18 @@ function setupExportModal(bindingContext, params = {}) {
             const user = (localStorage.getItem('user')) ? JSON.parse(localStorage.getItem('user')) : null;
             const route = entitiesSelector.value();
             // source === {BuildingID : <value>}
-            let queryParams = Object.keys(source || {})
-                .map(fieldName => `&${fieldName}=${source[fieldName]}`)
-                .join('');
+            const queryParams = Object.keys(source)
+                .map(fieldName => `&${fieldName}=${source[fieldName]}`).join('');
 
             const from = datesSelector.value();
             const fromParams = from ? `&from=${from}` : ``;
 
-            const url = `${Site.APIURL}/${route}?hash=${user._id}${queryParams}${fromParams}&format=csv-file`;
+            const fileNameParams = Object.keys(source)
+                .map(fieldName => `_${fieldName}_${source[fieldName]}`).join('');
+
+            const filename = `${route}${fileNameParams}${from ? `_from_${from}`: ''}.csv`;
+
+            const url = `${Site.APIURL}/${route}?hash=${user._id}${queryParams}${fromParams}&format=csv-file&filename=${filename}`;
             console.log(`url == ${url}`);
             window.open(url);
         },
