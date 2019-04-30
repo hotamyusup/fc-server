@@ -1,8 +1,10 @@
 'use strict';
 
+const _ = require('underscore');
 const Promise = require('bluebird');
 const moment = require('moment');
 const Boom = require('boom');
+const {parseAsync} = require('json2csv');
 
 const logger = require('./logger');
 
@@ -15,17 +17,30 @@ class BaseController {
         this.batchEntitiesKey = 'entities';
     }
 
-    handle(action, request, reply, func) {
-        let {hash} = request.query;
+    async handle(action, request, reply, func) {
+        let {hash, format} = request.query;
         hash = hash || '';
 
         const timerName = `${hash}.${this.controllerName}.handle.${action}`;
         console.time(timerName);
         logger.info(`sessionId: ${hash} ${this.controllerName}.${action} start`);
-        return Promise.resolve(func)
-            .then((result) => {
+        return Promise
+            .resolve(func)
+            .then(async result => {
                 logger.info(`sessionId: ${hash} ${this.controllerName}.${action} success`);
-                return reply(result);
+                if (format === 'csv' || format === 'csv-file') {
+                    const csv = await this.parseCSV(result);
+
+                    if (format === 'csv-file') {
+                        return reply(csv)
+                            .header('Content-Type', 'application/octet-stream')
+                            .header('content-disposition', `attachment; filename=${this.batchEntitiesKey}.${action}.report.csv;`);
+                    } else {
+                        return reply(csv);
+                    }
+                } else {
+                    return reply(result);
+                }
             })
             .catch(err => {
                 logger.error(`sessionId: ${hash} ${this.controllerName}.${action} error ${err}`);
@@ -102,6 +117,28 @@ class BaseController {
         return {
             handler: (request, reply) => this.handle('update', request, reply, this.DAO.delete(this.requestIDKey))
         }
+    }
+
+    async parseCSV(result) {
+        if (!_.isArray(result)) {
+            result = [result];
+        }
+
+        const fields = {};
+        _.forEach(result, entity => {
+            if (entity.schema) {
+                entity.schema.eachPath(function (field) {
+                    fields[field] = field;
+                });
+            } else {
+                Object.keys(entity).map(field => fields[field] = field);
+            }
+        });
+
+        const opts = {fields: Object.keys(fields)};
+        const csv = await parseAsync(result, opts);
+
+        return csv;
     }
 }
 

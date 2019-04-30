@@ -2,13 +2,14 @@
 
 const Promise = require('bluebird');
 
-const BaseController = require("../../../../core/base.controller");
 const logger = require("../../../../core/logger");
 
-const DeviceDAO = require("../dao/device.dao");
+const PropertyChildrenBaseController = require("../../common/property.children.base.controller");
 const InspectionDAO = require("../../inspection/dao/inspection.dao");
 
-class DeviceController extends BaseController {
+const DeviceDAO = require("../dao/device.dao");
+
+class DeviceController extends PropertyChildrenBaseController {
     constructor() {
         super(DeviceDAO);
         this.controllerName = 'DeviceController';
