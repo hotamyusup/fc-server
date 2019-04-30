@@ -63,37 +63,6 @@ class PropertyChildrenBaseController extends BaseController {
         };
     }
 
-    get export() {
-        return {
-            handler: async (request, reply) => {
-                const {from} = request.query;
-                const {format} = request.params;
-                const conditions = {};
-                if (from) {
-                    conditions.updated_at = {
-                        $gt: moment(from).toDate()
-                    }
-                }
-                ['DeviceID', 'FloorID', 'BuildingID', 'PropertyID'].forEach(key => {
-                    if (request.query[key]) {
-                        conditions[key] = request.query[key];
-                    }
-                });
-
-                const entities = await this.DAO.all(conditions);
-
-                const user = request.auth && request.auth.credentials;
-                const filteredEntities = await this.filterUserEntities(user, ...entities);
-                if (entities && entities.length && filteredEntities && filteredEntities.length === 0) {
-                    return reply(Boom.forbidden(`User ${user && user.Title} dont have access to entities`));
-                } else {
-                    return this.handle('export', request, reply, filteredEntities);
-                }
-
-            }
-        }
-    }
-
     async filterUserEntities(user, ...entities) {
         if (!user || entities.length === 0) {
             console.log(`isUserOwner(${user})`);
