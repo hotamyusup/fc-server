@@ -15,6 +15,15 @@ class PropertyDAO extends PropertyChildrenBaseDAO {
         super(PropertyModel);
     }
 
+    async getPropertiesForOrganization(organizationID) {
+        return this.model.find({Organization: organizationID});
+    }
+
+    async getPropertiesIdsForOrganization(organizationID) {
+        const properties = await this.model.find({Organization: organizationID});
+        return properties.map(p => p._id);
+    }
+
     async prepareUpdateObject(propertyJSON) {
         const property = await super.prepareUpdateObject(propertyJSON);
 
