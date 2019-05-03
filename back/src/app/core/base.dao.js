@@ -51,8 +51,8 @@ class BaseDAO {
         return this.update(dataObject, true);
     }
 
-    delete(id) {
-        return this.model.remove({_id : id});
+    delete(_id) {
+        return this.model.remove({_id});
     }
 }
 

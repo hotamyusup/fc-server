@@ -145,6 +145,11 @@ $(function () {
 				callback(data);
 			});
 		},
+		deleteInspection: function (id, callback) {
+			API.delete("/inspections/"+id, function (data) {
+				callback(data);
+			});
+		},
 		users: function (callback) {
 			API.get("/users", function (data) {
 				callback(data);
@@ -269,7 +274,17 @@ $(function () {
 			$.get(Config.APIURL + URL + "?hash=" + User._id, function (data) {
 				Callback(data);
 			});
-		}
+		},
+        delete: function (URL, Callback) {
+            var url = Config.APIURL + URL + (URL.indexOf('?') >= 0 ? '&' : '?') + "hash=" + User._id;
+            $.ajax({
+                url: url,
+                type: 'DELETE',
+                success: function (data) {
+                    Callback(data);
+                }
+            });
+        }
 	}
 });
 
