@@ -2,12 +2,13 @@
 
 const Promise = require('bluebird');
 
-const BaseController = require("../../../../core/base.controller");
 const logger = require("../../../../core/logger");
+
+const PropertyChildrenBaseController = require("../../common/property.children.base.controller");
 
 const FloorDAO = require("../dao/floor.dao");
 
-class FloorController extends BaseController {
+class FloorController extends PropertyChildrenBaseController {
     constructor() {
         super(FloorDAO);
         this.controllerName = 'FloorController';
