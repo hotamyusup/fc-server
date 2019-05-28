@@ -16,6 +16,7 @@ const DeviceSchema = new Schema({
     ExpirationType: {type: String},
     PSI: {type: Number},
     Notes: {type: String},
+    InUnit: {type: Boolean},
     QRCode: {type: String},
     Picture: {type: String},
     XPos: {type: Number},

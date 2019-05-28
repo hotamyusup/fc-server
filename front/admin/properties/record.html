@@ -147,6 +147,22 @@
 												</div>
 											</div>
 										</li>
+										<li class="item">
+											<div class="item-row">
+                                                <div class="item-col">
+                                                </div>
+                                                <div class="item-col">
+                                                </div>
+                                                <div class="item-col text-right">
+                                                    <!-- ko if: ACL.isAdmin && Record.Status != -1 -->
+                                                    <div><a href="javascript:;;" data-bind="click: $root.deleteRecord" class="userlink">Delete</a></div>
+                                                    <!-- /ko -->
+                                                    <!-- ko if: Record.Status == -1 -->
+                                                    <div>Deleted</div>
+                                                    <!-- /ko -->
+                                                </div>
+											</div>
+										</li>
 									</ul>
 								</div>
 							</div>
@@ -176,7 +192,15 @@
 			var FloorID = QueryString("f");
 			var DeviceID = QueryString("d");
 			var Model = {
-			    ACL: Auth.ACL()
+			    ACL: Auth.ACL(),
+                deleteRecord: function() {
+                    if (confirm('Are you sure you want to delete?')) {
+                        API.deleteInspection(ID, function (data) {
+                            console.log(data);
+                            location.reload();
+                        });
+                    }
+                }
             };
 			API.property(PropertyID, function (data) {
 				Model.Property = data;

@@ -93,12 +93,15 @@
 										<h3 class="title"> History </h3>
 
 									</div>
-									<div class="header-block pull-right">
-										Inspection History
-									</div>
+
+                                    <div class="header-block pull-right">
+                                        <span data-bind="text: deviceName"></span>
+                                        <span>Inspection History</span>
+                                        <a href="#export-modal-window" data-toggle="modal" data-target="#export-modal-window">Export</a>
+                                    </div>
 								</div>
 								<ul class="item-list striped" data-bind="foreach: Device.Records">
-									<li class="item">
+									<li class="item" data-bind="style : { opacity: (Status == -1 ? 0.6 : 1)}">
 										<div class="item-row">
 											<div class="item-col item-col-title no-overflow">
 												<h4 class="item-title no-wrap" data-bind="text: moment(created_at).format('YYYY-MM-DD HH:mm')"></h4>
@@ -123,6 +126,10 @@
 			<footer class="footer"></footer>
 		</div>
 	</div>
+
+    <div data-bind="htmlUrl: exportModal.templateUrl">
+    </div>
+
 	<!-- Reference block for JS -->
 	<div class="ref" id="ref">
 		<div class="color-primary"></div>
@@ -134,7 +141,8 @@
 	<script src="/admin/js/vendor.js"></script>
 	<script src="/admin/js/app.js"></script>
 	<script src="/admin/js/custom.js"></script>
-	<script type="text/javascript">
+    <script src="/admin/parts/export/modal.js"></script>
+    <script type="text/javascript">
 		$(function () {
 			Site.init();
 			var ID = QueryString("i");
@@ -149,7 +157,26 @@
 				Model.Building = _.findWhere(data.Buildings,{_id:BuildingID});
 				Model.Floor = _.findWhere(Model.Building.Floors,{_id:FloorID});
 				Model.Device = _.findWhere(Model.Floor.Devices,{_id:ID});
-				ko.applyBindings(Model);
+
+
+                API.equipments(function(equipments){
+                    const {EquipmentType, DeviceType} = Model.Device;
+                    const deviceName = _.findWhere(_.findWhere(equipments,{_id:EquipmentType}).Devices,{_id:DeviceType}).Title;
+
+                    Model.deviceName = deviceName;
+
+                    setupExportModal(Model, {
+                        title: [Model.Property.Title, Model.Building.Title, Model.Floor.Title, deviceName].map(s => s.trim()).join(' / '),
+                        source: {DeviceID: Model.Device._id},
+                        entities: [
+                            ['Inspections', 'inspections']
+                        ]
+                    });
+
+                    ko.applyBindings(Model);
+                });
+
+
 			});
 		});
 

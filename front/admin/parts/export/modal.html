@@ -1,0 +1,34 @@
+<!-- ko if: $root.exportModal -->
+<div class="modal fade" id="export-modal-window" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLabel">Export from <b data-bind="text: $root.exportModal.title"></b></h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+
+                <div style="display: flex; flex-direction: row; justify-content: center; padding: 10px;">
+                    <div class="form-group" style="padding: 0 20px 0 20px">
+                        <select data-bind="options: $root.exportModal.dates.list,optionsText: 'title', optionsValue: 'from', value: 0, event:{ change: $root.exportModal.dates.onChange}"
+                                class="form-control underlined">
+                        </select>
+                    </div>
+                    <div class="form-group" style="padding: 0 20px 0 20px">
+                        <select data-bind="options: $root.exportModal.entities.list,optionsText: 'title', optionsValue: 'route', value: 0, event:{ change: $root.exportModal.entities.onChange}"
+                                class="form-control underlined">
+                        </select>
+                    </div>
+                </div>
+
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary" href="#" data-bind="click: $root.exportModal.exportCsv">Export</button>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- /ko -->

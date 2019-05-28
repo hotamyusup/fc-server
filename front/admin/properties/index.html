@@ -83,7 +83,7 @@
 			<div class="sidebar-overlay" id="sidebar-overlay"></div>
 			<div class="sidebar-mobile-menu-handle" id="sidebar-mobile-menu-handle"></div>
 			<div class="mobile-menu-handle"></div>
-			<article class="content dashboard-page">
+            <article class="content dashboard-page">
 				<section class="section" id="users">
 					<div class="row">
 						<div class="col-xl-12">
@@ -94,7 +94,7 @@
 
 									</div>
 									<div class="header-block pull-right">
-
+                                            <a href="#export-modal-window" data-toggle="modal" data-target="#export-modal-window">Export</a>
 									</div>
 								</div>
 								<ul class="item-list striped" data-bind="foreach: properties">
@@ -102,10 +102,10 @@
 									<li class="item">
 										<div class="item-row">
 											<div class="item-col item-col-title no-overflow">
-												<h4 class="item-title no-wrap" data-bind="text: Title"></h4>
+												<h4 class="item-title no-wrap" data-bind="text: $data.Title"></h4>
 											</div>
 											<div class="item-col item-col-title no-overflow">
-												<h4 class="item-title no-wrap" data-bind="text: City"></h4>
+												<h4 class="item-title no-wrap" data-bind="text: $data.City"></h4>
 											</div>
 											<div class="item-col text-right">
 												<div><a href="javascript:;;" data-bind="attr: {id:_id, href:'property.html?i='+_id}" class="userlink">Details</a></div>
@@ -123,9 +123,13 @@
 					</div>
 				</section>
 			</article>
-			<footer class="footer"></footer>
+            <footer class="footer"></footer>
 		</div>
 	</div>
+
+    <div data-bind="htmlUrl: exportModal.templateUrl">
+    </div>
+
 	<!-- Reference block for JS -->
 	<div class="ref" id="ref">
 		<div class="color-primary"></div>
@@ -135,10 +139,11 @@
 		</div>
 	</div>
 	<script src="/admin/js/vendor.js"></script>
-
 	<script src="/admin/js/app.js"></script>
 	<script src="/admin/js/custom.js"></script>
-	<script type="text/javascript">
+    <script src="/admin/parts/export/modal.js"></script>
+
+    <script type="text/javascript">
 		function download(filename, text) {
 			var element = document.createElement('a');
 			element.setAttribute('href', 'data:text/csv;charset=utf-8,' + encodeURIComponent(text));
@@ -265,10 +270,17 @@
                         });
 					}
 				});
-				ko.applyBindings({
+
+                const Model = {
                     ACL: Auth.ACL(),
-					properties: data
-				});
+                    properties: data
+                };
+
+                setupExportModal(Model, {
+                    title: 'Server',
+                });
+
+                ko.applyBindings(Model);
 			});
 		});
 	</script>

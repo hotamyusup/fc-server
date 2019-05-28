@@ -1,7 +1,6 @@
 'use strict';
 
 const Promise = require('bluebird');
-const path = require('path');
 const _ = require('lodash');
 const Boom = require('boom');
 const FileReader = require('filereader');
@@ -9,14 +8,14 @@ const FileReader = require('filereader');
 const logger = require('../../../../core/logger');
 const MailService = require('../../../../core/mail.service');
 
-const PDFMakeService = require('../service/pdfmake.service');
-
-
-const PropertyDAO = require("../../../property/property/dao/property.dao");
 const BaseController = require("../../../../../app/core/base.controller");
-const DocumentDAO = require("../dao/document.dao.instance");
+const PropertyDAO = require("../../../property/property/dao/property.dao");
 
+const UploadDocumentDAO = require('../../upload/dao/upload.document.dao');
 const documentToMailMessage = require('../../fire-safety/mail/documentToMailMessage');
+
+const PDFMakeService = require('../service/pdfmake.service');
+const DocumentDAO = require("../dao/document.dao.instance");
 
 class DocumentController extends BaseController {
     constructor() {
@@ -25,6 +24,7 @@ class DocumentController extends BaseController {
         this.redirectUrl = '/documents/';
         this.requestIDKey = 'DocumentID';
     }
+
 
     get getForProperty() {
         return {
@@ -38,13 +38,24 @@ class DocumentController extends BaseController {
                     action,
                     request,
                     reply,
-                    this.DAO.all({PropertyID})
-                        .then(docs => _.map(docs, doc => {
-                                doc = doc.toJSON();
-                                delete doc['definition'];
-                                return doc;
-                            })
-                        ));
+                    (async () => {
+
+                        const docModels = await this.DAO.forProperty(PropertyID);
+                        const docs = _.map(docModels, doc => {
+                            doc = doc.toJSON();
+                            delete doc['definition'];
+                            return doc;
+                        });
+
+                        const uploadDocs = await UploadDocumentDAO.getFileListForProperty(PropertyID);
+
+                        const allDocs = [
+                            ...docs,
+                            ...uploadDocs
+                        ];
+
+                        return allDocs
+                    })());
             }
         }
     }
@@ -75,21 +86,22 @@ class DocumentController extends BaseController {
             handler: (request, reply) => {
                 const action = 'activate';
                 return this.handle(action, request, reply, this.DAO.get(request.params[this.requestIDKey]).then(document => {
-                	document.Status = 1;
-                	return document.save();
-				}));
+                    document.Status = 1;
+                    return document.save();
+                }));
             }
         }
     }
+
     get deactivate() {
         return {
             handler: (request, reply) => {
                 const action = 'deactivate';
-				return this.handle(action, request, reply, this.DAO.get(request.params[this.requestIDKey]).then(document => {
-					document.Status = 0;
-					return document.save();
-				}));
-			}
+                return this.handle(action, request, reply, this.DAO.get(request.params[this.requestIDKey]).then(document => {
+                    document.Status = 0;
+                    return document.save();
+                }));
+            }
         }
     }
 
@@ -104,7 +116,7 @@ class DocumentController extends BaseController {
 
     get sign() {
         return {
-            handler: async(request, reply) => {
+            handler: async (request, reply) => {
                 const hash = request.query.hash || '';
                 const action = 'sign';
                 logger.info(`sessionId: ${hash} ${this.controllerName}.${action} start`);

@@ -14,8 +14,13 @@ class PropertyChildrenBaseDAO extends BaseDAO {
         return this.model.find(conditions);
     }
 
-    forProperty(PropertyID){
+    forProperty(PropertyID) {
         return this.model.find({PropertyID});
+    }
+
+    delete(id) {
+        console.log(`delete(${id})`);
+        return this.update({_id: id, Status: -1});
     }
 }
 

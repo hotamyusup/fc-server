@@ -1,5 +1,6 @@
 'use strict';
 
+const Boom = require("boom");
 const Promise = require("bluebird");
 const moment = require("moment");
 const _ = require("underscore");
@@ -7,13 +8,16 @@ const _ = require("underscore");
 const logger = require("../../../../core/logger");
 const RedirectOnCreateController = require("../../../../core/redirect-on-create.controller");
 
+const PropertyChildrenBaseController = require("../../common/property.children.base.controller");
+
+
 const PropertyDAO = require("../dao/property.dao");
 const BuildingDAO = require("../../building/dao/building.dao");
 const FloorDAO = require("../../floor/dao/floor.dao");
 const DeviceDAO = require("../../device/dao/device.dao");
 const InspectionDAO = require("../../inspection/dao/inspection.dao");
 
-class PropertyController extends RedirectOnCreateController {
+class PropertyController extends PropertyChildrenBaseController {
     constructor() {
         super(PropertyDAO);
         this.controllerName = 'PropertyController';
@@ -42,6 +46,7 @@ class PropertyController extends RedirectOnCreateController {
         return {
             handler: (request, reply) => {
                 const {from} = request.query;
+
                 const conditions = {};
                 console.log('from === ', from);
                 if (from) {
@@ -49,6 +54,12 @@ class PropertyController extends RedirectOnCreateController {
                         $gt: moment(from).toDate()
                     };
                 }
+
+                const user = request.auth && request.auth.credentials;
+                if (user.Type === 'Customer') {
+                    conditions.Organization = user.Organization;
+                }
+
                 this.handle('all', request, reply, getPropertiesWithChildrenBuildings(conditions));
             }
         }
@@ -56,11 +67,13 @@ class PropertyController extends RedirectOnCreateController {
 
 
     get get() {
-        const getPropertyWithTreeOfChildren = (PropertyID) => {
+        const getPropertyWithTreeOfChildren = async (Property) => {
+            const PropertyID = Property._id;
+
             const mapToJSON = res => res.map(o => o.toJSON());
             return Promise
                 .props({
-                    Property: PropertyDAO.get(PropertyID).then(o => o.toJSON()),
+                    Property,
                     Buildings: BuildingDAO.forProperty(PropertyID).then(mapToJSON),
                     Floors: FloorDAO.forProperty(PropertyID).then(mapToJSON),
                     Devices: DeviceDAO.forProperty(PropertyID).then(mapToJSON),
@@ -113,8 +126,18 @@ class PropertyController extends RedirectOnCreateController {
         };
 
         return {
-            handler: (request, reply) => {
-                this.handle('get', request, reply, getPropertyWithTreeOfChildren(request.params[this.requestIDKey]));
+            handler: async (request, reply) => {
+                const PropertyID = request.params[this.requestIDKey];
+                const user = request.auth && request.auth.credentials;
+
+                const Property = await PropertyDAO.get(PropertyID).then(o => o.toJSON());
+                if (user.Type === 'Customer') {
+                    if (`${Property.Organization}` !== `${user.Organization}`) {
+                        return reply(Boom.forbidden(`User ${user && user.Title} dont have access to property ${PropertyID}`));
+                    }
+                }
+
+                this.handle('get', request, reply, getPropertyWithTreeOfChildren(Property));
             }
         }
     }
@@ -153,11 +176,6 @@ class PropertyController extends RedirectOnCreateController {
 }
 
 module.exports = new PropertyController();
-
-
-
-
-
 
 
 const calculateRepairAndInspectState = (Properties, Buildings, Floors, Devices, Records) => {
