@@ -1,6 +1,6 @@
 'use strict';
 
-const Boom = require("Boom");
+const Boom = require("boom");
 const Promise = require("bluebird");
 const moment = require("moment");
 const _ = require("underscore");

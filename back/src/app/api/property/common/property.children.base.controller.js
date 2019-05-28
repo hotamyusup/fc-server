@@ -4,7 +4,7 @@ const _ = require('underscore');
 const moment = require('moment');
 const mongoose = require('mongoose');
 const Promise = require('bluebird');
-const Boom = require('Boom');
+const Boom = require('boom');
 const {parseAsync} = require('json2csv');
 
 const BaseController = require('../../../core/base.controller');
