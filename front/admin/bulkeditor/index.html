@@ -213,8 +213,8 @@
                                         {{changedDevices.count}}</a>
                                     <a v-if="changedDevices.count > 0" class="btn btn-secondary btn-sm" href="#"
                                        @click="resetChangedDevices()">Clear {{changedDevices.count}}</a>
-                                    <a v-if="selectedDevicesCount() > 0" class="btn btn-danger-outline btn-sm" href="#"
-                                       @click="deleteSelectedDevices()">Delete Selected {{selectedDevicesCount()}}</a>
+                                    <a v-if="selectedDevices.count > 0" class="btn btn-danger-outline btn-sm" href="#"
+                                       @click="deleteSelectedDevices()">Delete Selected {{selectedDevices.count}}</a>
                                 </div>
                             </div>
                             <div style="overflow-x: scroll; font-size: 0.8em; padding: 10px;">
@@ -311,9 +311,11 @@
                                         :class="{changed: changedDevices[device._id], selected: selectedDevices[device._id]}"
                                         v-for="(device, index) in devices">
                                         <td class="index-device-field">
-                                            <input :id="`checkbox_${device._id}`" type="checkbox"
+                                            <input :id="`checkbox_${device._id}`"
+                                                   type="checkbox"
+                                                   @change="changeSelected(device.id)"
                                                    v-model="selectedDevices[device._id]">
-                                            <label :for="`checkbox_${device._id}`">#{{index}}</label>
+                                            <label :for="`checkbox_${device._id}`">#{{index + 1}}</label>
                                         </td>
                                         <td v-for="field in DEVICE_FIELDS">
                                             <span v-if="field === '_id'">
@@ -585,6 +587,7 @@
                         id2deviceFloor: {},
                         fetchDevices: _.debounce(function () {
                             if (this.changedDevices.count > 0) {
+                                console.log('this.changedDevices === ', this.changedDevices);
                                 alert(`You have unsaved ${this.changedDevices.count} devices. Save or Clear.`);
                                 return;
                                 //&& confirm(`Do you want to save ${this.changedDevices.count} devices before next search or changes will be lost?`)) {
@@ -616,7 +619,7 @@
                             this.fetchDevices();
                         },
                         changedDevices: {count: 0},
-                        deviceChanged: async function (device, field, value, skipSelect) {
+                        deviceChanged(device, field, value, skipSelect) {
                             // console.log(`deviceChanged({${device._id}}, ${field}, ${value});`);
                             device[field] = value;
                             this.$set(this.changedDevices, device._id, device);
@@ -632,9 +635,9 @@
                                         });
                             }
                         },
-                        selectedDevices: {},
-                        selectedDevicesCount() {
-                            return _.keys(this.selectedDevices).length
+                        selectedDevices: {count: 0},
+                        changeSelected() {
+                            this.$set(this.selectedDevices, 'count', _.keys(this.selectedDevices).filter(id => id !== 'count' && !!this.selectedDevices[id]).length)
                         },
                         isSelectAll: false,
                         selectAll(isSelectAll) {
@@ -647,6 +650,8 @@
                                     this.$set(this.selectedDevices, deviceId, false);
                                 });
                             }
+
+                            this.changeSelected();
                         },
                         async saveChangedDevices() {
                             let devices;
@@ -655,10 +660,10 @@
                                 devices = _.values(this.changedDevices).filter(device => device && device._id);
                                 const result = await postEntities('devices/batch', {devices});
                                 this.changedDevices = {};
+                                this.fetchDevices();
                             } catch (e) {
                                 alert(`Can't save devices:${devices.length} error: ${e}`);
                             }
-                            this.fetchDevices();
                         },
                         async resetFieldFilters() {
                             this.fieldFilters = {
@@ -685,13 +690,11 @@
                                         })
                                         .filter(device => !!device);
                                 const result = await postEntities('devices/batch', {devices});
-                                this.selectedDevices = {};
+                                this.selectedDevices = {count: 0};
+                                this.fetchDevices();
                             } catch (e) {
                                 alert(`Can't delete devices:${devices.length} error: ${e}`);
                             }
-
-                            this.selectedDevices = {};
-                            this.fetchDevices();
                         }
                     }
                 });
@@ -733,10 +736,10 @@
                     app.id2deviceBuilding = id2deviceBuilding;
                     app.id2deviceFloor = id2deviceFloor;
                     app.changedDevices = {count: 0};
-                    app.selectedDevices = {};
+                    app.selectedDevices = {count: 0};
                 }
 
-                fetchDevices();
+                fetchDevicesDebounced();
 
             })();
         }

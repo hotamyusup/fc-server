@@ -71,6 +71,11 @@
                                         <i class="fa fa-home"></i> Occupancy Types
                                     </a>
                                 </li>
+                                <li data-bind="visible: ACL.isAdminOrEmployee" style="display: none;">
+                                    <a href="/admin/bulkeditor">
+                                        <i class="fa fa-table"></i> Bulk Editor
+                                    </a>
+                                </li>
                                 <li>
                                     <a href="/admin/logout.html">
                                         <i class="fa fa-lock"></i> Log out
