@@ -10,9 +10,13 @@ class BaseDAO {
         this.model = model;
     }
 
-    all(conditions) {
+    fieldDefinition(field) {
+        return this.model.schema.path(field)
+    }
+
+    all(conditions, options) {
         conditions = conditions || {};
-        return this.model.find(conditions);
+        return this.model.find(conditions, null, options);
     }
 
     get(id) {

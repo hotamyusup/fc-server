@@ -1,0 +1,747 @@
+<!doctype html>
+<html class="no-js" lang="en" xmlns:v-bind="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="x-ua-compatible" content="ie=edge">
+    <title>Fire Cloud Admin</title>
+    <meta name="description" content="">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="apple-touch-icon" href="apple-touch-icon.png">
+    <link rel="stylesheet" href="/admin/css/vendor.css">
+    <link rel="stylesheet" href="/admin/css/app.css">
+    <script>
+        var themeSettings = (localStorage.getItem('themeSettings')) ? JSON.parse(localStorage.getItem('themeSettings')) :
+                {};
+        var themeName = themeSettings.themeName || 'red';
+        if (themeName) {
+            document.write('<link rel="stylesheet" id="theme-style" href="/admin/css/app-' + themeName + '.css">');
+        } else {
+            document.write('<link rel="stylesheet" id="theme-style" href="/admin/css/app.css">');
+        }
+    </script>
+
+    <!--PRODUCTION VUE-->
+    <script src="https://cdn.jsdelivr.net/npm/vue"></script>
+
+    <!--DEVELOPMENT VUE-->
+    <!--<script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>-->
+    <style>
+        .sidebar {
+            position: fixed;
+            left: -230px;
+        }
+
+        .app {
+            padding-left: 0;
+        }
+
+        .app.sidebar-open {
+            left: 0;
+        }
+
+        .sidebar-overlay {
+            display: block;
+        }
+
+        .sidebar-overlay {
+            background-color: rgba(0, 0, 0, 0.7);
+        }
+
+        .sidebar-open .sidebar-overlay {
+            left: 0;
+            opacity: 1;
+        }
+
+        .sidebar-mobile-menu-handle {
+            display: block;
+        }
+
+        .sidebar-open #customize-menu {
+            left: 0;
+        }
+
+        #customize-menu {
+            -webkit-transition: left 0.3s ease;
+            transition: left 0.3s ease;
+            left: -230px;
+        }
+
+        .app .content {
+            padding: 70px 20px 70px 20px;
+        }
+
+        .header {
+            left: 0;
+            height: 50px;
+        }
+
+        .device-tr input, .device-tr select {
+            border: 0
+        }
+
+        tr.device-tr.selected .index-device-field {
+            background-color: #ff6160;
+            color: white;
+        }
+
+        tr.device-tr.selected {
+            border: 2px #ff6160 dashed;
+        }
+
+        .device-tr.changed, .device-tr.changed input, .device-tr.changed select {
+            background-color: #c4ffc0;
+        }
+
+    </style>
+</head>
+<body>
+<div class="main-wrapper">
+    <div class="app" id="app">
+        <header class="header">
+            <div class="header-block header-block-collapse">
+                <button class="collapse-btn" id="sidebar-collapse-btn">
+                    <i class="fa fa-bars"></i>
+                </button>
+            </div>
+            <div class="header-block header-block-search"></div>
+            <div class="header-block header-block-buttons"></div>
+            <div class="header-block header-block-nav"></div>
+        </header>
+        <aside class="sidebar">
+            <div class="sidebar-container">
+                <div class="sidebar-header">
+                    <div class="brand">Fire Cloud Admin</div>
+                </div>
+                <nav class="menu">
+                    <ul class="sidebar-menu metismenu" id="sidebar-menu">
+                        <li>
+                            <a href="/admin/properties">
+                                <i class="fa fa-th-large"></i> Properties
+                            </a>
+                        </li>
+                        <li>
+                            <a href="/admin/users">
+                                <i class="fa fa-users"></i> Users
+                            </a>
+                        </li>
+                        <li>
+                            <a href="/admin/organizations">
+                                <i class="fa fa-dot-circle-o"></i> Organizations
+                            </a>
+                        </li>
+                        <li>
+                            <a href="/admin/equipments">
+                                <i class="fa fa-lightbulb-o"></i> Equipments
+                            </a>
+                        </li>
+                        <li>
+                            <a href="/admin/constructiontypes">
+                                <i class="fa fa-building-o"></i> Construction Types
+                            </a>
+                        </li>
+                        <li>
+                            <a href="/admin/occupancytypes">
+                                <i class="fa fa-home"></i> Occupancy Types
+                            </a>
+                        </li>
+                        <li class="active">
+                            <a href="/admin/bulkeditor">
+                                <i class="fa fa-table"></i> Bulk Editor
+                            </a>
+                        </li>
+                        <li>
+                            <a href="/admin/logout.html">
+                                <i class="fa fa-lock"></i> Log out
+                            </a>
+                        </li>
+                    </ul>
+                </nav>
+            </div>
+        </aside>
+        <div class="sidebar-overlay" id="sidebar-overlay"></div>
+        <div class="sidebar-mobile-menu-handle" id="sidebar-mobile-menu-handle"></div>
+        <div class="mobile-menu-handle"></div>
+        <article class="content dashboard-page">
+            <section class="section" id="bulkeditor-section" style="display: none;" :style="{display: true}">
+                <!--<div id="save-devices-pane">-->
+                <!--<a class="btn btn-success btn-sm" href="create.html">Save {{changedDevices.count}}</a>-->
+                <!--</div>-->
+                <div class="row">
+                    <div class="col-xl-12">
+                        <div class="card items" data-exclude="xs,sm,lg">
+                            <div class="card-header bordered">
+                                <div class="header-block">
+                                    <h3 class="title" style="display: flex; align-items: center;">
+                                        <span>{{message}}</span>
+                                        <span> limit: </span>
+                                        <input style="display: inline; max-width: 60px"
+                                               v-model="fetchLimit"
+                                               type="number"
+                                               @input="fetchDevices()"
+                                               placeholder="filter">
+                                        <span> and skip: </span>
+                                        <input style="display: inline; max-width: 60px"
+                                               v-model="fetchSkip"
+                                               type="number"
+                                               @input="fetchDevices()"
+                                               placeholder="filter">
+                                        <span> sort by field:</span>
+                                        <select v-model="fetchSortField"
+                                                style="display: inline; max-width: 160px;"
+                                                @change="fetchDevices()">
+                                            <option v-for="field in DEVICE_FIELDS" :value="field">
+                                                {{field}}
+                                            </option>
+                                        </select>
+                                        <select v-model="fetchSortOrder"
+                                                style="display: inline; max-width: 160px;"
+                                                @change="fetchDevices()">
+                                            <option value="1">ASC</option>
+                                            <option value="-1">DESC</option>
+                                        </select>
+
+                                    </h3>
+                                </div>
+                                <div class="header-block pull-right">
+                                    <a class="btn btn-secondary btn-sm" href="#"
+                                       @click="resetFieldFilters()">Reset filters</a>
+                                </div>
+                                <div class="header-block pull-right">
+
+                                    <a v-if="changedDevices.count > 0" class="btn btn-success btn-sm" href="#"
+                                       @click="saveChangedDevices()">Save
+                                        {{changedDevices.count}}</a>
+                                    <a v-if="changedDevices.count > 0" class="btn btn-secondary btn-sm" href="#"
+                                       @click="resetChangedDevices()">Clear {{changedDevices.count}}</a>
+                                    <a v-if="selectedDevicesCount() > 0" class="btn btn-danger-outline btn-sm" href="#"
+                                       @click="deleteSelectedDevices()">Delete Selected {{selectedDevicesCount()}}</a>
+                                </div>
+                            </div>
+                            <div style="overflow-x: scroll; font-size: 0.8em; padding: 10px;">
+                                <table border="1">
+                                    <tr>
+                                        <th></th>
+                                        <th v-for="field in DEVICE_FIELDS"
+                                            :style="{backgroundColor: field === fetchSortField ? 'black' : undefined, color: field === fetchSortField ? 'white' : undefined}">
+                                            {{field}}
+                                        </th>
+                                    </tr>
+                                    <tr>
+                                        <th>
+                                            <input id="checkbox_all" type="checkbox" v-model="isSelectAll"
+                                                   @change="selectAll(isSelectAll)">
+                                            <label for="checkbox_all">#All</label>
+                                        </th>
+                                        <th v-for="field in DEVICE_FIELDS">
+
+                                            <span v-if="field === '_id'">
+                                            </span>
+                                            <span v-else-if="field === 'EquipmentType'">
+                                                <select v-model="fieldFilters[field]"
+                                                        style="display: inline; width: 100%;"
+                                                        @change="fieldChanged(field, $event.target.value)">
+                                                    <option value=""></option>
+                                                    <option v-for="equipment in equipments"
+                                                            :value="equipment._id">{{equipment.Title}}
+                                                   </option>
+                                                </select>
+                                            </span>
+                                            <span v-else-if="field === 'DeviceType'">
+                                                <select v-model="fieldFilters[field]"
+                                                        style="display: inline; width: 100%;"
+                                                        @change="fieldChanged(field, $event.target.value)">
+                                                    <option value=""></option>
+                                                    <option v-for="deviceType in equipmentDevices"
+                                                            v-if="!fieldFilters['EquipmentType'] || deviceType.EquipmentTypeID == fieldFilters['EquipmentType']"
+                                                            :value="deviceType._id">{{deviceType.Title}}
+                                                   </option>
+                                                </select>
+                                            </span>
+                                            <span v-else-if="field === 'PropertyID'">
+                                                <select v-model="fieldFilters[field]"
+                                                        style="display: inline; width: 100%;"
+                                                        @change="fieldChanged(field, $event.target.value)">
+                                                    <option value=""></option>
+                                                    <option v-for="property in properties"
+                                                            :value="property._id">{{property.Title}}
+                                                   </option>
+                                                </select>
+                                            </span>
+                                            <span v-else-if="field === 'BuildingID'">
+                                                <select v-model="fieldFilters[field]"
+                                                        style="display: inline; width: 100%;"
+                                                        @change="fieldChanged(field, $event.target.value)">
+                                                    <option value=""></option>
+                                                    <option v-for="building in buildings"
+                                                            v-if="!fieldFilters['PropertyID'] || building.PropertyID == fieldFilters['PropertyID']"
+                                                            :value="building._id">{{building.Title}}
+                                                   </option>
+                                                </select>
+                                            </span>
+                                            <span v-else-if="field === 'FloorID'">
+                                                <select v-if="fieldFilters['PropertyID']"
+                                                        v-model="fieldFilters[field]"
+                                                        style="display: inline; width: 100%;"
+                                                        @change="fieldChanged(field, $event.target.value)">
+                                                    <option value=""></option>
+                                                    <option v-for="floor in propertyId2floors['PropertyID']"
+                                                            v-if="!fieldFilters['BuildingID'] || floor.BuildingID == fieldFilters['BuildingID']"
+                                                            :value="floor._id">{{floor.Title}}
+                                                   </option>
+                                                </select>
+                                            </span>
+                                            <span v-else-if="field === 'InUnit'">
+                                                <select v-model="fieldFilters[field]"
+                                                        @change="fieldChanged(field, $event.target.value)">
+                                                    <option value=""></option>
+                                                    <option value="true">Yes</option>
+                                                    <option value="false">No</option>
+                                                </select>
+                                            </span>
+                                            <span v-else-if="field === 'Picture'"></span>
+                                            <span v-else>
+                                                <input style="display: inline; width: 100%;"
+                                                       v-model="fieldFilters[field]"
+                                                       @input="fieldChanged(field, $event.target.value)"
+                                                       placeholder="filter">
+                                            </span>
+                                        </th>
+                                    </tr>
+                                    <tr class="device-tr"
+                                        :class="{changed: changedDevices[device._id], selected: selectedDevices[device._id]}"
+                                        v-for="(device, index) in devices">
+                                        <td class="index-device-field">
+                                            <input :id="`checkbox_${device._id}`" type="checkbox"
+                                                   v-model="selectedDevices[device._id]">
+                                            <label :for="`checkbox_${device._id}`">#{{index}}</label>
+                                        </td>
+                                        <td v-for="field in DEVICE_FIELDS">
+                                            <span v-if="field === '_id'">
+                                                     <a target="_blank"
+                                                        :href="`/admin/properties/device.html?i=${device._id}&p=${device.PropertyID}&b=${device.BuildingID}&f=${device.FloorID}`">
+                                                         {{device[field]}}
+                                                     </a>
+                                            </span>
+                                            <span v-else-if="field === 'EquipmentType'">
+                                                 <select v-model="device[field]"
+                                                         @change="deviceChanged(device, field, device[field])"
+                                                         :title="equipment2id[device[field]] && equipment2id[device[field]].Title"
+                                                         style="display: inline; width: 100%;">
+                                                     <option v-for="equipment in equipments"
+                                                             :value="equipment._id">{{equipment.Title}}
+                                                   </option>
+                                                </select>
+
+                                            </span>
+                                            <span v-else-if="field === 'DeviceType'">
+                                                 <select v-model="device[field]"
+                                                         @change="deviceChanged(device, field, device[field])"
+                                                         style="display: inline; width: 100%;"
+                                                         :title="deviceType2id[device[field]] && deviceType2id[device[field]].Title">
+                                                    <option v-for="deviceType in equipmentDevices"
+                                                            v-if="deviceType.EquipmentTypeID == device.EquipmentType"
+                                                            :value="deviceType._id">{{deviceType.Title}}
+                                                   </option>
+                                                </select>
+                                            </span>
+                                            <span v-else-if="field === 'PropertyID'">
+                                                 <a v-if="id2property[device[field]]"
+                                                    target="_blank"
+                                                    :href="`/admin/properties/property.html?i=${device.PropertyID}`">
+                                                     {{id2property[device[field]].Title}}
+                                                 </a>
+                                            </span>
+                                            <span v-else-if="field === 'BuildingID'">
+                                                <a v-if="id2deviceBuilding[device[field]]"
+                                                   target="_blank"
+                                                   :href="`/admin/properties/buildings.html?i=${device.PropertyID}`">
+                                                     {{id2deviceBuilding[device[field]].Title}}
+                                                 </a>
+                                            </span>
+                                            <span v-else-if="field === 'FloorID'">
+                                                <a v-if="id2deviceFloor[device[field]]"
+                                                   target="_blank"
+                                                   :href="`/admin/properties/devices.html?i=${device.FloorID}&p=${device.PropertyID}&b=${device.BuildingID}`">
+                                                     {{id2deviceFloor[device[field]].Title}}
+                                                 </a>
+                                            </span>
+                                            <a v-else-if="field === 'Picture'" target="_blank"
+                                               :href="(device[field]||'').indexOf('http') === 0 ? device[field] : 'http://fc2.fireprotected.com/assets/img/photo_not_found.jpg'">
+                                                <img :src="(device[field]||'').indexOf('http') === 0 ? device[field].replace('.jpg', '-t.jpg') : 'http://fc2.fireprotected.com/assets/img/photo_not_found.jpg'"
+                                                     height="40">
+                                            </a>
+                                            <span v-else>
+                                                <input v-model="device[field]"
+                                                       style="display: inline; width: 100%;"
+                                                       placeholder="null"
+                                                       :title="device[field]"
+                                                       @input="deviceChanged(device, field, device[field])"
+                                                />
+                                            </span>
+                                        </td>
+                                    </tr>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </article>
+        <footer class="footer"></footer>
+    </div>
+</div>
+<!-- Reference block for JS -->
+<div class="ref" id="ref">
+    <div class="color-primary"></div>
+    <div class="chart">
+        <div class="color-primary"></div>
+        <div class="color-secondary"></div>
+    </div>
+</div>
+<script src="/admin/js/vendor.js"></script>
+<script src="/admin/js/app.js"></script>
+<script src="/admin/js/custom.js"></script>
+<script type="text/javascript">
+    $(function () {
+        if (Site.init(['Admin'])) {
+            async function postEntities(apiUrl, body) {
+                const query = {hash: User._id};
+                const queryString = Object.keys(query).map(key => `${key}=${query[key]}`).join('&')
+                const url = `${Config.APIURL}/${apiUrl}?${queryString}`;
+                console.log('url === ', url);
+                return new Promise((resolve, reject) => {
+                    $.ajax({
+                        url,
+                        type: "POST",
+                        data: JSON.stringify(body),
+                        dataType: "json",
+                        mimeType: "application/json",
+                        contentType: "application/json",
+                        success: resolve
+                    });
+                });
+            }
+
+            async function getEntities(apiUrl, query = {}) {
+                query.hash = User._id;
+                const queryString = Object.keys(query)
+                        .map(key => `${key}=${typeof query[key] === 'object'
+                                ? encodeURIComponent(JSON.stringify(query[key]))
+                                : query[key]}`)
+                        .join('&');
+
+                const url = `${Config.APIURL}/${apiUrl}?${queryString}`;
+                console.log('url === ', url);
+                return new Promise((resolve, reject) => {
+
+                    $.get(url, function (data) {
+                        console.log(`getEntities(${apiUrl}) url = ${url}\ndata === `, data);
+                        resolve(data);
+                    });
+                });
+            }
+
+            const DEVICE_FIELDS = [
+                '_id',
+                'PropertyID',
+                'BuildingID',
+                'FloorID',
+                'Picture',
+                'EquipmentType',
+                'DeviceType',
+                'ModelNumber',
+                'SerialNumber',
+                'InstallationDate',
+                'updated_at',
+                'DeviceLocation',
+                'InUnit',
+                'ExpirationType',
+                'Notes',
+                'QRCode',
+                'XPos',
+                'YPos',
+                'Status',
+                'created_at'
+            ];
+
+            (async function run() {
+                const properties = await getEntities('properties');
+                const buildings = [];
+                id2property = {};
+                id2building = {};
+                _.forEach(properties, property => {
+                    id2property[property._id] = property;
+                    _.forEach(property.Buildings, building => {
+                        id2building[building._id] = building;
+                        buildings.push(building);
+                    });
+                });
+
+                const equipments = await getEntities('equipments');
+                const equipment2id = {};
+                const deviceType2id = {};
+                const equipmentDevices = [];
+                _.forEach(equipments, equipment => {
+                    equipment2id[equipment._id] = equipment;
+                    _.forEach(equipment.Devices, deviceType => {
+                        deviceType.EquipmentTypeID = equipment._id;
+                        deviceType2id[deviceType._id] = deviceType;
+                        equipmentDevices.push(deviceType);
+                    })
+                });
+
+                const getMomentFormat = rawMomentValue => {
+                    if (rawMomentValue.length === 4) {
+                        return 'YYYY';
+                    } else if (rawMomentValue[10] === 'T') {
+                        return 'YYYY-MM-DDTHH:mm';
+                    } else {
+                        return 'YYYY-MM-DD HH:mm';
+                    }
+                };
+
+                let fetchDevicesDebounced = _.debounce(function () {
+                    const filter = {};
+                    for (const field in app.fieldFilters) {
+                        const value = app.fieldFilters[field];
+
+                        if (value == null || value == '') {
+                            delete filter[field];
+                        } else if ((field === 'InstallationDate') || (field === 'created_at') || (field === 'updated_at')) {
+                            // let rawDateValue = (value || '').trim();
+                            const [rawMomentFromValue, rawMomentToValue] = (value || '').split('<').map(timeString => (timeString || '').trim());
+                            const momentFrom = moment(rawMomentFromValue, getMomentFormat(rawMomentFromValue));
+                            console.log(`${rawMomentFromValue} --> ${momentFrom.format()} [${getMomentFormat(rawMomentFromValue)}]`);
+                            let momentTo;
+                            if (rawMomentToValue) {
+                                console.log('rawMomentToValue === ', rawMomentToValue);
+                                momentTo = moment(rawMomentToValue, getMomentFormat(rawMomentToValue));
+                            } else
+                            // if (momentFrom.isValid()) {
+                            if (momentFrom.minute()) {
+                                momentTo = momentFrom.clone().endOf('minute');
+                            } else if (momentFrom.hour()) {
+                                momentTo = momentFrom.clone().endOf('hour');
+                            } else if (momentFrom.date() && rawMomentFromValue.length >= 'YYYY-MM-DD'.length) {
+                                momentTo = momentFrom.clone().endOf('date');
+                            } else if (momentFrom.month() && rawMomentFromValue.length >= 'YYYY-MM'.length) {
+                                momentTo = momentFrom.clone().endOf('month');
+                            } else if (momentFrom.year() && rawMomentFromValue.length >= 'YYYY'.length) {
+                                momentTo = momentFrom.clone().endOf('year');
+                            }
+
+                            filter[field] = {
+                                $gte: momentFrom.toISOString(),
+                                $lte: momentTo ? momentTo.toISOString() : undefined,
+                            };
+
+                            console.log(JSON.stringify(filter[field]));
+
+                        } else if ((field === 'InUnit') || (field === 'EquipmentType') || (field === 'DeviceType') || (field === 'PropertyID') || (field === 'BuildingID') || (field === 'FloorID')) {
+                            filter[field] = value;
+                        } else if ((field === 'XPos') || (field === 'YPos') || (field === 'Status')) {
+                            filter[field] = value;
+                        } else {
+                            const firstSymbol = value[0];
+                            const lastSymbol = value[value.length - 1];
+                            if ((firstSymbol === "'" && lastSymbol === "'") || (firstSymbol === '"' && lastSymbol === '"')) {
+                                filter[field] = value.slice(1, -1);
+                            } else {
+                                filter[field] = {$regex: value};
+                            }
+                        }
+                    }
+
+                    fetchDevices(filter);
+
+                }, 800);
+
+                const app = new Vue({
+                    el: '#bulkeditor-section',
+                    data: {
+                        message: `Loading`,
+                        moment,
+                        fetchLimit: 100,
+                        fetchSkip: 0,
+                        fetchSortField: 'updated_at',
+                        fetchSortOrder: -1,
+                        DEVICE_FIELDS,
+                        equipments,
+                        equipmentDevices,
+                        equipment2id,
+                        deviceType2id,
+                        properties,
+                        id2property,
+                        buildings,
+                        id2building,
+                        floors: [],
+                        propertyId2floors: {},
+                        devices: [],
+                        id2device: {},
+                        fieldFilters: {
+                            Status: 1
+                        },
+                        id2deviceBuilding: {},
+                        id2deviceFloor: {},
+                        fetchDevices: _.debounce(function () {
+                            if (this.changedDevices.count > 0) {
+                                alert(`You have unsaved ${this.changedDevices.count} devices. Save or Clear.`);
+                                return;
+                                //&& confirm(`Do you want to save ${this.changedDevices.count} devices before next search or changes will be lost?`)) {
+                                // await this.saveChangedDevices();
+                            }
+                            fetchDevicesDebounced();
+                        }, 100),
+                        fieldChanged: async function (field, value) {
+                            if (field === 'PropertyID') {
+                                const PropertyID = value;
+                                if (PropertyID) {
+                                    if (!this.propertyId2floors[PropertyID]) {
+                                        const floorsForProperty = await getEntities('floors', {
+                                            filter: {PropertyID},
+                                            sort: {Title: 1}
+                                        });
+
+                                        this.$set(this.propertyId2floors, 'PropertyID', floorsForProperty)
+                                    }
+                                }
+                                this.$set(this.fieldFilters, 'FloorID', null)
+                                this.$set(this.fieldFilters, 'BuildingID', null)
+                            } else if (field === 'BuildingID') {
+                                this.$set(this.fieldFilters, 'FloorID', null)
+                            } else if (field === 'EquipmentType') {
+                                this.$set(this.fieldFilters, 'DeviceType', null)
+                            }
+
+                            this.fetchDevices();
+                        },
+                        changedDevices: {count: 0},
+                        deviceChanged: async function (device, field, value, skipSelect) {
+                            // console.log(`deviceChanged({${device._id}}, ${field}, ${value});`);
+                            device[field] = value;
+                            this.$set(this.changedDevices, device._id, device);
+                            const changedDevicesCount = _.keys(this.changedDevices).length - 1; // -1 because of this.changedDevices.count field is not device to store
+                            this.$set(this.changedDevices, 'count', changedDevicesCount);
+                            if (!skipSelect && this.selectedDevices[device._id]) {
+                                _
+                                        .pairs(this.selectedDevices)
+                                        .filter(([deviceId, checked]) => checked)
+                                        .forEach(([deviceId, checked]) => {
+                                            const device = this.id2device[deviceId];
+                                            this.deviceChanged(device, field, value, true)
+                                        });
+                            }
+                        },
+                        selectedDevices: {},
+                        selectedDevicesCount() {
+                            return _.keys(this.selectedDevices).length
+                        },
+                        isSelectAll: false,
+                        selectAll(isSelectAll) {
+                            if (isSelectAll) {
+                                _.forEach(this.devices, device => {
+                                    this.$set(this.selectedDevices, device._id, true);
+                                });
+                            } else {
+                                _.keys(this.selectedDevices).forEach(deviceId => {
+                                    this.$set(this.selectedDevices, deviceId, false);
+                                });
+                            }
+                        },
+                        async saveChangedDevices() {
+                            let devices;
+                            try {
+                                console.log('saveDevicesBatch() this.changedDevices === ', this.changedDevices);
+                                devices = _.values(this.changedDevices).filter(device => device && device._id);
+                                const result = await postEntities('devices/batch', {devices});
+                                this.changedDevices = {};
+                            } catch (e) {
+                                alert(`Can't save devices:${devices.length} error: ${e}`);
+                            }
+                            this.fetchDevices();
+                        },
+                        async resetFieldFilters() {
+                            this.fieldFilters = {
+                                Status: 1
+                            };
+                            this.fetchDevices();
+                        },
+                        async resetChangedDevices() {
+                            this.changedDevices = {count: 0};
+                            this.fetchDevices();
+                        },
+                        async deleteSelectedDevices() {
+                            let devices;
+                            try {
+                                console.log('saveDevicesBatch() this.selectedDevices === ', this.selectedDevices);
+                                devices = _
+                                        .keys(this.selectedDevices)
+                                        .map(deviceId => {
+                                            const device = this.id2device[deviceId];
+                                            if (device) {
+                                                device.Status = -1;
+                                            }
+                                            return device;
+                                        })
+                                        .filter(device => !!device);
+                                const result = await postEntities('devices/batch', {devices});
+                                this.selectedDevices = {};
+                            } catch (e) {
+                                alert(`Can't delete devices:${devices.length} error: ${e}`);
+                            }
+
+                            this.selectedDevices = {};
+                            this.fetchDevices();
+                        }
+                    }
+                });
+
+
+                async function fetchDevices(filter = {}) {
+                    // console.log('fetchDevices() filter === ', filter);
+                    const limit = app.fetchLimit;
+                    const skip = app.fetchSkip;
+                    const devices = await getEntities('devices', {
+                        filter,
+                        limit,
+                        skip,
+                        sort: {[app.fetchSortField]: app.fetchSortOrder}
+                    });
+                    const id2device = {};
+                    const idsToFetch = {PropertyIDs: {}, BuildingIDs: {}, FloorIDs: {}};
+
+                    (devices || []).forEach(device => {
+                        id2device[device._id] = device;
+                        idsToFetch.PropertyIDs[device.PropertyID] = device.PropertyID;
+                        idsToFetch.BuildingIDs[device.BuildingID] = device.BuildingID;
+                        idsToFetch.FloorIDs[device.FloorID] = device.FloorID;
+                    });
+
+                    const [deviceBuildings = [], deviceFloors = []] = await Promise.all([
+                        postEntities('buildings/getBatch', Object.keys(idsToFetch.BuildingIDs)),
+                        postEntities('floors/getBatch', Object.keys(idsToFetch.FloorIDs))
+                    ]);
+
+                    const id2deviceBuilding = {};
+                    deviceBuildings.forEach(building => id2deviceBuilding[building._id] = building);
+                    const id2deviceFloor = {};
+                    deviceFloors.forEach(floor => id2deviceFloor[floor._id] = floor);
+
+                    app.message = `Loaded ${devices.length} devices.`;
+                    app.devices = devices;
+                    app.id2device = id2device;
+                    app.id2deviceBuilding = id2deviceBuilding;
+                    app.id2deviceFloor = id2deviceFloor;
+                    app.changedDevices = {count: 0};
+                    app.selectedDevices = {};
+                }
+
+                fetchDevices();
+
+            })();
+        }
+    });
+
+</script>
+</body>
+</html>

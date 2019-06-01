@@ -28,11 +28,11 @@ class PropertyController extends PropertyChildrenBaseController {
     }
 
     get all() {
-        const getPropertiesWithChildrenBuildings = conditions => {
+        const getPropertiesWithChildrenBuildings = (conditions, options) => {
             const mapToJSON = res => res.map(o => o.toJSON());
             return Promise
                 .props({
-                    Properties: PropertyDAO.all(conditions).then(mapToJSON),
+                    Properties: PropertyDAO.all(conditions, options).then(mapToJSON),
                     Buildings: BuildingDAO.all().then(mapToJSON),
                 })
                 .then(({Properties, Buildings}) => {
@@ -45,10 +45,15 @@ class PropertyController extends PropertyChildrenBaseController {
 
         return {
             handler: (request, reply) => {
-                const {from} = request.query;
+                const {from, sort, limit, skip} = request.query;
+
+                const options = {
+                    sort: sort ? JSON.parse(decodeURIComponent(sort)) : undefined,
+                    limit: limit ? parseInt(limit) : undefined,
+                    skip: skip ? parseInt(skip) : undefined
+                };
 
                 const conditions = {};
-                console.log('from === ', from);
                 if (from) {
                     conditions.updated_at = {
                         $gt: moment(from).toDate()
@@ -60,7 +65,7 @@ class PropertyController extends PropertyChildrenBaseController {
                     conditions.Organization = user.Organization;
                 }
 
-                this.handle('all', request, reply, getPropertiesWithChildrenBuildings(conditions));
+                this.handle('all', request, reply, getPropertiesWithChildrenBuildings(conditions, options));
             }
         }
     }

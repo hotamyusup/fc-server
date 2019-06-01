@@ -60,7 +60,14 @@ class BaseController {
     get all() {
         return {
             handler: (request, reply) => {
-                const {from} = request.query;
+                const {from, sort, limit, skip} = request.query;
+
+                const options = {
+                    sort: sort ? JSON.parse(decodeURIComponent(sort)) : undefined,
+                    limit: limit ? parseInt(limit) : undefined,
+                    skip: skip ? parseInt(skip) : undefined
+                };
+
                 const conditions = {};
                 if (from) {
                     conditions.updated_at = {
@@ -68,7 +75,7 @@ class BaseController {
                     }
                 }
 
-                this.handle('all', request, reply, this.DAO.all(conditions));
+                this.handle('all', request, reply, this.DAO.all(conditions, options));
             }
         };
     }
@@ -99,6 +106,14 @@ class BaseController {
                     Promise.map(request.payload[this.batchEntitiesKey],
                         propertyJSON => this.DAO.upsert(propertyJSON))
                 );
+            }
+        }
+    }
+
+    get getBatch() {
+        return {
+            handler: (request, reply) => {
+                this.handle('getBatch', request, reply, this.DAO.all({_id: {$in: request.payload}}));
             }
         }
     }

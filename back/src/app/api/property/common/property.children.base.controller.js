@@ -23,12 +23,17 @@ class PropertyChildrenBaseController extends BaseController {
             handler: async (request, reply) => {
                 const entity = this.DAO.get(request.params[this.requestIDKey]);
                 const user = request.auth && request.auth.credentials;
-                const filtered = await this.filterUserEntities(user, entity);
-                if (filtered.length) {
-                    return this.handle('get', request, reply, entity)
-                } else {
-                    return reply(Boom.forbidden(`User ${user && user.Title} dont have access to entity`));
+
+                if (user.Type === 'Customer') {
+                    const usersPropertiesList = await PropertyDAO.getPropertiesForOrganization(user.Organization);
+                    const property = _.filter(usersPropertiesList, property => `${property.id}` === `${entity.PropertyID}`)[0];
+
+                    if (!property) {
+                        return reply(Boom.forbidden(`User ${user && user.Title} dont have access to entity`));
+                    }
                 }
+
+                return this.handle('get', request, reply, entity)
             }
         };
     }
@@ -36,13 +41,45 @@ class PropertyChildrenBaseController extends BaseController {
     get all() {
         return {
             handler: async (request, reply) => {
-                const {from, DeviceID, FloorID, BuildingID, PropertyID} = request.query;
-                const conditions = {};
+                const {from, sort, limit, skip, filter, DeviceID, FloorID, BuildingID, PropertyID} = request.query;
+
+                const options = {
+                    sort: sort ? JSON.parse(decodeURIComponent(sort)) : undefined,
+                    limit: limit ? parseInt(limit) : undefined,
+                    skip: skip ? parseInt(skip) : undefined
+                };
+
+                console.log('filter === ', filter);
+
+                const conditions = filter ? JSON.parse(decodeURIComponent(filter)) : {};
                 if (from) {
                     conditions.updated_at = {
                         $gt: moment(from).toDate()
                     }
                 }
+
+                _.pairs(conditions).forEach(([field, value]) => {
+                    if (value != null && value != '') {
+                        if (value.$regex) {
+                            const $regex = new RegExp(value.$regex, "i");
+                            value.$regex = $regex
+                        }
+
+                        if (this.DAO.fieldDefinition(field).instance === 'Date') {
+                            if (typeof value === 'object') {
+                                ['$gte', '$gt', '$lte', '$lt'].forEach(comparatorField => {
+                                    if (value[comparatorField]) {
+                                        value[comparatorField] = moment(value[comparatorField]).toDate();
+                                    }
+                                })
+                            } else {
+                                conditions[field] = moment(value).toDate();
+                            }
+                        }
+                    } else {
+                        delete conditions[field];
+                    }
+                });
 
                 ['DeviceID', 'FloorID', 'BuildingID', 'PropertyID'].forEach(key => {
                     if (request.query[key]) {
@@ -50,41 +87,24 @@ class PropertyChildrenBaseController extends BaseController {
                     }
                 });
 
-                const entities = await this.DAO.all(conditions);
-                const user = request.auth && request.auth.credentials;
-                const filteredEntities = await this.filterUserEntities(user, ...entities);
-                if (entities && entities.length && filteredEntities && filteredEntities.length === 0) {
-                    return reply(Boom.forbidden(`User ${user && user.Title} dont have access to entities`));
-                } else {
-                    return this.handle('all', request, reply, filteredEntities);
-                }
 
+                console.log(`conditions === `, conditions);
+
+                const user = request.auth && request.auth.credentials;
+                await this.addConditionFilterUserOwnEntities(conditions, user);
+                const entities = await this.DAO.all(conditions, options);
+                return this.handle('all', request, reply, entities);
             }
         };
     }
 
-    async filterUserEntities(user, ...entities) {
-        if (!user || entities.length === 0) {
-            console.log(`isUserOwner(${user})`);
-            return [];
-        }
-
+    async addConditionFilterUserOwnEntities(conditions, user) {
         if (user.Type === 'Customer') {
-            const usersPropertiesList = await PropertyDAO.getPropertiesForOrganization(user.Organization)
-            const usersPropertyIDs = usersPropertiesList.reduce((idsMap, prop) => {
-                idsMap[prop._id] = prop._id;
-                return idsMap;
-            }, {});
-
-            const ownEntities = _.filter(entities, entity => {
-                return usersPropertyIDs[entity.PropertyID] || usersPropertyIDs[entity._id];
-            });
-
-            return _.filter(ownEntities, entity => entity.Status > -1);
-        } else {
-            return entities;
+            const usersPropertiesList = await PropertyDAO.getPropertiesForOrganization(user.Organization);
+            conditions.PropertyID = {$in: _.map(usersPropertiesList, prop => prop._id)};
         }
     }
+
 
     async parseCSV(result) {
         if (!_.isArray(result)) {
