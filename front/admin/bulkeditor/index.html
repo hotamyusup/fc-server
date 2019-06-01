@@ -628,7 +628,7 @@
                             if (!skipSelect && this.selectedDevices[device._id]) {
                                 _
                                         .pairs(this.selectedDevices)
-                                        .filter(([deviceId, checked]) => checked)
+                                        .filter(([deviceId, checked]) => deviceId !== 'count' && checked)
                                         .forEach(([deviceId, checked]) => {
                                             const device = this.id2device[deviceId];
                                             this.deviceChanged(device, field, value, true)
