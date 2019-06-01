@@ -49,8 +49,6 @@ class PropertyChildrenBaseController extends BaseController {
                     skip: skip ? parseInt(skip) : undefined
                 };
 
-                console.log('filter === ', filter);
-
                 const conditions = filter ? JSON.parse(decodeURIComponent(filter)) : {};
                 if (from) {
                     conditions.updated_at = {
@@ -86,9 +84,6 @@ class PropertyChildrenBaseController extends BaseController {
                         conditions[key] = request.query[key];
                     }
                 });
-
-
-                console.log(`conditions === `, conditions);
 
                 const user = request.auth && request.auth.credentials;
                 await this.addConditionFilterUserOwnEntities(conditions, user);
