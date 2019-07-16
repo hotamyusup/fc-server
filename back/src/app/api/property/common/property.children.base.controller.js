@@ -89,6 +89,10 @@ class PropertyChildrenBaseController extends BaseController {
                 await this.addConditionFilterUserOwnEntities(conditions, user);
                 const entities = await this.DAO.all(conditions, options);
                 return this.handle('all', request, reply, entities);
+            },
+            timeout: {
+                server: 5 * 60 * 1000,
+                socket: 5 * 60 * 1000 + 5000 // Socket timeout should be more than Server timeout
             }
         };
     }
@@ -245,8 +249,7 @@ class PropertyChildrenBaseController extends BaseController {
             }
         });
 
-        const extendedEntities = await Promise.map(result, extendEntity);
-        // return extendedEntities;
+        const extendedEntities = await Promise.map(result, extendEntity, {concurrency: 1000});
 
         const opts = {fields: Object.keys(fieldsMap)};
         const csv = await parseAsync(extendedEntities, opts);
