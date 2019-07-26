@@ -278,39 +278,42 @@ Igor, Kalashnikov, zo0m.cfgmail.com, main building 11, 11th floor, unit121
 						return doc;
 					}));
 				}
-			},
-
-			scheduleParsedDocuments() {
-				var parsedDocuments = rootModel.parsedDocuments();
-				var docsWithErrors = _.filter(parsedDocuments, function (doc) {
-					return doc.errors && doc.errors.length;
-				});
-
-				if (docsWithErrors.length) {
-					var confirmed = confirm('There are not valid documents, count: ' + docsWithErrors.length);
-					if (!confirmed) {
-						return;
-					}
-
-					confirmed = confirm('Skip invalid documents: ' + docsWithErrors.length);
-					if (confirmed) {
-						parsedDocuments = parsedDocuments.filter(function (doc) {
-							return !doc.errors || doc.errors.length === 0;
-						})
-					}
-				}
-
-				if (parsedDocuments.length) {
-					API.generateDocuments(parsedDocuments, function (data) {
-						alert('Documents scheduled');
-						console.log('scheduled documents: ', data);
-					});
-				} else {
-					alert('No documents to schedule.');
-				}
-
 			}
-		};
+        };
+
+        rootModel.scheduleParsedDocuments = _.debounce(function () {
+                    var parsedDocuments = rootModel.parsedDocuments();
+                    var docsWithErrors = _.filter(parsedDocuments, function (doc) {
+                        return doc.errors && doc.errors.length;
+                    });
+
+                    if (docsWithErrors.length) {
+                        var confirmed = confirm('There are not valid documents, count: ' + docsWithErrors.length);
+                        if (!confirmed) {
+                            return;
+                        }
+
+                        confirmed = confirm('Skip invalid documents: ' + docsWithErrors.length);
+                        if (confirmed) {
+                            parsedDocuments = parsedDocuments.filter(function (doc) {
+                                return !doc.errors || doc.errors.length === 0;
+                            })
+                        }
+                    }
+
+                    if (parsedDocuments.length) {
+                        API.generateDocuments(parsedDocuments, function (data) {
+                            alert('Documents scheduled');
+                            console.log('scheduled documents: ', data);
+                        });
+                    } else {
+                        alert('No documents to schedule.');
+                    }
+
+                },
+                1000,
+                {leading: true, trailing: false});
+
 		ko.applyBindings(rootModel);
 
 		var scheduledDocumentsEmails = [];
@@ -479,24 +482,24 @@ Igor, Kalashnikov, zo0m.cfgmail.com, main building 11, 11th floor, unit121
 		// 			$(this).animate({height: "120px"}, 500);
 		// 		});
 
-		$("#submit").click(function (e) {
-			e.preventDefault();
-			var valid = Site.validate($("#form"));
-			if (valid) {
-				var User = {
-					Title: $("#title").val(),
-					Email: $("#email").val(),
-					Phone: $("#phone").val(),
-					Type: $("#type").val(),
-					Password: $("#password").val(),
-					Organization: $("#organization").val()
-				};
+        $("#submit").click(function (e) {
+            e.preventDefault();
+            var valid = Site.validate($("#form"));
+            if (valid) {
+                var User = {
+                    Title: $("#title").val(),
+                    Email: $("#email").val(),
+                    Phone: $("#phone").val(),
+                    Type: $("#type").val(),
+                    Password: $("#password").val(),
+                    Organization: $("#organization").val()
+                };
 
-				API.createUser(User, function (data) {
-					Site.redirect("/users/");
-				});
-			}
-		});
+                API.createUser(User, function (data) {
+                    Site.redirect("/users/");
+                });
+            }
+        });
 
 		function readBlob(file, callback) {
 			var start = 0;
