@@ -168,6 +168,8 @@
 		Site.init();
 		var PropertyID = QueryString("i");
 		var Model = {
+            ACL:Auth.ACL(),
+
 			User: User,
 
 			id2floor: ko.observable(null),

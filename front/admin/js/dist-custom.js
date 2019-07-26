@@ -224,6 +224,27 @@ $(function () {
 				callback(data);
 			});
 		},
+		documents: function (propertyID, callback) {
+			API.get(
+				"/documents?PropertyID=" + propertyID,
+				function (data) {
+					callback(data);
+				});
+		},
+		generateDocuments: function (documents, callback) {
+			API.post(
+				"/documents/fire-safety/generate-bulk",
+				{documents},
+				function (data) {
+					callback(data);
+				});
+		},
+		activateDocument: function (documentID, callback) {
+			API.get("/documents/" + documentID + "/activate", callback);
+		},
+		deactivateDocument: function (documentID, callback) {
+			API.get("/documents/" + documentID + "/deactivate", callback);
+		},
 		equipments: function (callback) {
 			API.get("/equipments", function (data) {
 				callback(data);
@@ -295,12 +316,22 @@ $(function () {
 			});
 		},
 		post: function (URL, Params, Callback) {
-			$.post(Config.APIURL + URL + "?hash=" + User._id, Params, function (data) {
-				Callback(data);
+			// $.post(Config.APIURL + URL + "?hash=" + User._id, Params, function (data) {
+			// 	Callback(data);
+			// });
+
+			$.ajax({
+				url: Config.APIURL + URL + "?hash=" + User._id,
+				type: "POST",
+				data: JSON.stringify(Params),
+				dataType: "json",
+				mimeType: "application/json",
+				contentType: "application/json",
+				success: Callback
 			});
 		},
 		get: function (URL, Callback) {
-			$.get(Config.APIURL + URL + "?hash=" + User._id, function (data) {
+			$.get(Config.APIURL + URL + (URL.indexOf('?') >= 0 ? '&' : '?') + "hash=" + User._id, function (data) {
 				Callback(data);
 			});
 		},

@@ -218,7 +218,8 @@ Igor, Kalashnikov, zo0m.cfg@gmail.com, main building 11, 11th floor, unit121
 Igor, Kalashnikov, zo0m.cfgmail.com, main building 11, 11th floor, unit121
 `.trim());*/
 		var rootModel = {
-			isLoaded: ko.observable(false),
+			ACL: Auth.ACL(),
+		    isLoaded: ko.observable(false),
 			stepName: ko.observable('upload'),
 			isPreview() {
 				return this.stepName() === 'preview'
