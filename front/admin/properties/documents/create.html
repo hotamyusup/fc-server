@@ -41,12 +41,12 @@
 				</div>
 				<nav class="menu">
 					<ul class="sidebar-menu metismenu" id="sidebar-menu">
-						<li>
+						<li class="active">
 							<a href="/admin/properties">
 								<i class="fa fa-th-large"></i> Properties
 							</a>
 						</li>
-						<li class="active">
+						<li>
 							<a href="/admin/users">
 								<i class="fa fa-users"></i> Users
 							</a>
@@ -71,11 +71,11 @@
 								<i class="fa fa-home"></i> Occupancy Types
 							</a>
 						</li>
-                        <li data-bind="visible: ACL.isAdminOrEmployee" style="display: none;">
-                            <a href="/admin/bulkeditor">
-                                <i class="fa fa-table"></i> Bulk Editor
-                            </a>
-                        </li>
+						<li data-bind="visible: ACL.isAdminOrEmployee" style="display: none;">
+							<a href="/admin/bulkeditor">
+								<i class="fa fa-table"></i> Bulk Editor
+							</a>
+						</li>
 						<li>
 							<a href="/admin/logout.html">
 								<i class="fa fa-lock"></i> Log out
@@ -254,65 +254,84 @@ Igor, Kalashnikov, zo0m.cfgmail.com, main building 11, 11th floor, unit121
 				var buildingID = event.target.value;
 				var csvBuildingTitle = document.signer.building;
 				if (buildingID) {
-					var parsedDocuments = rootModel.parsedDocuments();
-					rootModel.parsedDocuments([]);
-					rootModel.parsedDocuments(_.map(parsedDocuments,function (doc) {
-						if (doc.signer.building === csvBuildingTitle) {
-							doc.BuildingID = buildingID;
-							doc.FloorID = getFloorIDByTitle(buildingID, doc.signer.floor);
-						}
-						return doc;
-					}));
+					const isNotBlank = (csvBuildingTitle || '').trim().length > 0;
+					if (isNotBlank) {
+						var parsedDocuments = rootModel.parsedDocuments();
+						rootModel.parsedDocuments([]);
+						rootModel.parsedDocuments(_.map(parsedDocuments, function (doc) {
+							if (doc.signer.building === csvBuildingTitle) {
+								doc.BuildingID = buildingID;
+								doc.FloorID = getFloorIDByTitle(buildingID, doc.signer.floor);
+							}
+							return doc;
+						}));
+					} else {
+						document.BuildingID = buildingID;
+						document.FloorID = getFloorIDByTitle(buildingID, document.signer.floor);
+
+						var parsedDocuments = rootModel.parsedDocuments();
+						rootModel.parsedDocuments([]);
+						rootModel.parsedDocuments(parsedDocuments);
+					}
 				}
 			},
 			floorSelected(document, event) {
 				var floorID = event.target.value;
 				var csvFloorTitle = document.signer.floor;
 				if (floorID) {
-					var parsedDocuments = rootModel.parsedDocuments();
-					rootModel.parsedDocuments([]);
-					rootModel.parsedDocuments(_.map(parsedDocuments,function (doc) {
-						if (doc.BuildingID === document.BuildingID && doc.signer.floor === csvFloorTitle) {
-							doc.FloorID = floorID;
-						}
-						return doc;
-					}));
+					const isNotBlank = (csvFloorTitle || '').trim().length > 0;
+					if (isNotBlank) {
+						var parsedDocuments = rootModel.parsedDocuments();
+						rootModel.parsedDocuments([]);
+						rootModel.parsedDocuments(_.map(parsedDocuments, function (doc) {
+							if (doc.BuildingID === document.BuildingID && doc.signer.floor === csvFloorTitle) {
+								doc.FloorID = floorID;
+							}
+							return doc;
+						}));
+					} else {
+						document.FloorID = floorID;
+
+						var parsedDocuments = rootModel.parsedDocuments();
+						rootModel.parsedDocuments([]);
+						rootModel.parsedDocuments(parsedDocuments);
+					}
 				}
 			}
-        };
+		};
 
-        rootModel.scheduleParsedDocuments = _.debounce(function () {
-                    var parsedDocuments = rootModel.parsedDocuments();
-                    var docsWithErrors = _.filter(parsedDocuments, function (doc) {
-                        return doc.errors && doc.errors.length;
-                    });
+		rootModel.scheduleParsedDocuments = _.debounce(function () {
+				var parsedDocuments = rootModel.parsedDocuments();
+				var docsWithErrors = _.filter(parsedDocuments, function (doc) {
+					return doc.errors && doc.errors.length;
+				});
 
-                    if (docsWithErrors.length) {
-                        var confirmed = confirm('There are not valid documents, count: ' + docsWithErrors.length);
-                        if (!confirmed) {
-                            return;
-                        }
+				if (docsWithErrors.length) {
+					var confirmed = confirm('There are not valid documents, count: ' + docsWithErrors.length);
+					if (!confirmed) {
+						return;
+					}
 
-                        confirmed = confirm('Skip invalid documents: ' + docsWithErrors.length);
-                        if (confirmed) {
-                            parsedDocuments = parsedDocuments.filter(function (doc) {
-                                return !doc.errors || doc.errors.length === 0;
-                            })
-                        }
-                    }
+					confirmed = confirm('Skip invalid documents: ' + docsWithErrors.length);
+					if (confirmed) {
+						parsedDocuments = parsedDocuments.filter(function (doc) {
+							return !doc.errors || doc.errors.length === 0;
+						})
+					}
+				}
 
-                    if (parsedDocuments.length) {
-                        API.generateDocuments(parsedDocuments, function (data) {
-                            alert('Documents scheduled');
-                            console.log('scheduled documents: ', data);
-                        });
-                    } else {
-                        alert('No documents to schedule.');
-                    }
+				if (parsedDocuments.length) {
+					API.generateDocuments(parsedDocuments, function (data) {
+						alert('Documents scheduled');
+						console.log('scheduled documents: ', data);
+					});
+				} else {
+					alert('No documents to schedule.');
+				}
 
-                },
-                1000,
-                {leading: true, trailing: false});
+			},
+			1000,
+			{leading: true, trailing: false});
 
 		ko.applyBindings(rootModel);
 
