@@ -41,12 +41,12 @@
 				</div>
 				<nav class="menu">
 					<ul class="sidebar-menu metismenu" id="sidebar-menu">
-						<li>
+						<li class="active">
 							<a href="/admin/properties">
 								<i class="fa fa-th-large"></i> Properties
 							</a>
 						</li>
-						<li class="active">
+						<li>
 							<a href="/admin/users">
 								<i class="fa fa-users"></i> Users
 							</a>
@@ -71,11 +71,11 @@
 								<i class="fa fa-home"></i> Occupancy Types
 							</a>
 						</li>
-                        <li data-bind="visible: ACL.isAdminOrEmployee" style="display: none;">
-                            <a href="/admin/bulkeditor">
-                                <i class="fa fa-table"></i> Bulk Editor
-                            </a>
-                        </li>
+						<li data-bind="visible: ACL.isAdminOrEmployee" style="display: none;">
+							<a href="/admin/bulkeditor">
+								<i class="fa fa-table"></i> Bulk Editor
+							</a>
+						</li>
 						<li>
 							<a href="/admin/logout.html">
 								<i class="fa fa-lock"></i> Log out
@@ -218,7 +218,8 @@ Igor, Kalashnikov, zo0m.cfg@gmail.com, main building 11, 11th floor, unit121
 Igor, Kalashnikov, zo0m.cfgmail.com, main building 11, 11th floor, unit121
 `.trim());*/
 		var rootModel = {
-			isLoaded: ko.observable(false),
+			ACL: Auth.ACL(),
+		    isLoaded: ko.observable(false),
 			stepName: ko.observable('upload'),
 			isPreview() {
 				return this.stepName() === 'preview'
@@ -253,33 +254,53 @@ Igor, Kalashnikov, zo0m.cfgmail.com, main building 11, 11th floor, unit121
 				var buildingID = event.target.value;
 				var csvBuildingTitle = document.signer.building;
 				if (buildingID) {
-					var parsedDocuments = rootModel.parsedDocuments();
-					rootModel.parsedDocuments([]);
-					rootModel.parsedDocuments(_.map(parsedDocuments,function (doc) {
-						if (doc.signer.building === csvBuildingTitle) {
-							doc.BuildingID = buildingID;
-							doc.FloorID = getFloorIDByTitle(buildingID, doc.signer.floor);
-						}
-						return doc;
-					}));
+					const isNotBlank = (csvBuildingTitle || '').trim().length > 0;
+					if (isNotBlank) {
+						var parsedDocuments = rootModel.parsedDocuments();
+						rootModel.parsedDocuments([]);
+						rootModel.parsedDocuments(_.map(parsedDocuments, function (doc) {
+							if (doc.signer.building === csvBuildingTitle) {
+								doc.BuildingID = buildingID;
+								doc.FloorID = getFloorIDByTitle(buildingID, doc.signer.floor);
+							}
+							return doc;
+						}));
+					} else {
+						document.BuildingID = buildingID;
+						document.FloorID = getFloorIDByTitle(buildingID, document.signer.floor);
+
+						var parsedDocuments = rootModel.parsedDocuments();
+						rootModel.parsedDocuments([]);
+						rootModel.parsedDocuments(parsedDocuments);
+					}
 				}
 			},
 			floorSelected(document, event) {
 				var floorID = event.target.value;
 				var csvFloorTitle = document.signer.floor;
 				if (floorID) {
-					var parsedDocuments = rootModel.parsedDocuments();
-					rootModel.parsedDocuments([]);
-					rootModel.parsedDocuments(_.map(parsedDocuments,function (doc) {
-						if (doc.BuildingID === document.BuildingID && doc.signer.floor === csvFloorTitle) {
-							doc.FloorID = floorID;
-						}
-						return doc;
-					}));
-				}
-			},
+					const isNotBlank = (csvFloorTitle || '').trim().length > 0;
+					if (isNotBlank) {
+						var parsedDocuments = rootModel.parsedDocuments();
+						rootModel.parsedDocuments([]);
+						rootModel.parsedDocuments(_.map(parsedDocuments, function (doc) {
+							if (doc.BuildingID === document.BuildingID && doc.signer.floor === csvFloorTitle) {
+								doc.FloorID = floorID;
+							}
+							return doc;
+						}));
+					} else {
+						document.FloorID = floorID;
 
-			scheduleParsedDocuments() {
+						var parsedDocuments = rootModel.parsedDocuments();
+						rootModel.parsedDocuments([]);
+						rootModel.parsedDocuments(parsedDocuments);
+					}
+				}
+			}
+		};
+
+		rootModel.scheduleParsedDocuments = _.debounce(function () {
 				var parsedDocuments = rootModel.parsedDocuments();
 				var docsWithErrors = _.filter(parsedDocuments, function (doc) {
 					return doc.errors && doc.errors.length;
@@ -308,8 +329,10 @@ Igor, Kalashnikov, zo0m.cfgmail.com, main building 11, 11th floor, unit121
 					alert('No documents to schedule.');
 				}
 
-			}
-		};
+			},
+			1000,
+			{leading: true, trailing: false});
+
 		ko.applyBindings(rootModel);
 
 		var scheduledDocumentsEmails = [];
@@ -478,24 +501,24 @@ Igor, Kalashnikov, zo0m.cfgmail.com, main building 11, 11th floor, unit121
 		// 			$(this).animate({height: "120px"}, 500);
 		// 		});
 
-		$("#submit").click(function (e) {
-			e.preventDefault();
-			var valid = Site.validate($("#form"));
-			if (valid) {
-				var User = {
-					Title: $("#title").val(),
-					Email: $("#email").val(),
-					Phone: $("#phone").val(),
-					Type: $("#type").val(),
-					Password: $("#password").val(),
-					Organization: $("#organization").val()
-				};
+        $("#submit").click(function (e) {
+            e.preventDefault();
+            var valid = Site.validate($("#form"));
+            if (valid) {
+                var User = {
+                    Title: $("#title").val(),
+                    Email: $("#email").val(),
+                    Phone: $("#phone").val(),
+                    Type: $("#type").val(),
+                    Password: $("#password").val(),
+                    Organization: $("#organization").val()
+                };
 
-				API.createUser(User, function (data) {
-					Site.redirect("/users/");
-				});
-			}
-		});
+                API.createUser(User, function (data) {
+                    Site.redirect("/users/");
+                });
+            }
+        });
 
 		function readBlob(file, callback) {
 			var start = 0;
