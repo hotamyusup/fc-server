@@ -141,6 +141,10 @@
 											<a class="userlink" data-bind="click: $root.activateDocument" href="javascript:;;">Activate</a>
 											<!-- /ko -->
 										</div>
+
+										<div class="item-col no-overflow">
+											<a class="userlink" data-bind="click: $root.notifyDocument" href="javascript:;;">Send now</a>
+										</div>
 									</div>
 								</li>
 							</ul>
@@ -186,6 +190,13 @@
 			},
 			deactivateDocument(document) {
 				API.deactivateDocument(document._id, function () {
+					API.documents(PropertyID, function (documents) {
+						Model.Documents(documents);
+					});
+				})
+			},
+			notifyDocument(document) {
+				API.notifyDocument(document._id, function () {
 					API.documents(PropertyID, function (documents) {
 						Model.Documents(documents);
 					});

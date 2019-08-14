@@ -245,6 +245,9 @@ $(function () {
 		deactivateDocument: function (documentID, callback) {
 			API.get("/documents/" + documentID + "/deactivate", callback);
 		},
+		notifyDocument: function (documentID, callback) {
+			API.get("/documents/" + documentID + "/notify", callback);
+		},
 		equipments: function (callback) {
 			API.get("/equipments", function (data) {
 				callback(data);
