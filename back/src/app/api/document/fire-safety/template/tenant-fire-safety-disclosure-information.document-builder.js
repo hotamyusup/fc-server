@@ -48,7 +48,8 @@ class TenantFireSafetyDisclosureDocumentBuilder {
             return bounds;
         }, {x: 200, y: 100});
 
-        const image = await loadImageByUrl(property.Map);
+        const mapImage = floor.Map.Image || (building.Map && building.Map.Image) || property.Map;
+        const image = await loadImageByUrl(mapImage);
 
         const scale = floor.Map.Scale;
         const left = floor.Map.Left;
@@ -226,21 +227,21 @@ class TenantFireSafetyDisclosureDocumentBuilder {
                                 }
                                 ,
                                 lastDeviceIcon ? {
-                                        text: "—",
-                                        style: "legendLabel",
-                                        height: 20,
-                                        width: 20,
-                                        "margin": [10, 4, 10, 10],
-                                        alignment: "center"
+                                    text: "—",
+                                    style: "legendLabel",
+                                    height: 20,
+                                    width: 20,
+                                    "margin": [10, 4, 10, 10],
+                                    alignment: "center"
 
-                                    } : undefined
+                                } : undefined
                                 ,
                                 lastDeviceIcon ? {
-                                        image: lastDeviceIcon,
-                                        style: "legendImage",
-                                        height: 20,
-                                        width: 20,
-                                    } : undefined
+                                    image: lastDeviceIcon,
+                                    style: "legendImage",
+                                    height: 20,
+                                    width: 20,
+                                } : undefined
                                 ,
                                 {
                                     text: ` = ${deviceTypeById[deviceType].Title}${inspectionDate !== 'none' ? ` - Annual service date: ${moment(inspectionDate).format('DD MMM YY')}` : ''}`,
