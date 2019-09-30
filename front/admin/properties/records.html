@@ -109,13 +109,19 @@
 									<li class="item" data-bind="style : { opacity: (Status == -1 ? 0.6 : 1)}">
 										<div class="item-row">
 											<div class="item-col item-col-title no-overflow">
-												<h4 class="item-title no-wrap" data-bind="text: created_at != null ? moment(created_at).format('YYYY-MM-DD HH:mm') : ''"></h4>
+												<h4 class="item-title no-wrap" data-bind="if: $data.created_at">
+													<span data-bind="text: moment(created_at).format('YYYY-MM-DD HH:mm')"></span>
+												</h4>
 											</div>
 											<div class="item-col item-col-title no-overflow">
-												<h4 class="item-title no-wrap" data-bind="text: Frequency != null ? ((+Frequency)+'').replace('0','Quarterly').replace('1','Semi').replace('2','Annualy').replace('3','5 Yearly') : ''"></h4>
+												<h4 class="item-title no-wrap" data-bind="if: $data.Frequency != null">
+													<span data-bind="text: ((+Frequency)+'').replace('0','Quarterly').replace('1','Semi').replace('2','Annualy').replace('3','5 Yearly')"></span>
+												</h4>
 											</div>
 											<div class="item-col item-col-title no-overflow">
-												<h4 class="item-title no-wrap" data-bind="text: DeviceStatus != null ? DeviceStatus.toString().replace('0','Fail').replace('1','Pass') : ''"></h4>
+												<h4 class="item-title no-wrap" data-bind="if: $data.DeviceStatus !== null">
+													<span data-bind="text: DeviceStatus.toString().replace('0','Fail').replace('1','Pass')"></span>
+												</h4>
 											</div>
 											<div class="item-col text-right">
 												<div><a href="javascript:;;" data-bind="attr: {href:'record.html?i='+_id+'&p='+$parent.Property._id+'&b='+$parent.Building._id+'&f='+$parent.Floor._id+'&d='+$parent.Device._id}" class="userlink">Details</a></div>
