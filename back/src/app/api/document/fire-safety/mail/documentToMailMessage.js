@@ -47,16 +47,21 @@ module.exports = async function documentToMailMessage(document) {
     }
 
     const property = document.property ? document.property : await PropertyDAO.get(document.PropertyID);
-    const propertyManagerEmail = property.Contacts[0].Email;
+    const propertyManagerEmail = property.Contacts && property.Contacts[0].Email;
 
     const from = 'noreply_firecloud@fireprotected.com';
 
     const DocumentID = `${document._id}`;
 
+    const to = [signer.email];
+    if (propertyManagerEmail) {
+        to.push(propertyManagerEmail);
+    }
+
     const message = {
         DocumentID,
         from,
-        to: [signer.email, propertyManagerEmail],
+        to,
         subject: title,
         title,
         attachments
