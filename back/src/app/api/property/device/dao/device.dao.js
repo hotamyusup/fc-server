@@ -9,6 +9,18 @@ class DeviceDAO extends PropertyChildrenBaseDAO {
         super(DeviceModel);
     }
 
+    create(dataObject) {
+        return super.create(cleanPSI(dataObject));
+    }
+
+    async update(dataObject, upsert) {
+        return super.update(cleanPSI(dataObject), upsert);
+    }
+
+    upsert(dataObject) {
+        return super.upsert(cleanPSI(dataObject));
+    }
+
     findByQR(QRCode) {
         return this.model.findOne({QRCode});
     }
@@ -16,3 +28,10 @@ class DeviceDAO extends PropertyChildrenBaseDAO {
 
 module.exports = new DeviceDAO();
 
+function cleanPSI(dataObject) {
+    if (dataObject && dataObject.PSI && isNaN(dataObject.PSI)) {
+        delete dataObject.PSI;
+    }
+
+    return dataObject;
+}
