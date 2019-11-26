@@ -3,5 +3,15 @@
 const BaseDAO = require("../../../core/base.dao");
 const OrganizationModel = require("../model/organization.model");
 
-const OrganizationDAO = new BaseDAO(OrganizationModel);
-module.exports = OrganizationDAO;
+class OrganizationDAO extends BaseDAO {
+    constructor() {
+        super(OrganizationModel);
+    }
+
+    async isActive(organizationID) {
+        const organization = await this.get(organizationID);
+        return organization && organization.Active;
+    }
+}
+
+module.exports = new OrganizationDAO();

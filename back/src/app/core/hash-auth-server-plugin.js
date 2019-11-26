@@ -3,6 +3,7 @@
 const Boom = require('boom');
 const _ = require('underscore');
 const UserDAO = require("../api/user/dao/user.dao");
+const OrganizationDAO = require("../api/organization/dao/organization.dao");
 
 
 exports.register = (plugin, options, next) => {
@@ -25,7 +26,15 @@ const authorize = (server) => {
                         if (!user) {
                             throw new Error('unauthorized');
                         } else {
-                            reply.continue({credentials: user})
+                            OrganizationDAO
+                                .isActive(user.Organization)
+                                .then(isOrganizationActive => {
+                                    if (isOrganizationActive) {
+                                        reply.continue({credentials: user});
+                                    } else {
+                                        reply(Boom.unauthorized())
+                                    }
+                                })
                         }
                     })
                     .catch(error => {
