@@ -408,8 +408,9 @@ Igor, Kalashnikov, zo0m.cfgmail.com, main building 11, 11th floor, unit121
 						if (!emailRegExp.test(signer.email)) {
 							errors.push('email is not valid');
 						}
+						//due to change request, we are emailing the same "catch-all" mailbox
 						if (scheduledDocumentsEmails.indexOf(signer.email) >= 0) {
-							errors.push('email is already scheduled');
+						//	errors.push('email is already scheduled');
 						}
 					} else {
 						errors.push('email is empty');

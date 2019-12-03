@@ -55,7 +55,7 @@ module.exports = async function documentToMailMessage(document) {
 
     const to = [signer.email];
     if (propertyManagerEmail) {
-        to.push(propertyManagerEmail);
+       // to.push(propertyManagerEmail);
     }
 
     const message = {

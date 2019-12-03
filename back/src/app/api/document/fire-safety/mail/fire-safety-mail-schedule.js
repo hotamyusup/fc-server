@@ -8,7 +8,10 @@ const DocumentDAO = require('../../common/dao/document.dao.instance');
 const documentToMailMessage = require('./documentToMailMessage');
 
 // cron details: https://crontab.guru/#0_09_*_JAN_*
-schedule.scheduleJob('0 09 * JAN *', sendNotificationsToAllSigners);
+// ****  DiSABLED 12.2.2019 **** //
+//schedule.scheduleJob('0 09 * JAN *', sendNotificationsToAllSigners);
+// ***************************** //
+
 // schedule.scheduleJob('* * * * *', sendNotificationsToAllSigners); // uncomment for testing
 // sendNotificationsToAllSigners();
 
