@@ -137,7 +137,7 @@
 											<!-- ko if: $data.Status === 1 -->
 											<a class="userlink" data-bind="click: $root.deactivateDocument" href="javascript:;;">Deactivate</a>
 											<!-- /ko -->
-											<!-- ko if: $data.Status === 0 -->
+											<!-- ko if: $data.Status !== 1 -->
 											<a class="userlink" data-bind="click: $root.activateDocument" href="javascript:;;">Activate</a>
 											<!-- /ko -->
 										</div>
