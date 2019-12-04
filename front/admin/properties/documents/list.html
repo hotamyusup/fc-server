@@ -129,15 +129,15 @@
 											<h4 class="item-title no-wrap" data-bind="text: $data.notified_at && moment($data.notified_at).format('L')"></h4>
 										</div>
 										<div class="item-col no-overflow">
-											<h4 class="item-title no-wrap" data-bind="if: Status === 1">Scheduled</h4>
-											<h4 class="item-title no-wrap" data-bind="if: Status === 0">Deactivated</h4>
+											<h4 class="item-title no-wrap" data-bind="if: $data.Status === 1">Scheduled</h4>
+											<h4 class="item-title no-wrap" data-bind="if: $data.Status === 0">Deactivated</h4>
 										</div>
 										<div class="item-col text-right">
 
-											<!-- ko if: Status === 1 -->
+											<!-- ko if: $data.Status === 1 -->
 											<a class="userlink" data-bind="click: $root.deactivateDocument" href="javascript:;;">Deactivate</a>
 											<!-- /ko -->
-											<!-- ko if: Status === 0 -->
+											<!-- ko if: $data.Status !== 1 -->
 											<a class="userlink" data-bind="click: $root.activateDocument" href="javascript:;;">Activate</a>
 											<!-- /ko -->
 										</div>

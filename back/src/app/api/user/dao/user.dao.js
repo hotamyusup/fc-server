@@ -7,6 +7,7 @@ const BaseDAO = require("../../../core/base.dao");
 const logger = require("../../../core/logger");
 
 const UserModel = require("../model/user.model");
+const OrganizationDAO = require("../../organization/dao/organization.dao");
 
 class UserDAO extends BaseDAO {
     constructor() {
@@ -32,9 +33,21 @@ class UserDAO extends BaseDAO {
         return UserModel.findOne({Email: {$regex}});
     }
 
-    login(email, password) {
+    async login(email, password) {
         const $regex = new RegExp(email, "i");
-        return UserModel.findOne({Email: {$regex}, Password: password});
+        const loggedInUser = await UserModel.findOne({Email: {$regex}, Password: password});
+
+        if (loggedInUser) {
+            const isOrganizationActive = await OrganizationDAO.isActive(loggedInUser.Organization);
+            if (isOrganizationActive) {
+                return loggedInUser;
+            } else {
+                logger.warn(`User "${email}" try to access inactive Organization with id "${loggedInUser.Organization}"`);
+                return null;
+            }
+        } else {
+            return null;
+        }
     }
 }
 

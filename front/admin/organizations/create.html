@@ -99,6 +99,13 @@
 								<label class="control-label">Title</label>
 								<input type="text" id="title" name="Title" class="form-control underlined required">
 							</div>
+                            <div class="form-group">
+                                <label class="control-label">Active</label>
+                                <select class="form-control underlined" id="active" name="Active">
+                                    <option value="1">true</option>
+                                    <option value="0">false</option>
+                                </select>
+                            </div>
 							<div class="form-group">
 								<button type="submit" id="submit" class="btn btn-primary validate">Submit</button>
 							</div>
@@ -134,7 +141,8 @@
 					var valid = Site.validate($("#form"));
 					if (valid) {
 						var Organization = {
-							Title: $("#title").val()
+							Title: $("#title").val(),
+							Active: $("#active").val()
 						};
 
 						API.createOrganization(Organization, function (data) {

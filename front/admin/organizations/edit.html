@@ -97,6 +97,13 @@
 								<input type="text" id="title" class="form-control required underlined" data-bind="value: Organization.Title">
 							</div>
 							<div class="form-group">
+								<label class="control-label">Active</label>
+								<select class="form-control underlined" id="active" name="Active" data-bind="value: Organization.Active">
+									<option value="1">true</option>
+									<option value="0">false</option>
+								</select>
+							</div>
+							<div class="form-group">
 								<input type="hidden" id="id" data-bind="value: Organization._id">
 								<button type="submit" id="submit" class="btn btn-primary">Submit</button>
 							</div>
@@ -133,12 +140,14 @@
                 });
 
                 $("#submit").click(function (e) {
+                	console.log(`submit`);
                     e.preventDefault();
                     var valid = Site.validate($("#form"));
                     if (valid) {
                         var Organization = {
-                            OrganizationID: $("#id").val(),
-                            Title: $("#title").val()
+                            _id: $("#id").val(),
+                            Title: $("#title").val(),
+                            Active: $("#active").val()
                         };
 
                         API.updateOrganization($("#id").val(), Organization, function (data) {
