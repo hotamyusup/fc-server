@@ -17,6 +17,7 @@ const DeviceSchema = new Schema({
     PSI: {type: Number},
     Notes: {type: String},
     InUnit: {type: Boolean},
+    IsEmergencyExit: {type: Boolean},
     QRCode: {type: String},
     Picture: {type: String},
     XPos: {type: Number},

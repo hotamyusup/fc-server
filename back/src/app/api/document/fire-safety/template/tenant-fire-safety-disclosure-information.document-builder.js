@@ -22,6 +22,7 @@ const styles = require('./pdfmake.styles');
 
 class TenantFireSafetyDisclosureDocumentBuilder {
     async build(FloorID, tenant) {
+        logger.info(`TenantFireSafetyDisclosureDocumentBuilder.build(${FloorID})`);
 
         const floor = await FloorDAO.get(FloorID);
         const building = await BuildingDAO.get(floor.BuildingID);
@@ -87,6 +88,11 @@ class TenantFireSafetyDisclosureDocumentBuilder {
                 return equipment2type[deviceType] || equipment2type[equipmentType];
             };
 
+            const filterEmergencyExit = device => {
+                const type = equipment2type[device.DeviceType] && equipment2type[device.DeviceType].type;
+                return type !== 'exit' || (type === 'exit' && device.IsEmergencyExit);
+            };
+
             const type2sortOrder = {
                 extinguisher: 400,
                 exit: 300,
@@ -97,7 +103,8 @@ class TenantFireSafetyDisclosureDocumentBuilder {
 
             const devicesSortedByType = devices
                 .filter(getStyleFromDevice)
-                .filter(device => device.Status === 1);
+                .filter(device => device.Status === 1)
+                .filter(filterEmergencyExit);
 
             const inspectionsForDevices = await InspectionDAO.all({
                 DeviceID: {$in: devicesSortedByType.map(d => d._id)}
@@ -110,35 +117,63 @@ class TenantFireSafetyDisclosureDocumentBuilder {
                     device2inspections[device._id] = _.filter(device2inspections[device._id], inspection => inspection.Frequency == 2 /*Annual*/); // && inspection.DeviceStatus === 0);
                 }
 
-                return device2inspections[device._id] && device2inspections[device._id].length || getStyleFromDevice(device).type === 'alarmpanel';
+                const deviceType = getStyleFromDevice(device).type;
+                return device2inspections[device._id] && device2inspections[device._id].length
+                    || deviceType === 'alarmpanel'
+                    || deviceType === 'exit';
             });
 
             setAngleForClusteredDevices(annualInspectedDevices);
 
             const type2devices = _.groupBy(annualInspectedDevices, 'DeviceType');
 
-            const typeGroupedByDate = _.keys(type2devices).reduce((typeGroupedByDate, type) => {
+            const valuesKey2Value = {};
+            const typeGroupedByValuesKey = _.keys(type2devices).reduce((typeGroupedByValuesKey, type) => {
                 const typeDevices = type2devices[type];
 
-                typeGroupedByDate[type] = _.groupBy(typeDevices, device => {
-                    if (!device2inspections[device._id]) {
-                        return 'none'
+                const deviceTypeType = equipment2type[type].type;
+
+
+                typeGroupedByValuesKey[type] = _.groupBy(typeDevices, device => {
+                    const lastDeviceInspection = device2inspections[device._id] && _.sortBy(device2inspections[device._id], 'InspectionDate').reverse()[0];
+                    const lastDeviceInspectionDateKey = lastDeviceInspection && moment(lastDeviceInspection.InspectionDate).format('YYYY-MM-DD');
+
+                    if (deviceTypeType === 'exit') {
+                        valuesKey2Value['none'] = {};
+                    } else if (deviceTypeType === 'smokedetector') {
+                        const deviceInstallationDateKey = device.InstallationDate && moment(device.InstallationDate).format('YYYY-MM-DD');
+                        const valuesKey = `${type}|${lastDeviceInspectionDateKey}|${deviceInstallationDateKey}`;
+                        valuesKey2Value[valuesKey] = {};
+                        // if (lastDeviceInspection) {
+                        //     valuesKey2Value[valuesKey].InspectionDate = lastDeviceInspection.InspectionDate;
+                        // }
+                        if (deviceInstallationDateKey) {
+                            valuesKey2Value[valuesKey].InstallationDate = device.InstallationDate;
+                        }
+
+                        return valuesKey;
+                    } else {
+                        const valuesKey = `${type}|${lastDeviceInspectionDateKey}`;
+                        valuesKey2Value[valuesKey] = {};
+                        if (lastDeviceInspection) {
+                            valuesKey2Value[valuesKey].InspectionDate = lastDeviceInspection.InspectionDate;
+                        }
+
+                        return valuesKey;
                     }
-                    const lastDeviceInspection = _.sortBy(device2inspections[device._id], 'InspectionDate').reverse()[0];
-                    return moment(lastDeviceInspection.InspectionDate).format('YYYY-MM-DD');
+
                 });
 
-                return typeGroupedByDate;
+                return typeGroupedByValuesKey;
             }, {});
 
             let deviceCounter = 0;
             const deviceLegendRows = [];
-
-            _.keys(typeGroupedByDate)
+            _.keys(typeGroupedByValuesKey)
                 .sort((deviceType1, deviceType2) => type2sortOrder[equipment2type[deviceType2].type] - type2sortOrder[equipment2type[deviceType1].type])
                 .map(deviceType =>
-                    _.keys(typeGroupedByDate[deviceType]).forEach((inspectionDate) => {
-                        const devices = typeGroupedByDate[deviceType][inspectionDate];
+                    _.keys(typeGroupedByValuesKey[deviceType]).forEach((valuesKey) => {
+                        const devices = typeGroupedByValuesKey[deviceType][valuesKey];
                         const type = equipment2type[deviceType].type;
 
                         let firstDeviceIcon, lastDeviceIcon;
@@ -215,6 +250,24 @@ class TenantFireSafetyDisclosureDocumentBuilder {
                                 ctx.drawImage(iconCanvas, deviceOnCirclePoint.x - imageRadius, deviceOnCirclePoint.y - imageRadius, imageWidth, imageHeight);
                             }
                         });
+                        let legendText = ` = ${deviceTypeById[deviceType].Title}`;
+
+
+                        const {InspectionDate, InstallationDate} = valuesKey2Value[valuesKey] || {};
+
+                        const legendTextMessages = [];
+                        if (InstallationDate) {
+                            legendTextMessages.push(`Date Last Replaced in Unit: ${moment(InstallationDate).format('DD MMM YY')}`);
+                        }
+
+                        if (InspectionDate) {
+                            legendTextMessages.push(`Annual Service Date: ${moment(InspectionDate).format('DD MMM YY')}`);
+                        }
+
+                        if (legendTextMessages.length) {
+                            legendText += ` - ${legendTextMessages.join(', ')}`;
+                        }
+
 
                         deviceLegendRows.push({
                             type,
@@ -244,7 +297,7 @@ class TenantFireSafetyDisclosureDocumentBuilder {
                                 } : undefined
                                 ,
                                 {
-                                    text: ` = ${deviceTypeById[deviceType].Title}${inspectionDate !== 'none' ? ` - Annual service date: ${moment(inspectionDate).format('DD MMM YY')}` : ''}`,
+                                    text: legendText,
                                     style: "legendLabel",
                                     height: 20
                                 }
@@ -265,7 +318,7 @@ class TenantFireSafetyDisclosureDocumentBuilder {
                 mapImageRow.width = canvasHeight / canvasWidth > 1.5 ? 300 : 400;
             }
 
-            if (_.keys(typeGroupedByDate).filter(deviceType => equipment2type[deviceType].type === 'pullstation').length === 0) {
+            if (_.keys(typeGroupedByValuesKey).filter(deviceType => equipment2type[deviceType].type === 'pullstation').length === 0) {
                 deviceLegendRows.push({
                     type: 'pullstation',
                     columns: [
@@ -276,7 +329,7 @@ class TenantFireSafetyDisclosureDocumentBuilder {
                             width: 20,
                         },
                         {
-                            text: ` PULL STATIONS NOT FOUND`,
+                            text: `No Pull Stations`,
                             style: "legendLabel",
                             height: 20,
                             color: "red"
