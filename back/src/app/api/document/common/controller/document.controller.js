@@ -3,6 +3,7 @@
 const Promise = require('bluebird');
 const _ = require('lodash');
 const Boom = require('boom');
+const moment = require('moment');
 const FileReader = require('filereader');
 
 const logger = require('../../../../core/logger');
@@ -144,6 +145,7 @@ class DocumentController extends BaseController {
                         }
 
                         row.columns[0][0].margin = [0, 50, 0, 0];
+                        row.columns[0][0].text = `Date: ${moment().format("DD MMMM YYYY")}`;
                     }
                 });
 

@@ -103,20 +103,21 @@ class TenantFireSafetyDisclosureDocumentBuilder {
 
             const devicesSortedByType = devices
                 .filter(getStyleFromDevice)
-                .filter(device => device.Status === 1)
+                .filter(device => device.Status !== -1)
                 .filter(filterEmergencyExit);
 
+            const ANNUAL_FREQUENCY = 2;
+            const PASS_RECORD_STATUS = 0;
+
             const inspectionsForDevices = await InspectionDAO.all({
-                DeviceID: {$in: devicesSortedByType.map(d => d._id)}
+                DeviceID: {$in: devicesSortedByType.map(d => d._id)},
+                Frequency: ANNUAL_FREQUENCY,
+                // DeviceStatus: PASS_RECORD_STATUS,
             });
 
             const device2inspections = _.groupBy(inspectionsForDevices, 'DeviceID');
 
             const annualInspectedDevices = devicesSortedByType.filter(device => {
-                if (device2inspections[device._id]) {
-                    device2inspections[device._id] = _.filter(device2inspections[device._id], inspection => inspection.Frequency == 2 /*Annual*/); // && inspection.DeviceStatus === 0);
-                }
-
                 const deviceType = getStyleFromDevice(device).type;
                 return device2inspections[device._id] && device2inspections[device._id].length
                     || deviceType === 'alarmpanel'
@@ -142,11 +143,8 @@ class TenantFireSafetyDisclosureDocumentBuilder {
                         valuesKey2Value['none'] = {};
                     } else if (deviceTypeType === 'smokedetector') {
                         const deviceInstallationDateKey = device.InstallationDate && moment(device.InstallationDate).format('YYYY-MM-DD');
-                        const valuesKey = `${type}|${lastDeviceInspectionDateKey}|${deviceInstallationDateKey}`;
+                        const valuesKey = `${type}|${deviceInstallationDateKey}`;
                         valuesKey2Value[valuesKey] = {};
-                        // if (lastDeviceInspection) {
-                        //     valuesKey2Value[valuesKey].InspectionDate = lastDeviceInspection.InspectionDate;
-                        // }
                         if (deviceInstallationDateKey) {
                             valuesKey2Value[valuesKey].InstallationDate = device.InstallationDate;
                         }
@@ -342,6 +340,15 @@ class TenantFireSafetyDisclosureDocumentBuilder {
             const documentDefinition = {
                 content: [
                     {
+                        columns: [
+                            {
+                                text: `${moment().format("DD MMMM YYYY")}`,
+                                alignment: "right"
+                            }
+                        ],
+                        margin: [0, 10, 0, 10]
+                    },
+                    {
                         text: "RESIDENT FIRE SAFETY DISCLOSURE INFORMATION",
                         style: "header"
                     },
@@ -353,7 +360,9 @@ class TenantFireSafetyDisclosureDocumentBuilder {
                             },
                             {
                                 text: `FLOOR/LEVEL: ${floor.Title}`,
-                                width: "30%"
+                                width: "30%",
+                                alignment: "right"
+
                             }
                         ],
                         margin: [0, 20, 0, 20]
@@ -380,6 +389,9 @@ class TenantFireSafetyDisclosureDocumentBuilder {
 
                             const nextTypeMargin = currentRowExtended[0].margin || [0, 30, 0, 0];
                             nextTypeMargin[1] = 30;
+                            if (extendedRows.length === 0) {
+                                nextTypeMargin[1] = 20;
+                            }
                             currentRowExtended[0].margin = nextTypeMargin;
 
                             if (lastRowType && lastRowType === 'exit') {
@@ -410,7 +422,7 @@ class TenantFireSafetyDisclosureDocumentBuilder {
                         columns: [
                             [
                                 {
-                                    text: `Date: ${moment().format("DD MMMM YYYY")}`,
+                                    text: "Date: _______________________",
                                     alignment: "center"
                                 }
                             ],
