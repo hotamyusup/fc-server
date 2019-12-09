@@ -56,6 +56,7 @@ module.exports = async function documentToMailMessage(document) {
 
     const to = [signer.email];
     if (propertyManagerEmail) {
+       //removing prop manager according to FC team request Dec2019
        // to.push(propertyManagerEmail);
     }
 
