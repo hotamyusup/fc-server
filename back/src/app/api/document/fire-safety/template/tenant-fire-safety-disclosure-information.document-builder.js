@@ -106,6 +106,24 @@ class TenantFireSafetyDisclosureDocumentBuilder {
                 .filter(device => device.Status !== -1)
                 .filter(filterEmergencyExit);
 
+            const alarmPanelsCount = devicesSortedByType.filter(device => getStyleFromDevice(device).type === 'alarmpanel').length;
+            let id2alarmPanelsBuildingFloors = {};
+            if (alarmPanelsCount === 0) {
+                const buildingAlarmPanels = await DeviceDAO.all({
+                    BuildingID: building._id,
+                    DeviceType: {$in: ["56fa327ddfe0b7562268266e", "5aeb69c13efe111289717df9"]}
+                });
+
+                const buildingAlarmPanelsFloors = await FloorDAO.all({
+                    _id: {$in: _.keys(_.groupBy(buildingAlarmPanels, 'FloorID'))},
+                });
+
+                console.log('buildingAlarmPanelsFloors === ', buildingAlarmPanelsFloors);
+
+                id2alarmPanelsBuildingFloors = _.keyBy(buildingAlarmPanelsFloors, '_id');
+                devicesSortedByType.push(...buildingAlarmPanels);
+            }
+
             const ANNUAL_FREQUENCY = 2;
             const PASS_RECORD_STATUS = 0;
 
@@ -147,6 +165,20 @@ class TenantFireSafetyDisclosureDocumentBuilder {
                         valuesKey2Value[valuesKey] = {};
                         if (deviceInstallationDateKey) {
                             valuesKey2Value[valuesKey].InstallationDate = device.InstallationDate;
+                        }
+
+                        return valuesKey;
+                    } else if ((deviceTypeType === 'alarmpanel') && (`${device.FloorID}` !== `${FloorID}`)) {
+                        const valuesKey = `${type}|${lastDeviceInspectionDateKey}|${device.FloorID}`;
+                        valuesKey2Value[valuesKey] = {};
+                        if (lastDeviceInspection) {
+                            valuesKey2Value[valuesKey].InspectionDate = lastDeviceInspection.InspectionDate;
+                        }
+
+                        const alarmPanelFloor = id2alarmPanelsBuildingFloors[device.FloorID];
+                        console.log('alarmPanelFloor === ', alarmPanelFloor);
+                        if (alarmPanelFloor) {
+                            valuesKey2Value[valuesKey].FloorTitle = alarmPanelFloor.Title;
                         }
 
                         return valuesKey;
@@ -221,6 +253,11 @@ class TenantFireSafetyDisclosureDocumentBuilder {
                             const deviceIconLeft = device.XPos - imageRadius;
                             const deviceIconTop = device.YPos - imageRadius;
 
+                            const isDeviceOnOtherFloor = `${device.FloorID}` !== `${FloorID}`;
+                            if (isDeviceOnOtherFloor) {
+                                ctx.globalAlpha = 0.4;
+                            }
+
                             if (device.clusteredAngle == null) {
                                 ctx.drawImage(iconCanvas, deviceIconLeft, deviceIconTop, imageWidth, imageHeight);
                             } else {
@@ -247,11 +284,15 @@ class TenantFireSafetyDisclosureDocumentBuilder {
                                 const deviceOnCirclePoint = getPointOnCircle(center, parseInt(imageRadius * 1.6), device.clusteredAngle);
                                 ctx.drawImage(iconCanvas, deviceOnCirclePoint.x - imageRadius, deviceOnCirclePoint.y - imageRadius, imageWidth, imageHeight);
                             }
+
+                            if (isDeviceOnOtherFloor) {
+                                ctx.globalAlpha = 1;
+                            }
                         });
                         let legendText = ` = ${deviceTypeById[deviceType].Title}`;
 
 
-                        const {InspectionDate, InstallationDate} = valuesKey2Value[valuesKey] || {};
+                        const {InspectionDate, InstallationDate, FloorTitle} = valuesKey2Value[valuesKey] || {};
 
                         const legendTextMessages = [];
                         if (InstallationDate) {
@@ -260,6 +301,10 @@ class TenantFireSafetyDisclosureDocumentBuilder {
 
                         if (InspectionDate) {
                             legendTextMessages.push(`Annual Service Date: ${moment(InspectionDate).format('DD MMM YY')}`);
+                        }
+
+                        if (FloorTitle) {
+                            legendTextMessages.push(`Located on floor: ${FloorTitle}`);
                         }
 
                         if (legendTextMessages.length) {
