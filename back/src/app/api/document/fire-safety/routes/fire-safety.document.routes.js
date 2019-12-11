@@ -7,6 +7,7 @@ const DOCUMENT_ROUTES = [
     {method: 'POST', path: '/documents/fire-safety/generate-bulk', config: FireSafetyDocumentController.generateDocuments},
     {method: 'POST', path: '/documents/fire-safety/generate', config: FireSafetyDocumentController.generateDocument},
     {method: 'GET', path: '/documents/fire-safety/{DocumentID}', config: FireSafetyDocumentController.get},
+    {method: 'GET', path: '/documents/fire-safety/templatesZip', config: FireSafetyDocumentController.templatesZip},
 ];
 
 module.exports = DOCUMENT_ROUTES;

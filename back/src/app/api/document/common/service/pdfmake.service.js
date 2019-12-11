@@ -19,9 +19,12 @@ class PDFMakeService {
         this.printer = new PdfPrinter(PDF_FONTS_LOCATION);
     }
 
-    createPDFDocument(docDefinition) {
+    createPDFDocument(docDefinition, toFilePath) {
         return new Promise((resolve, reject) => {
             const pdfDoc = this.printer.createPdfKitDocument(docDefinition);
+            if (toFilePath) {
+				pdfDoc.pipe(fs.createWriteStream(toFilePath));
+			}
             pdfDoc.end();
             resolve(pdfDoc);
         });

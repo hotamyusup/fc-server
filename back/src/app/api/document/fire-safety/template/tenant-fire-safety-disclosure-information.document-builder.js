@@ -118,8 +118,6 @@ class TenantFireSafetyDisclosureDocumentBuilder {
                     _id: {$in: _.keys(_.groupBy(buildingAlarmPanels, 'FloorID'))},
                 });
 
-                console.log('buildingAlarmPanelsFloors === ', buildingAlarmPanelsFloors);
-
                 id2alarmPanelsBuildingFloors = _.keyBy(buildingAlarmPanelsFloors, '_id');
                 devicesSortedByType.push(...buildingAlarmPanels);
             }
@@ -176,7 +174,6 @@ class TenantFireSafetyDisclosureDocumentBuilder {
                         }
 
                         const alarmPanelFloor = id2alarmPanelsBuildingFloors[device.FloorID];
-                        console.log('alarmPanelFloor === ', alarmPanelFloor);
                         if (alarmPanelFloor) {
                             valuesKey2Value[valuesKey].FloorTitle = alarmPanelFloor.Title;
                         }

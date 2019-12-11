@@ -11,6 +11,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "archiver": "^3.1.1",
     "async": "^2.6.0",
     "bluebird": "^3.5.1",
     "boom": "^5.2.0",
@@ -31,6 +32,7 @@
     "nodemailer": "^4.1.0",
     "nodemon": "^1.12.1",
     "pdfmake": "^0.1.37",
+    "rimraf": "^3.0.0",
     "sqlite": "^2.9.2",
     "underscore": "^1.8.3",
     "winston": "^3.0.0-rc1",
