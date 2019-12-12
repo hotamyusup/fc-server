@@ -4,6 +4,7 @@ const moment = require('moment');
 const path = require('path');
 const fs = require('fs');
 const rimraf = require("rimraf");
+const mkdirp = require('mkdirp');
 const uuid = require('node-uuid');
 const Boom = require('boom');
 const logger = require('../../../../core/logger');
@@ -152,8 +153,6 @@ class FireSafetyDocumentController extends BaseController {
         return {
             handler: async (request, reply) => {
                 try {
-
-
                     const {hash, PropertyID} = request.query;
                     const action = 'templatesZip';
                     logger.info(`sessionId: ${hash} ${this.controllerName}.${action} start ${JSON.stringify(request.payload)} ${JSON.stringify(request.params)}`);
@@ -215,35 +214,31 @@ class FireSafetyDocumentController extends BaseController {
                     const sessionDirZipPath = `${sessionDirPath}/${propertyDirName}.zip`;
 
                     const output = fs.createWriteStream(sessionDirZipPath); //path to create .zip file
-                    output.on('close', function () {
+                    output.on('close', () => {
                         logger.info(`sessionId: ${hash} ${this.controllerName}.${action} archive complete: ${archive.pointer()} total bytes`);
                         // console.log('archiver has been finalized and the output file descriptor has closed.');
                         reply
                             .file(sessionDirZipPath, {mode: 'attachment', filename: `${propertyDirName}.zip`})
                             .once('finish', () => {
-                                rimraf(sessionDirPath, function () {
+                                rimraf(sessionDirPath, () => {
                                     logger.info(`sessionId: ${hash} ${this.controllerName}.${action} rm -rf ${sessionDirPath} done`);
                                 });
                             });
                     });
 
-                    archive.on('error', function (err) {
+                    archive.on('error', (err) => {
                         logger.error(`sessionId: ${hash} ${this.controllerName}.${action} archive error: ${err.message}`);
                         logger.error(err);
                         reply(Boom.forbidden(err))
                     });
-
-                    // //on stream closed we can end the request
-                    // archive.on('end', function () {
-                    //     console.log('Archive wrote %d bytes', archive.pointer());
-                    // });
 
                     archive.pipe(output);
                     archive.directory(propertyDirPath, propertyDirName);
                     archive.finalize();
 
                 } catch (e) {
-                    console.log('e === ', e);
+                    logger.error(`sessionId: ${hash} ${this.controllerName}.${action} error === ${e}`);
+                    logger.error(e);
                 }
             }
         }
@@ -254,7 +249,7 @@ module.exports = new FireSafetyDocumentController();
 
 async function createDir(path) {
     return new Promise((resolve, reject) => {
-        fs.mkdir(path, {recursive: true}, (err) => {
+        mkdirp(path, (err) => {
             if (err) {
                 reject(err);
             } else {
@@ -274,18 +269,5 @@ async function copyFile(sourceFilePath, destinationFilePath) {
                 resolve()
             }
         });
-    })
-}
-
-async function storeFile(path, file) {
-    return new Promise((resolve, reject) => {
-        fs.writeFile(path, file, (err) => {
-            if (err) {
-                reject(err)
-            } else {
-                resolve();
-            }
-        });
-
     })
 }
