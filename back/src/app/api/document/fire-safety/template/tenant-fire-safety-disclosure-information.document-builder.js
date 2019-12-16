@@ -20,6 +20,8 @@ const PropertyDAO = require("../../../property/property/dao/property.dao");
 const iconsBase64 = require('./base64.icons');
 const styles = require('./pdfmake.styles');
 
+const toStringDateFormat = "MMMM DD, YYYY";
+
 class TenantFireSafetyDisclosureDocumentBuilder {
     async build(FloorID, tenant) {
         logger.info(`TenantFireSafetyDisclosureDocumentBuilder.build(${FloorID})`);
@@ -140,7 +142,9 @@ class TenantFireSafetyDisclosureDocumentBuilder {
                     || deviceType === 'exit';
             });
 
-            setAngleForClusteredDevices(annualInspectedDevices);
+            const isTypeShouldBeDrawnOnMap = type => ['alarmpanel', 'pullstation'].indexOf(type) >= 0;
+
+            setAngleForClusteredDevices(annualInspectedDevices.filter(isTypeShouldBeDrawnOnMap));
 
             const type2devices = _.groupBy(annualInspectedDevices, 'DeviceType');
 
@@ -149,7 +153,6 @@ class TenantFireSafetyDisclosureDocumentBuilder {
                 const typeDevices = type2devices[type];
 
                 const deviceTypeType = equipment2type[type].type;
-
 
                 typeGroupedByValuesKey[type] = _.groupBy(typeDevices, device => {
                     const lastDeviceInspection = device2inspections[device._id] && _.sortBy(device2inspections[device._id], 'InspectionDate').reverse()[0];
@@ -202,10 +205,10 @@ class TenantFireSafetyDisclosureDocumentBuilder {
                     _.keys(typeGroupedByValuesKey[deviceType]).forEach((valuesKey) => {
                         const devices = typeGroupedByValuesKey[deviceType][valuesKey];
                         const type = equipment2type[deviceType].type;
+                        const typeShouldBeDrawnOnMap = isTypeShouldBeDrawnOnMap(type);
 
                         let firstDeviceIcon, lastDeviceIcon;
-
-                        devices.forEach((device, index) => {
+                        typeShouldBeDrawnOnMap && devices.forEach((device, index) => {
                             deviceCounter++;
 
                             const radius = 10;
@@ -218,12 +221,12 @@ class TenantFireSafetyDisclosureDocumentBuilder {
 
                             const iconImage = type2icon[type];
 
-                            iconCtx.drawImage(iconImage, 0, 0, imageWidth, imageHeight);
+                            iconCtx.drawImage(iconImage, 0 + 2, 0 + 2, imageWidth - 4, imageHeight - 4);
 
                             iconCtx.fillStyle = deviceTypeById[device.DeviceType + ''].Color;
 
                             iconCtx.beginPath();
-                            iconCtx.arc(imageWidth - radius, imageHeight - radius, radius, 0, 2 * Math.PI);
+                            iconCtx.arc(imageWidth - radius - 1, imageHeight - radius - 1, radius, 0, 2 * Math.PI);
                             iconCtx.stroke();
                             iconCtx.fill();
 
@@ -231,7 +234,7 @@ class TenantFireSafetyDisclosureDocumentBuilder {
                             iconCtx.font = 'bold 20px Roboto, serif';
 
                             const deviceNumberString = `${deviceCounter}`;
-                            let deviceLeftShift = imageWidth - radius - 5;
+                            let deviceLeftShift = imageWidth - radius - 6;
                             if (deviceNumberString.length > 1) {
                                 deviceLeftShift = imageWidth - radius - 12
                             }
@@ -251,8 +254,30 @@ class TenantFireSafetyDisclosureDocumentBuilder {
                             const deviceIconTop = device.YPos - imageRadius;
 
                             const isDeviceOnOtherFloor = `${device.FloorID}` !== `${FloorID}`;
+
+                            if (type=== 'alarmpanel') {
+                                ctx.globalAlpha = isDeviceOnOtherFloor ? 0.06 : 0.16;
+                                const circlesCenterX = device.clusteredAngle != null ? deviceIconLeft : (deviceIconLeft + imageRadius);
+                                const circlesCenterY = device.clusteredAngle != null ? deviceIconTop : (deviceIconTop + imageRadius);
+
+                                ctx.fillStyle = "#de2a20";
+                                ctx.strokeStyle = '#8a0016';
+
+                                ctx.beginPath();
+                                ctx.arc(circlesCenterX, circlesCenterY, 96, 0, 2 * Math.PI);
+                                ctx.fill();
+                                ctx.beginPath();
+                                ctx.arc(circlesCenterX, circlesCenterY, 64, 0, 2 * Math.PI);
+                                ctx.fill();
+                                ctx.beginPath();
+                                ctx.arc(circlesCenterX, circlesCenterY, 32, 0, 2 * Math.PI);
+                                ctx.fill();
+                            }
+
                             if (isDeviceOnOtherFloor) {
                                 ctx.globalAlpha = 0.4;
+                            } else {
+                                ctx.globalAlpha = 1;
                             }
 
                             if (device.clusteredAngle == null) {
@@ -282,22 +307,28 @@ class TenantFireSafetyDisclosureDocumentBuilder {
                                 ctx.drawImage(iconCanvas, deviceOnCirclePoint.x - imageRadius, deviceOnCirclePoint.y - imageRadius, imageWidth, imageHeight);
                             }
 
+
                             if (isDeviceOnOtherFloor) {
                                 ctx.globalAlpha = 1;
                             }
                         });
-                        let legendText = ` = ${deviceTypeById[deviceType].Title}`;
+                        let legendText = ``;
+                        if (type === 'exit') {
+                            legendText = `${devices.length} Emergency Exits`;
+                        } else {
+                            legendText = `${devices.length} ${deviceTypeById[deviceType].Title}`;;
+                        }
 
 
                         const {InspectionDate, InstallationDate, FloorTitle} = valuesKey2Value[valuesKey] || {};
 
                         const legendTextMessages = [];
                         if (InstallationDate) {
-                            legendTextMessages.push(`Date Last Replaced in Unit: ${moment(InstallationDate).format('DD MMM YY')}`);
+                            legendTextMessages.push(`Date Last Replaced in Unit: ${moment(InstallationDate).format(toStringDateFormat)}`);
                         }
 
                         if (InspectionDate) {
-                            legendTextMessages.push(`Annual Service Date: ${moment(InspectionDate).format('DD MMM YY')}`);
+                            legendTextMessages.push(`Annual Service Date: ${moment(InspectionDate).format(toStringDateFormat)}`);
                         }
 
                         if (FloorTitle) {
@@ -312,12 +343,12 @@ class TenantFireSafetyDisclosureDocumentBuilder {
                         deviceLegendRows.push({
                             type,
                             columns: [
-                                {
+                                typeShouldBeDrawnOnMap ? {
                                     image: firstDeviceIcon,
                                     style: "legendImage",
                                     height: 20,
                                     width: 20,
-                                }
+                                } : undefined
                                 ,
                                 lastDeviceIcon ? {
                                     text: "—",
@@ -339,7 +370,8 @@ class TenantFireSafetyDisclosureDocumentBuilder {
                                 {
                                     text: legendText,
                                     style: "legendLabel",
-                                    height: 20
+                                    height: 20,
+                                    margin: !typeShouldBeDrawnOnMap ? [0, 0, 0, 0] : undefined
                                 }
                             ].filter(r => !!r),
                             margin: [0, 5, 0, 5],
@@ -384,8 +416,14 @@ class TenantFireSafetyDisclosureDocumentBuilder {
                     {
                         columns: [
                             {
-                                text: `${moment().format("DD MMMM YYYY")}`,
+                                text: property.Title,
+                                width: "70%"
+                            },
+                            {
+                                text: `${moment().format(toStringDateFormat)}`,
+                                width: "30%",
                                 alignment: "right"
+
                             }
                         ],
                         margin: [0, 10, 0, 10]
@@ -397,7 +435,7 @@ class TenantFireSafetyDisclosureDocumentBuilder {
                     {
                         columns: [
                             {
-                                text: `BUILDING ADDRESS: ${property.Street}, ${building.Title}`,
+                                text: `BUILDING ADDRESS: ${property.Street}, ${property.City}`,
                                 width: "70%"
                             },
                             {
@@ -407,7 +445,7 @@ class TenantFireSafetyDisclosureDocumentBuilder {
 
                             }
                         ],
-                        margin: [0, 20, 0, 20]
+                        margin: [0, 10, 0, 10]
                     },
                     mapImageRow,
                     ...deviceLegendRows.reduce((extendedRows, row) => { // add notices before device type details
@@ -429,11 +467,8 @@ class TenantFireSafetyDisclosureDocumentBuilder {
                                 });
                             }
 
-                            const nextTypeMargin = currentRowExtended[0].margin || [0, 30, 0, 0];
-                            nextTypeMargin[1] = 30;
-                            if (extendedRows.length === 0) {
-                                nextTypeMargin[1] = 20;
-                            }
+                            const nextTypeMargin = currentRowExtended[0].margin || [0, 10, 0, 0];
+                            nextTypeMargin[1] = 10;
                             currentRowExtended[0].margin = nextTypeMargin;
 
                             if (lastRowType && lastRowType === 'exit') {
@@ -442,7 +477,7 @@ class TenantFireSafetyDisclosureDocumentBuilder {
                                     alignment: 'left',
                                     style: "notice",
                                     color: "red",
-                                    margin: [0, 10, 0, 10]
+                                    margin: [0, 4, 0, 6]
                                 });
                             }
                         }
@@ -453,33 +488,35 @@ class TenantFireSafetyDisclosureDocumentBuilder {
                     {
                         text: "TO REPORT A SUSPECTED FIRE CODE VIOLATION, CONTACT THE FIRE DEPARTMENT AT: 415-558-3300.",
                         style: "notice",
+                        fontSize: 10,
                         margin: [0, 20, 0, 4]
                     },
                     {
                         text: "GENERAL FIRE SAFETY GUIDANCE AND FIRE SAFETY TRAINING VIDEO ARE AVAILABLE ON THE SFFD WEBSITE AT: http://sf-fire.org/fire-safety-tips-san-francisco",
+                        fontSize: 10,
                         style: "notice"
                     },
                     {
                         template: 'signature',
                         columns: [
-                            [
-                                {
-                                    text: "Date: _______________________",
-                                    alignment: "center"
-                                }
-                            ],
-                            [
-                                {
-                                    text: "_____________________________",
-                                    style: "signature",
-                                },
-                                {
-                                    text: `${tenant && tenant.name ? tenant.name : "resident signature"}`,
-                                    style: "signature"
-                                }
-                            ],
+                    //         [
+                    //             {
+                    //                 text: "Date: _______________________",
+                    //                 alignment: "center"
+                    //             }
+                    //         ],
+                    //         [
+                    //             {
+                    //                 text: "_____________________________",
+                    //                 style: "signature",
+                    //             },
+                    //             {
+                    //                 text: `${tenant && tenant.name ? tenant.name : "resident signature"}`,
+                    //                 style: "signature"
+                    //             }
+                    //         ],
                         ],
-                        margin: [0, 40, 0, 0]
+                    //     margin: [0, 40, 0, 0]
                     },
                 ],
                 images: {
@@ -572,7 +609,6 @@ const equipment2type = {
 };
 
 function setAngleForClusteredDevices(devices) {
-    devices = devices.slice();
     let i = 0;
 
     while (devices.length > 0 && i < devices.length) {
@@ -597,8 +633,6 @@ function setAngleForClusteredDevices(devices) {
             i++;
         }
     }
-
-    return devices;
 }
 
 function getPointOnCircle(center, radius, angle) {

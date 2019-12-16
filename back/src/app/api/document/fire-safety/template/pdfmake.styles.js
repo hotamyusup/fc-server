@@ -39,7 +39,7 @@ const styles = {
     "legendLabel": {
         "fontSize": 12,
         "bold": true,
-        "margin": [10, 4, 0, 10],
+        "margin": [10, 2, 0, 4],
     }
 };
 
