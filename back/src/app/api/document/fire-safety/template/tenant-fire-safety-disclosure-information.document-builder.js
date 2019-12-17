@@ -142,9 +142,10 @@ class TenantFireSafetyDisclosureDocumentBuilder {
                     || deviceType === 'exit';
             });
 
-            const isTypeShouldBeDrawnOnMap = type => ['alarmpanel', 'pullstation'].indexOf(type) >= 0;
+            const isTypeShouldBeDrawnOnMap = type => ['smokedetector'].indexOf(type) === -1;
 
-            setAngleForClusteredDevices(annualInspectedDevices.filter(isTypeShouldBeDrawnOnMap));
+            const mapDrawnDevices = annualInspectedDevices.filter(d => isTypeShouldBeDrawnOnMap(getStyleFromDevice(d).type));
+            setAngleForClusteredDevices(mapDrawnDevices);
 
             const type2devices = _.groupBy(annualInspectedDevices, 'DeviceType');
 
@@ -250,15 +251,17 @@ class TenantFireSafetyDisclosureDocumentBuilder {
                                 lastDeviceIcon = iconCanvas.toDataURL();
                             }
 
-                            const deviceIconLeft = device.XPos - imageRadius;
-                            const deviceIconTop = device.YPos - imageRadius;
+                            const deviceIconLeft = device.XPos;
+                            const deviceIconTop = device.YPos;
 
                             const isDeviceOnOtherFloor = `${device.FloorID}` !== `${FloorID}`;
 
-                            if (type=== 'alarmpanel') {
+                            if (type=== 'alarmpanel' &&
+                                (device.clusteredAngle == null || device.clusteredAngle == 0) // draw circle once
+                            ) {
                                 ctx.globalAlpha = isDeviceOnOtherFloor ? 0.06 : 0.16;
-                                const circlesCenterX = device.clusteredAngle != null ? deviceIconLeft : (deviceIconLeft + imageRadius);
-                                const circlesCenterY = device.clusteredAngle != null ? deviceIconTop : (deviceIconTop + imageRadius);
+                                const circlesCenterX = deviceIconLeft + imageRadius;
+                                const circlesCenterY = deviceIconTop + imageRadius;
 
                                 ctx.fillStyle = "#de2a20";
                                 ctx.strokeStyle = '#8a0016';
@@ -284,15 +287,15 @@ class TenantFireSafetyDisclosureDocumentBuilder {
                                 ctx.drawImage(iconCanvas, deviceIconLeft, deviceIconTop, imageWidth, imageHeight);
                             } else {
                                 const center = {
-                                    x: deviceIconLeft,
-                                    y: deviceIconTop
+                                    x: deviceIconLeft + imageRadius,
+                                    y: deviceIconTop + imageRadius
                                 };
 
                                 ctx.fillStyle = "#333333";
                                 ctx.strokeStyle = '#333333';
 
                                 ctx.beginPath();
-                                ctx.arc(deviceIconLeft, deviceIconTop, 8, 0, 2 * Math.PI);
+                                ctx.arc(center.x, center.y, 8, 0, 2 * Math.PI);
                                 ctx.fill();
 
                                 const lineCirclePoint = getPointOnCircle(center, parseInt(imageRadius * 0.8), device.clusteredAngle);
@@ -300,7 +303,7 @@ class TenantFireSafetyDisclosureDocumentBuilder {
                                 ctx.beginPath();
                                 ctx.lineWidth = 4;
                                 ctx.moveTo(lineCirclePoint.x, lineCirclePoint.y);
-                                ctx.lineTo(deviceIconLeft, deviceIconTop);
+                                ctx.lineTo(center.x, center.y);
                                 ctx.stroke();
 
                                 const deviceOnCirclePoint = getPointOnCircle(center, parseInt(imageRadius * 1.6), device.clusteredAngle);
