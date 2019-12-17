@@ -226,26 +226,26 @@ class TenantFireSafetyDisclosureDocumentBuilder {
 
                             iconCtx.drawImage(iconImage, 0 + 2, 0 + 2, imageWidth - 4, imageHeight - 4);
 
-                            iconCtx.fillStyle = deviceTypeById[device.DeviceType + ''].Color;
-
-                            iconCtx.beginPath();
-                            iconCtx.arc(imageWidth - radius - 1, imageHeight - radius - 1, radius, 0, 2 * Math.PI);
-                            iconCtx.stroke();
-                            iconCtx.fill();
-
-                            iconCtx.strokeStyle = '#666666';
-                            iconCtx.font = 'bold 20px Roboto, serif';
-
-                            const deviceNumberString = `${deviceCounter}`;
-                            let deviceLeftShift = imageWidth - radius - 6;
-                            if (deviceNumberString.length > 1) {
-                                deviceLeftShift = imageWidth - radius - 12
-                            }
-                            iconCtx.strokeText(deviceNumberString, deviceLeftShift + 1, imageHeight - radius + 9 + 1);
-
-                            iconCtx.fillStyle = '#FFFFFF';
-                            iconCtx.font = 'bold 20px Roboto, serif';
-                            iconCtx.fillText(deviceNumberString, deviceLeftShift, imageHeight - radius + 6);
+                            // iconCtx.fillStyle = deviceTypeById[device.DeviceType + ''].Color;
+                            //
+                            // iconCtx.beginPath();
+                            // iconCtx.arc(imageWidth - radius - 1, imageHeight - radius - 1, radius, 0, 2 * Math.PI);
+                            // iconCtx.stroke();
+                            // iconCtx.fill();
+                            //
+                            // iconCtx.strokeStyle = '#666666';
+                            // iconCtx.font = 'bold 20px Roboto, serif';
+                            //
+                            // const deviceNumberString = `${deviceCounter}`;
+                            // let deviceLeftShift = imageWidth - radius - 6;
+                            // if (deviceNumberString.length > 1) {
+                            //     deviceLeftShift = imageWidth - radius - 12
+                            // }
+                            // iconCtx.strokeText(deviceNumberString, deviceLeftShift + 1, imageHeight - radius + 9 + 1);
+                            //
+                            // iconCtx.fillStyle = '#FFFFFF';
+                            // iconCtx.font = 'bold 20px Roboto, serif';
+                            // iconCtx.fillText(deviceNumberString, deviceLeftShift, imageHeight - radius + 6);
 
                             if (index === 0) {
                                 firstDeviceIcon = iconCanvas.toDataURL();
@@ -348,35 +348,35 @@ class TenantFireSafetyDisclosureDocumentBuilder {
                         deviceLegendRows.push({
                             type,
                             columns: [
-                                typeShouldBeDrawnOnMap ? {
-                                    image: firstDeviceIcon,
-                                    style: "legendImage",
-                                    height: 20,
-                                    width: 20,
-                                } : undefined
-                                ,
-                                lastDeviceIcon ? {
-                                    text: "—",
-                                    style: "legendLabel",
-                                    height: 20,
-                                    width: 20,
-                                    "margin": [10, 4, 10, 10],
-                                    alignment: "center"
-
-                                } : undefined
-                                ,
-                                lastDeviceIcon ? {
-                                    image: lastDeviceIcon,
-                                    style: "legendImage",
-                                    height: 20,
-                                    width: 20,
-                                } : undefined
-                                ,
+                                // typeShouldBeDrawnOnMap ? {
+                                //     image: firstDeviceIcon,
+                                //     style: "legendImage",
+                                //     height: 20,
+                                //     width: 20,
+                                // } : undefined
+                                // ,
+                                // lastDeviceIcon ? {
+                                //     text: "—",
+                                //     style: "legendLabel",
+                                //     height: 20,
+                                //     width: 20,
+                                //     "margin": [10, 4, 10, 10],
+                                //     alignment: "center"
+                                //
+                                // } : undefined
+                                // ,
+                                // lastDeviceIcon ? {
+                                //     image: lastDeviceIcon,
+                                //     style: "legendImage",
+                                //     height: 20,
+                                //     width: 20,
+                                // } : undefined
+                                // ,
                                 {
                                     text: legendText,
                                     style: "legendLabel",
                                     height: 20,
-                                    margin: !typeShouldBeDrawnOnMap ? [0, 0, 0, 0] : undefined
+                                    // margin: !typeShouldBeDrawnOnMap ? [0, 0, 0, 0] : undefined
                                 }
                             ].filter(r => !!r),
                             margin: [0, 5, 0, 5],
@@ -399,12 +399,12 @@ class TenantFireSafetyDisclosureDocumentBuilder {
                 deviceLegendRows.push({
                     type: 'pullstation',
                     columns: [
-                        {
-                            image: iconsBase64.pullstation,
-                            style: "legendImage",
-                            height: 20,
-                            width: 20,
-                        },
+                        // {
+                        //     image: iconsBase64.pullstation,
+                        //     style: "legendImage",
+                        //     height: 20,
+                        //     width: 20,
+                        // },
                         {
                             text: `No Pull Stations`,
                             style: "legendLabel",
@@ -420,12 +420,12 @@ class TenantFireSafetyDisclosureDocumentBuilder {
                 deviceLegendRows.push({
                     type: 'pullstation',
                     columns: [
-                        {
-                            image: iconsBase64.fireescape,
-                            style: "legendImage",
-                            height: 20,
-                            width: 20,
-                        },
+                        // {
+                        //     image: iconsBase64.fireescape,
+                        //     style: "legendImage",
+                        //     height: 20,
+                        //     width: 20,
+                        // },
                         {
                             text: `No Fire Escapes`,
                             style: "legendLabel",
