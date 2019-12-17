@@ -317,11 +317,32 @@ class TenantFireSafetyDisclosureDocumentBuilder {
                                 ctx.globalAlpha = 1;
                             }
                         });
+
+                        const capitalizeTitle = title => {
+                            return (title || '')
+                                .trim()
+                                .toLowerCase()
+                                .split(' ')
+                                .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+                                .join(' ');
+                        };
+
+                        const deviceTypePluralizator = (deviceType, count)=> {
+                            const capitalizedDeviceType = capitalizeTitle(deviceType);
+                            if (count === 0) { // never called, empty devicetypes already filtered
+                                return `No ${capitalizedDeviceType}`;
+                            } else if (count === 1) {
+                                return `${count} ${capitalizedDeviceType}`;
+                            } else {
+                                return `${count} ${capitalizedDeviceType}s`;
+                            }
+                        };
+
                         let legendText = ``;
                         if (type === 'exit') {
-                            legendText = `${devices.length} Emergency Exits`;
+                            legendText = deviceTypePluralizator('Emergency Exit', devices.length);
                         } else {
-                            legendText = `${devices.length} ${deviceTypeById[deviceType].Title}`;;
+                            legendText = deviceTypePluralizator(deviceTypeById[deviceType].Title, devices.length);
                         }
 
 
@@ -341,7 +362,7 @@ class TenantFireSafetyDisclosureDocumentBuilder {
                         }
 
                         if (legendTextMessages.length) {
-                            legendText += ` - ${legendTextMessages.join(', ')}`;
+                            legendText += ` — ${legendTextMessages.join(', ')}`;
                         }
 
 
