@@ -77,6 +77,7 @@ class TenantFireSafetyDisclosureDocumentBuilder {
 
         const type2icon = await Promise.props({
             exit: getImageFromBase64(iconsBase64.exit),
+            fireescape: getImageFromBase64(iconsBase64.fireescape),
             extinguisher: getImageFromBase64(iconsBase64.extinguisher),
             pullstation: getImageFromBase64(iconsBase64.pullstation),
             alarmpanel: getImageFromBase64(iconsBase64.alarmpanel),
@@ -96,6 +97,7 @@ class TenantFireSafetyDisclosureDocumentBuilder {
             };
 
             const type2sortOrder = {
+                fireescape: 500,
                 extinguisher: 400,
                 exit: 300,
                 pullstation: 200,
@@ -414,6 +416,26 @@ class TenantFireSafetyDisclosureDocumentBuilder {
                 });
             }
 
+            if (_.keys(typeGroupedByValuesKey).filter(deviceType => equipment2type[deviceType].type === 'fireescape').length === 0) {
+                deviceLegendRows.push({
+                    type: 'pullstation',
+                    columns: [
+                        {
+                            image: iconsBase64.fireescape,
+                            style: "legendImage",
+                            height: 20,
+                            width: 20,
+                        },
+                        {
+                            text: `No Fire Escapes`,
+                            style: "legendLabel",
+                            height: 20,
+                        }
+                    ],
+                    margin: [0, 5, 0, 5],
+                });
+            }
+
             const documentDefinition = {
                 content: [
                     {
@@ -564,6 +586,9 @@ const equipment2type = {
         type: "extinguisher"
     },
 
+    "XXXXXXXXXXXXXXXXXXXXXXXXXX": { // FIRE ESCAPE - DeviceType // TODO change when create
+        type: "fireescape"
+    },
     "56fa2d50dfe0b75622682654": { // EXIT SIGN - DeviceType
         type: "exit"
     },
