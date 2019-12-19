@@ -386,13 +386,13 @@ class TenantFireSafetyDisclosureDocumentBuilder {
                                 //
                                 // } : undefined
                                 // ,
-                                // lastDeviceIcon ? {
-                                //     image: lastDeviceIcon,
-                                //     style: "legendImage",
-                                //     height: 20,
-                                //     width: 20,
-                                // } : undefined
-                                // ,
+                                 lastDeviceIcon ? {
+                                     image: lastDeviceIcon,
+                                     style: "legendImage",
+                                     height: 20,
+                                     width: 20,
+                                 } : undefined
+                                 ,
                                 {
                                     text: legendText,
                                     style: "legendLabel",
@@ -420,12 +420,12 @@ class TenantFireSafetyDisclosureDocumentBuilder {
                 deviceLegendRows.push({
                     type: 'pullstation',
                     columns: [
-                        // {
-                        //     image: iconsBase64.pullstation,
-                        //     style: "legendImage",
-                        //     height: 20,
-                        //     width: 20,
-                        // },
+                         {
+                             image: iconsBase64.pullstation,
+                             style: "legendImage",
+                             height: 20,
+                             width: 20,
+                         },
                         {
                             text: `No Pull Stations`,
                             style: "legendLabel",
@@ -497,8 +497,8 @@ class TenantFireSafetyDisclosureDocumentBuilder {
                     ...deviceLegendRows.reduce((extendedRows, row) => { // add notices before device type details
                         const currentRowExtended = [row];
                         const lastRowType = extendedRows[extendedRows.length - 1] && extendedRows[extendedRows.length - 1].type;
-
                         if (extendedRows.length === 0 || (lastRowType && lastRowType !== row.type)) {
+/*
                             if (row.type === 'smokedetector') {
                                 currentRowExtended.unshift({
                                     text: "SMOKE & CARBON MONOXIDE ALARM DEVICES:",
@@ -512,7 +512,7 @@ class TenantFireSafetyDisclosureDocumentBuilder {
                                     margin: [0, 10, 0, 10]
                                 });
                             }
-
+*/
                             const nextTypeMargin = currentRowExtended[0].margin || [0, 10, 0, 0];
                             nextTypeMargin[1] = 10;
                             currentRowExtended[0].margin = nextTypeMargin;

@@ -197,6 +197,7 @@ class FireSafetyDocumentController extends BaseController {
                         'resident fire safety disclosure.pdf',
                         'smoke alarm info disclosure.pdf',
                         'CO alarm info disclosure.pdf',
+                        'Smoke_CO_Disclosure_Fire_Department.pdf',
                         'SFFD Fire Safety Tips (rev. Aug 2017) - CHINESE.pdf',
                         'SFFD Fire Safety Tips (rev. Aug 2017) - FILIPINO.pdf',
                         'SFFD Fire Safety Tips (rev. Aug 2017) - RUSSIAN.pdf',

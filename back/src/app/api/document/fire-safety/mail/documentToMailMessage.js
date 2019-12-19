@@ -39,6 +39,7 @@ module.exports = async function documentToMailMessage(document) {
             'resident fire safety disclosure.pdf',
             'smoke alarm info disclosure.pdf',
             'CO alarm info disclosure.pdf',
+            'Smoke_CO_Disclosure_Fire_Department.pdf',
         ].map(filename => ({
             filename,
             path: path.normalize(`${__dirname}../../../fire-safety/files/${filename}`)
