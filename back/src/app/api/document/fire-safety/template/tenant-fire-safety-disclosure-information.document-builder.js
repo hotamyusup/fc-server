@@ -369,13 +369,13 @@ class TenantFireSafetyDisclosureDocumentBuilder {
                         deviceLegendRows.push({
                             type,
                             columns: [
-                                // typeShouldBeDrawnOnMap ? {
-                                //     image: firstDeviceIcon,
-                                //     style: "legendImage",
-                                //     height: 20,
-                                //     width: 20,
-                                // } : undefined
-                                // ,
+                                typeShouldBeDrawnOnMap ? {
+                                    image: firstDeviceIcon,
+                                    style: "legendImage",
+                                    height: 20,
+                                    width: 20,
+                                } : undefined
+                                ,
                                 // lastDeviceIcon ? {
                                 //     text: "—",
                                 //     style: "legendLabel",
@@ -386,18 +386,18 @@ class TenantFireSafetyDisclosureDocumentBuilder {
                                 //
                                 // } : undefined
                                 // ,
-                                 lastDeviceIcon ? {
-                                     image: lastDeviceIcon,
-                                     style: "legendImage",
-                                     height: 20,
-                                     width: 20,
-                                 } : undefined
+                                //  lastDeviceIcon ? {
+                                //      image: lastDeviceIcon,
+                                //      style: "legendImage",
+                                //      height: 20,
+                                //      width: 20,
+                                //  } : undefined
                                  ,
                                 {
                                     text: legendText,
                                     style: "legendLabel",
                                     height: 20,
-                                    // margin: !typeShouldBeDrawnOnMap ? [0, 0, 0, 0] : undefined
+                                    margin: !typeShouldBeDrawnOnMap ? [0, 0, 0, 0] : undefined
                                 }
                             ].filter(r => !!r),
                             margin: [0, 5, 0, 5],
