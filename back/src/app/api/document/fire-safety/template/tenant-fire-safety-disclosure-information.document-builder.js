@@ -60,8 +60,9 @@ class TenantFireSafetyDisclosureDocumentBuilder {
 
         const w = image.width;
         const h = image.height;
-        const canvasWidth = boundsByDevices.x * 1.4; //w - left;
-        const canvasHeight = boundsByDevices.y * 1.4; //h - top;
+        const canvasWidth = boundsByDevices.x * 1.8; //w - left;
+        const canvasHeight = boundsByDevices.y * 1.8; //h - top;
+
         const mapCanvas = new Canvas(canvasWidth, canvasHeight);
         const ctx = mapCanvas.getContext('2d');
 
@@ -411,9 +412,11 @@ class TenantFireSafetyDisclosureDocumentBuilder {
             };
 
             if (canvasWidth > canvasHeight) {
-                mapImageRow.width = 520;
+                //mapImageRow.width = 520;
+                mapImageRow.width = 410;
             } else {
-                mapImageRow.width = canvasHeight / canvasWidth > 1.5 ? 300 : 400;
+                //mapImageRow.width = canvasHeight / canvasWidth > 1.5 ? 300 : 400;
+                mapImageRow.width = canvasHeight / canvasWidth > 1.5 ? 200 : 300;
             }
 
             if (_.keys(typeGroupedByValuesKey).filter(deviceType => equipment2type[deviceType].type === 'pullstation').length === 0) {
