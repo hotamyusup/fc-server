@@ -127,25 +127,37 @@ class DocumentController extends BaseController {
                 const document = await this.DAO.get(request.params[this.requestIDKey]);
 
                 const definition = document.definition;
+                const signerName = document.signer && document.signer.name;
 
                 definition.content.forEach(row => {
                     if (row.template === 'signature') {
-                        const signatureImageElem = {
-                            image: signatureBase64,
-                            style: "signature",
-                            height: 50,
-                            width: 50,
-                            alignment: "center"
-                        };
-
-                        if (row.columns[1].length === 2) {
-                            row.columns[1].unshift(signatureImageElem);
-                        } else {
-                            row.columns[1][0] = signatureImageElem;
-                        }
-
-                        row.columns[0][0].margin = [0, 50, 0, 0];
-                        row.columns[0][0].text = `Date: ${moment().format("DD MMMM YYYY")}`;
+                        row.columns = [
+                            [
+                                {
+                                    text: `Date: ${moment().format("DD MMMM YYYY")}`,
+                                    alignment: "center",
+                                    margin: [0, 50, 0, 0]
+                                }
+                            ],
+                            [
+                                {
+                                    image: signatureBase64,
+                                    style: "signature",
+                                    height: 50,
+                                    width: 50,
+                                    alignment: "center"
+                                },
+                                {
+                                    text: "_____________________________",
+                                    style: "signature",
+                                },
+                                {
+                                    text: `${signerName ? signerName : "resident signature"}`,
+                                    style: "signature"
+                                }
+                            ],
+                        ];
+                        row.margin = [0, 40, 0, 0];
                     }
                 });
 
