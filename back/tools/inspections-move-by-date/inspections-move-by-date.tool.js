@@ -127,6 +127,7 @@ module.exports = {
                         const oldInspectionDate = moment(inspection.InspectionDate);
                         const newInspectionDate = oldInspectionDate.clone().add(diffInDays, 'day');
                         inspection.InspectionDate = newInspectionDate.toISOString();
+                        inspection.updated_at = moment().toISOString();
                         await inspection.save({validateBeforeSave: false}); // avoid updated_at changes
                         console.log(`moved inspection ${inspection._id} from ${oldInspectionDate.format('YYYY-MM-DD HH:mm')} to ${newInspectionDate.format('YYYY-MM-DD HH:mm')}`);
                     }, {concurrency: 5});
