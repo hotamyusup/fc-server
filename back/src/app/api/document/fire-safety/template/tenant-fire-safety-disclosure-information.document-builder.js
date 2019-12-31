@@ -26,6 +26,23 @@ class TenantFireSafetyDisclosureDocumentBuilder {
     async build(FloorID, tenant) {
         logger.info(`TenantFireSafetyDisclosureDocumentBuilder.build(${FloorID})`);
 
+        const residentialUnit = tenant && tenant.unit && `${tenant.unit}`.trim();
+
+        // to test uncomment
+        // const residentialUnit = '900';
+        /*
+            and open host:port/documents/fire-safety?hash=57075bf139d1bffb8981e438&FloorID=5ac68dcae26e3453a1dbc7fc
+
+            smokedetector devices ids with DeviceLocation like "Unit ***": [
+              '1d85c5afcc4faf8620af5484',
+              'd685b0e0ecd2caaa50f9f5d1',
+              '3483f4d1be3b26472943a1b3',
+              '17b404fdd29638bd28621ffc',
+              '8378722707d806e75b56db86'
+            ]
+         */
+
+
         const floor = await FloorDAO.get(FloorID);
         const building = await BuildingDAO.get(floor.BuildingID);
         const property = await PropertyDAO.get(building.PropertyID || floor.PropertyID);
@@ -97,6 +114,21 @@ class TenantFireSafetyDisclosureDocumentBuilder {
                 return type !== 'exit' || (type === 'exit' && device.IsEmergencyExit);
             };
 
+            const getUnitNumberRegex = /^(unit[ \-\.]*([\w\d]*))/gi; //.exec(d.DeviceLocation)[2]
+            const compareUnits = device => {
+                const result = getUnitNumberRegex.exec(device.DeviceLocation);
+                console.log(`${device.DeviceLocation} result === `, result);
+                return result && result[2] === residentialUnit
+            };
+            const filterInUnitSmokedetectors = device => {
+                if (!residentialUnit) {
+                    return true;
+                }
+
+                const {type} = getStyleFromDevice(device);
+                return type !== 'smokedetector' || (type === 'smokedetector' && compareUnits(device));
+            };
+
             const type2sortOrder = {
                 fireescape: 500,
                 extinguisher: 400,
@@ -109,7 +141,8 @@ class TenantFireSafetyDisclosureDocumentBuilder {
             const devicesSortedByType = devices
                 .filter(getStyleFromDevice)
                 .filter(device => device.Status !== -1)
-                .filter(filterEmergencyExit);
+                .filter(filterEmergencyExit)
+                .filter(filterInUnitSmokedetectors);
 
             const alarmPanelsCount = devicesSortedByType.filter(device => getStyleFromDevice(device).type === 'alarmpanel').length;
             let id2alarmPanelsBuildingFloors = {};
@@ -166,10 +199,13 @@ class TenantFireSafetyDisclosureDocumentBuilder {
                         valuesKey2Value['none'] = {};
                     } else if (deviceTypeType === 'smokedetector') {
                         const deviceInstallationDateKey = device.InstallationDate && moment(device.InstallationDate).format('YYYY-MM-DD');
-                        const valuesKey = `${type}|${deviceInstallationDateKey}`;
+                        const valuesKey = `${type}|${deviceInstallationDateKey}|${device.DeviceLocation}`;
                         valuesKey2Value[valuesKey] = {};
                         if (deviceInstallationDateKey) {
                             valuesKey2Value[valuesKey].InstallationDate = device.InstallationDate;
+                        }
+                        if (device.DeviceLocation) {
+                            valuesKey2Value[valuesKey].DeviceLocation = capitalizeFirstLetter(device.DeviceLocation);
                         }
 
                         return valuesKey;
@@ -259,7 +295,7 @@ class TenantFireSafetyDisclosureDocumentBuilder {
 
                             const isDeviceOnOtherFloor = `${device.FloorID}` !== `${FloorID}`;
 
-                            if (type=== 'alarmpanel' &&
+                            if (type === 'alarmpanel' &&
                                 (device.clusteredAngle == null || device.clusteredAngle == 0) // draw circle once
                             ) {
                                 ctx.globalAlpha = isDeviceOnOtherFloor ? 0.06 : 0.16;
@@ -324,11 +360,11 @@ class TenantFireSafetyDisclosureDocumentBuilder {
                                 .trim()
                                 .toLowerCase()
                                 .split(' ')
-                                .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+                                .map(capitalizeFirstLetter)
                                 .join(' ');
                         };
 
-                        const deviceTypePluralizator = (deviceType, count)=> {
+                        const deviceTypePluralizator = (deviceType, count) => {
                             const capitalizedDeviceType = capitalizeTitle(deviceType);
                             if (count === 0) { // never called, empty devicetypes already filtered
                                 return `No ${capitalizedDeviceType}`;
@@ -347,11 +383,11 @@ class TenantFireSafetyDisclosureDocumentBuilder {
                         }
 
 
-                        const {InspectionDate, InstallationDate, FloorTitle} = valuesKey2Value[valuesKey] || {};
+                        const {InspectionDate, InstallationDate, FloorTitle, DeviceLocation} = valuesKey2Value[valuesKey] || {};
 
                         const legendTextMessages = [];
                         if (InstallationDate) {
-                            legendTextMessages.push(`Date Last Replaced in Unit: ${moment(InstallationDate).format(toStringDateFormat)}`);
+                            legendTextMessages.push(`Date Last Replaced in ${DeviceLocation || 'Unit'}: ${moment(InstallationDate).format(toStringDateFormat)}`);
                         }
 
                         if (InspectionDate) {
@@ -393,7 +429,7 @@ class TenantFireSafetyDisclosureDocumentBuilder {
                                 //      height: 20,
                                 //      width: 20,
                                 //  } : undefined
-                                 ,
+                                ,
                                 {
                                     text: legendText,
                                     style: "legendLabel",
@@ -423,12 +459,12 @@ class TenantFireSafetyDisclosureDocumentBuilder {
                 deviceLegendRows.push({
                     type: 'pullstation',
                     columns: [
-                         {
-                             image: iconsBase64.pullstation,
-                             style: "legendImage",
-                             height: 20,
-                             width: 20,
-                         },
+                        {
+                            image: iconsBase64.pullstation,
+                            style: "legendImage",
+                            height: 20,
+                            width: 20,
+                        },
                         {
                             text: `No Pull Stations`,
                             style: "legendLabel",
@@ -501,21 +537,21 @@ class TenantFireSafetyDisclosureDocumentBuilder {
                         const currentRowExtended = [row];
                         const lastRowType = extendedRows[extendedRows.length - 1] && extendedRows[extendedRows.length - 1].type;
                         if (extendedRows.length === 0 || (lastRowType && lastRowType !== row.type)) {
-/*
-                            if (row.type === 'smokedetector') {
-                                currentRowExtended.unshift({
-                                    text: "SMOKE & CARBON MONOXIDE ALARM DEVICES:",
-                                    style: "notice",
-                                    alignment: 'left'
-                                }, {
-                                    text: "TO CONFIRM ALARMS ARE IN WORKING CONDITION, PUSH “TEST” BUTTON ON EACH DEVICE.",
-                                    style: "notice",
-                                    fontSize: 10,
-                                    alignment: 'left',
-                                    margin: [0, 10, 0, 10]
-                                });
-                            }
-*/
+                            /*
+                                                        if (row.type === 'smokedetector') {
+                                                            currentRowExtended.unshift({
+                                                                text: "SMOKE & CARBON MONOXIDE ALARM DEVICES:",
+                                                                style: "notice",
+                                                                alignment: 'left'
+                                                            }, {
+                                                                text: "TO CONFIRM ALARMS ARE IN WORKING CONDITION, PUSH “TEST” BUTTON ON EACH DEVICE.",
+                                                                style: "notice",
+                                                                fontSize: 10,
+                                                                alignment: 'left',
+                                                                margin: [0, 10, 0, 10]
+                                                            });
+                                                        }
+                            */
                             const nextTypeMargin = currentRowExtended[0].margin || [0, 10, 0, 0];
                             nextTypeMargin[1] = 10;
                             currentRowExtended[0].margin = nextTypeMargin;
@@ -548,24 +584,24 @@ class TenantFireSafetyDisclosureDocumentBuilder {
                     {
                         template: 'signature',
                         columns: [
-                    //         [
-                    //             {
-                    //                 text: "Date: _______________________",
-                    //                 alignment: "center"
-                    //             }
-                    //         ],
-                    //         [
-                    //             {
-                    //                 text: "_____________________________",
-                    //                 style: "signature",
-                    //             },
-                    //             {
-                    //                 text: `${tenant && tenant.name ? tenant.name : "resident signature"}`,
-                    //                 style: "signature"
-                    //             }
-                    //         ],
+                            //         [
+                            //             {
+                            //                 text: "Date: _______________________",
+                            //                 alignment: "center"
+                            //             }
+                            //         ],
+                            //         [
+                            //             {
+                            //                 text: "_____________________________",
+                            //                 style: "signature",
+                            //             },
+                            //             {
+                            //                 text: `${tenant && tenant.name ? tenant.name : "resident signature"}`,
+                            //                 style: "signature"
+                            //             }
+                            //         ],
                         ],
-                    //     margin: [0, 40, 0, 0]
+                        //     margin: [0, 40, 0, 0]
                     },
                 ],
                 images: {
@@ -685,6 +721,10 @@ function setAngleForClusteredDevices(devices) {
             i++;
         }
     }
+}
+
+function capitalizeFirstLetter(word = '') {
+    return word.charAt(0).toUpperCase() + word.slice(1);
 }
 
 function getPointOnCircle(center, radius, angle) {
