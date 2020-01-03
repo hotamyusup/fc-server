@@ -694,6 +694,9 @@ const equipment2type = {
     "56fa327ddfe0b75622682665": { // PHOTO SMOKE DETECTOR - DeviceType
         type: "smokedetector"
     },
+    "5d4b600162dd8f13bdfaa3f6": { // IN UNIT/SMOKE ALARM - DeviceType
+        type: "smokedetector"
+    },
 };
 
 function setAngleForClusteredDevices(devices) {
