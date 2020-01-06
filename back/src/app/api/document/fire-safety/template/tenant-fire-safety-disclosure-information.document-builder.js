@@ -26,7 +26,16 @@ class TenantFireSafetyDisclosureDocumentBuilder {
     async build(FloorID, tenant) {
         logger.info(`TenantFireSafetyDisclosureDocumentBuilder.build(${FloorID})`);
 
-        const residentialUnit = tenant && tenant.unit && `${tenant.unit}`.trim();
+        const getUnitNumberRegex = /^(unit[ \-\.]*([\w\d]*))/i;
+        let residentialUnit = tenant && tenant.unit && `${tenant.unit}`.trim();
+
+        // if tenant has unit number with same format: "Unit 123" let get Unit number
+        if (getUnitNumberRegex.test(residentialUnit)) {
+            const result = getUnitNumberRegex.exec(residentialUnit);
+            if (result && result[2]) {
+                residentialUnit = result[2];
+            }
+        }
 
         // to test uncomment
         // const residentialUnit = '900';
@@ -114,10 +123,8 @@ class TenantFireSafetyDisclosureDocumentBuilder {
                 return type !== 'exit' || (type === 'exit' && device.IsEmergencyExit);
             };
 
-            const getUnitNumberRegex = /^(unit[ \-\.]*([\w\d]*))/gi; //.exec(d.DeviceLocation)[2]
             const compareUnits = device => {
                 const result = getUnitNumberRegex.exec(device.DeviceLocation);
-                console.log(`${device.DeviceLocation} result === `, result);
                 return result && result[2] === residentialUnit
             };
             const filterInUnitSmokedetectors = device => {
