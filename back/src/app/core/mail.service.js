@@ -12,7 +12,7 @@ const getMailConfig = () => config.NODE_ENV === 'production'
         port: 2525,
         auth: {
             user: 'apikey',
-            pass: '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'
+            pass: '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'
         },
     }
     : {
