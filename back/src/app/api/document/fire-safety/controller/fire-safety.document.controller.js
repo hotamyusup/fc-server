@@ -15,6 +15,7 @@ const FireSafetyDAO = require("../dao/fire-safety.document.dao");
 const PropertyDAO = require("../../../../api/property/property/dao/property.dao");
 const BuildingDAO = require("../../../../api/property/building/dao/building.dao");
 const FloorDAO = require("../../../../api/property/floor/dao/floor.dao");
+const DeviceDAO = require("../../../../api/property/device/dao/device.dao");
 const BaseController = require("../../../../core/base.controller");
 
 const TenantFireSafetyDisclosureDocumentBuilder = require("../template/tenant-fire-safety-disclosure-information.document-builder");
@@ -177,15 +178,52 @@ class FireSafetyDocumentController extends BaseController {
                     const floorsDirPath = `${propertyDirPath}/floors`;
                     await createDir(floorsDirPath);
 
+                    const smokedetectorDeviceTypes = TenantFireSafetyDisclosureDocumentBuilder.getDeviceTypes('smokedetector')
+                    const getUnitNumberRegex = /^(unit[ \-\.]*([\w\d]*))/i;
+
                     await Promise.map(filteredFloors, async floor => {
                         const building = id2building[floor.BuildingID];
                         const docDefinition = await TenantFireSafetyDisclosureDocumentBuilder.build(floor._id);
 
-                        const filename = `${building.Title} - ${floor.Title}`.replace(/[^a-z0-9 -]/gi, '_').trim();
+                        const floorFileName = `${building.Title} - ${floor.Title}`.replace(/[^a-z0-9 -]/gi, '_').trim();
 
-                        const filePath = `${floorsDirPath}/${filename}.pdf`;
+                        const filePath = `${floorsDirPath}/${floorFileName}.pdf`;
 
                         const pdfDocument = await PDFMakeService.createPDFDocument(docDefinition, filePath);
+
+                        const devices = await DeviceDAO.all({
+                                FloorID: floor._id,
+                                DeviceType: {$in: smokedetectorDeviceTypes}, // all smokedetector DeviceTypes OR filter by DeviceType "5d4b600162dd8f13bdfaa3f6" IN UNIT/SMOKE ALARM
+                                DeviceLocation: /^(unit[ \-\.]*([\w\d]*))/i
+                            }
+                        );
+
+                        const floorUnits = _.keys(_.reduce(devices, (unitsSet, device) => {
+                            const result = getUnitNumberRegex.exec(device.DeviceLocation);
+                            const unitNumber = result && result[2];
+                            if (unitNumber) {
+                                unitsSet[unitNumber] = unitNumber;
+                            }
+
+                            return unitsSet;
+                        }, {}));
+
+                        if (floorUnits.length) {
+                            const floorUnitsDirPath = `${floorsDirPath}/${floorFileName} Units`;
+                            await createDir(floorUnitsDirPath);
+
+                            await Promise.map(floorUnits, async unit => {
+
+                                const unitDocDefinition = await TenantFireSafetyDisclosureDocumentBuilder.build(floor._id, {unit});
+
+                                const filename = `${building.Title} - ${floor.Title} - Unit ${unit}`.replace(/[^a-z0-9 -]/gi, '_').trim();
+
+                                const filePath = `${floorUnitsDirPath}/${filename}.pdf`;
+
+                                const pdfDocument = await PDFMakeService.createPDFDocument(unitDocDefinition, filePath);
+                            }, {concurrency: 3})
+                        }
+
                     }, {concurrency: 5});
 
 

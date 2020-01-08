@@ -23,6 +23,14 @@ const styles = require('./pdfmake.styles');
 const toStringDateFormat = "MMMM DD, YYYY";
 
 class TenantFireSafetyDisclosureDocumentBuilder {
+    getDeviceTypes(type) {
+        return type2equipment[type];
+    }
+
+    getType(deviceType) {
+        return equipment2type[deviceType];
+    }
+
     async build(FloorID, tenant) {
         logger.info(`TenantFireSafetyDisclosureDocumentBuilder.build(${FloorID})`);
 
@@ -705,6 +713,12 @@ const equipment2type = {
         type: "smokedetector"
     },
 };
+
+const type2equipment = {};
+for (const deviceTypeId in equipment2type) {
+    const {type} = equipment2type[deviceTypeId];
+    type2equipment[type] = [...type2equipment[type] || [], deviceTypeId];
+}
 
 function setAngleForClusteredDevices(devices) {
     let i = 0;
