@@ -152,6 +152,10 @@ class FireSafetyDocumentController extends BaseController {
 
     get templatesZip() {
         return {
+            timeout: {
+                socket: 1000 * 60 * 61,
+                server: 1000 * 60 * 60
+            },
             handler: async (request, reply) => {
                 try {
                     const {hash, PropertyID} = request.query;
@@ -212,7 +216,7 @@ class FireSafetyDocumentController extends BaseController {
                             const floorUnitsDirPath = `${floorsDirPath}/${floorFileName} Units`;
                             await createDir(floorUnitsDirPath);
 
-                            await Promise.map(floorUnits, async unit => {
+                            await Promise.mapSeries(floorUnits, async unit => {
 
                                 const unitDocDefinition = await TenantFireSafetyDisclosureDocumentBuilder.build(floor._id, {unit});
 
@@ -221,10 +225,10 @@ class FireSafetyDocumentController extends BaseController {
                                 const filePath = `${floorUnitsDirPath}/${filename}.pdf`;
 
                                 const pdfDocument = await PDFMakeService.createPDFDocument(unitDocDefinition, filePath);
-                            }, {concurrency: 3})
+                            })
                         }
 
-                    }, {concurrency: 5});
+                    }, {concurrency : 2});
 
 
                     const commonDirPath = `${propertyDirPath}/common`;
