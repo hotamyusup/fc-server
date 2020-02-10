@@ -99,7 +99,7 @@
 
 									</div>
 									<div class="header-block pull-right">
-										
+										<a href="javascript:;;" data-bind="attr: {href:'property-edit.html?i='+Property._id}" class="userlink">Edit </a>
 									</div>
 								</div>
 								<ul class="item-list striped">
@@ -229,8 +229,10 @@
 											<div class="item-col item-col-title no-overflow">
 												<h4 class="item-title no-wrap">Contacts</h4>
 											</div>
-											<div class="item-col item-col-title no-overflow" data-bind="foreach: Property.Contacts">
-												<span class="item-title no-wrap" data-bind="text:Title"></span> &emsp;(<span class="item-title no-wrap" data-bind="text:Phone"></span>) &emsp;<span class="item-title no-wrap" data-bind="text:Email"></span>
+											<div class="item-col item-col-title no-overflow" style="flex-direction: column;" data-bind="foreach: Property.Contacts">
+												<div style="padding: 8px;">
+													<span class="item-title no-wrap" data-bind="text:Title"></span> &emsp;(<span class="item-title no-wrap" data-bind="text:Phone"></span>) &emsp;<span class="item-title no-wrap" data-bind="text:Email"></span>
+												</div>
 											</div>
 										</div>
 									</li>

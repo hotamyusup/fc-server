@@ -174,6 +174,11 @@ $(function () {
 				callback(data);
 			});
 		},
+        updateProperty: function (id, property, callback) {
+            API.post("/properties/" + id, property, function (data) {
+                callback(data);
+			});
+		},
 		deleteInspection: function (id, callback) {
 			API.delete("/inspections/"+id, function (data) {
 				callback(data);
@@ -211,6 +216,11 @@ $(function () {
 		},
 		organization: function (id, callback) {
 			API.get("/organizations/" + id, function (data) {
+				callback(data);
+			});
+		},
+		organizationUsers: function (organizationId, callback) {
+			API.get("/organizations/" + organizationId + "/users", function (data) {
 				callback(data);
 			});
 		},
