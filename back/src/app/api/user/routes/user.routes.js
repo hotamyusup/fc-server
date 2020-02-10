@@ -8,6 +8,7 @@ const USER_ROUTES = [
     {method: 'POST', path: '/users/login', config: UserController.login},
     {method: 'POST', path: '/users/{UserID}', config: UserController.update},
     {method: 'POST', path: '/users', config: UserController.create},
+    {method: 'DELETE', path: '/users/{UserID}', config: UserController.delete},
 ];
 
 module.exports = USER_ROUTES;

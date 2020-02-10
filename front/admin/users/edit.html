@@ -123,6 +123,7 @@
 							<div class="form-group">
 								<input type="hidden" id="id" data-bind="value: User._id">
 								<button type="submit" id="submit" class="btn btn-primary">Submit</button>
+								<button type="submit" id="delete" class="btn btn-danger-outline pull-right">Delete</button>
 							</div>
 						</form>
 					</div>
@@ -229,6 +230,15 @@
                         UserModel.Organizations = data;
                         ko.applyBindings(UserModel, document.getElementById('userform'));
                     });
+                });
+
+                $("#delete").click(function (e) {
+                    e.preventDefault();
+                    if (confirm('Are you sure you want to delete user?')) {
+                        API.deleteUser($("#id").val(), function () {
+                            Site.redirect("/users/");
+                        });
+                    }
                 });
 
                 $("#submit").click(function (e) {

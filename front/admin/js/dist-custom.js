@@ -199,6 +199,11 @@ $(function () {
 				callback(data);
 			});
 		},
+		deleteUser: function (id, callback) {
+			API.delete("/users/" + id, function (data) {
+				callback(data);
+			});
+		},
 		organizations: function (callback) {
 			API.get("/organizations", function (data) {
 				callback(data);
