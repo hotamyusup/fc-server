@@ -1,0 +1,222 @@
+<!doctype html>
+<html class="no-js" lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="x-ua-compatible" content="ie=edge">
+    <title>Fire Cloud Admin</title>
+    <meta name="description" content="">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="apple-touch-icon" href="apple-touch-icon.png">
+
+    <link rel="stylesheet" href="/admin/css/vendor.css">
+    <link rel="stylesheet" href="/admin/css/app.css">
+    <script>
+        var themeSettings = (localStorage.getItem('themeSettings')) ? JSON.parse(localStorage.getItem('themeSettings')) :
+                {};
+        var themeName = themeSettings.themeName || 'red';
+        if (themeName) {
+            document.write('<link rel="stylesheet" id="theme-style" href="/admin/css/app-' + themeName + '.css">');
+        } else {
+            document.write('<link rel="stylesheet" id="theme-style" href="/admin/css/app.css">');
+        }
+    </script>
+
+</head>
+<body>
+<div class="main-wrapper">
+    <div class="app" id="app">
+        <header class="header">
+            <div class="header-block header-block-collapse d-lg-none d-xl-none">
+                <button class="collapse-btn" id="sidebar-collapse-btn">
+                    <i class="fa fa-bars"></i>
+                </button>
+            </div>
+            <div class="header-block header-block-search"></div>
+            <div class="header-block header-block-buttons"></div>
+            <div class="header-block header-block-nav"></div>
+        </header>
+        <aside class="sidebar">
+            <div class="sidebar-container">
+                <div class="sidebar-header">
+                    <div class="brand">Fire Cloud Admin</div>
+                </div>
+                <nav class="menu">
+                    <ul class="sidebar-menu metismenu" id="sidebar-menu">
+                        <li class="active">
+                            <a href="/admin/properties">
+                                <i class="fa fa-th-large"></i> Properties
+                            </a>
+                        </li>
+                        <li data-bind="visible: ACL.isAdmin" style="display: none;">
+                            <a href="/admin/users">
+                                <i class="fa fa-users"></i> Users
+                            </a>
+                        </li>
+                        <li data-bind="visible: ACL.isAdmin" style="display: none;">
+                            <a href="/admin/organizations">
+                                <i class="fa fa-dot-circle-o"></i> Organizations
+                            </a>
+                        </li>
+                        <li data-bind="visible: ACL.isAdminOrEmployee" style="display: none;">
+                            <a href="/admin/equipments">
+                                <i class="fa fa-lightbulb-o"></i> Equipments
+                            </a>
+                        </li>
+                        <li data-bind="visible: ACL.isAdminOrEmployee" style="display: none;">
+                            <a href="/admin/constructiontypes">
+                                <i class="fa fa-building-o"></i> Construction Types
+                            </a>
+                        </li>
+                        <li data-bind="visible: ACL.isAdminOrEmployee" style="display: none;">
+                            <a href="/admin/occupancytypes">
+                                <i class="fa fa-home"></i> Occupancy Types
+                            </a>
+                        </li>
+                        <li data-bind="visible: ACL.isAdminOrEmployee" style="display: none;">
+                            <a href="/admin/bulkeditor">
+                                <i class="fa fa-table"></i> Bulk Editor
+                            </a>
+                        </li>
+                        <li>
+                            <a href="/admin/logout.html">
+                                <i class="fa fa-lock"></i> Log out
+                            </a>
+                        </li>
+                    </ul>
+                </nav>
+            </div>
+        </aside>
+        <div class="sidebar-overlay" id="sidebar-overlay"></div>
+        <div class="sidebar-mobile-menu-handle" id="sidebar-mobile-menu-handle"></div>
+        <div class="mobile-menu-handle"></div>
+        <article class="content dashboard-page">
+            <div class="card" data-bind="visible: !Property.Buildings">
+                <div class="card-block">Loading
+                </div>
+            </div>
+            <section class="section" data-bind="visible: Property.Buildings" style="display: none;">
+                <div class="row">
+                    <div class="col-xl-12" data-bind="if: Property">
+                        <ol class="breadcrumb">
+                            <li class="breadcrumb-item">
+                                <a data-bind="
+                                        text: Property.Title,
+                                        attr: {href: '../property.html?i='+Property._id}
+                                    "
+                                   href="#"
+                                ></a>
+                            </li>
+                            <li class="breadcrumb-item active" aria-current="page">Buildings</li>
+                        </ol>
+                        <div class="card items" data-exclude="xs,sm,lg">
+                            <div class="card-header bordered">
+                                <div class="header-block">
+                                    <h3 class="title">
+                                        <span>&nbsp;Buildings</span>
+                                    </h3>
+
+                                </div>
+                                <div class="header-block pull-right">
+                                    <a href="#export-modal-window" data-toggle="modal" data-target="#export-modal-window">Export</a>
+                                </div>
+                            </div>
+                            <ul class="item-list striped" data-bind="foreach: Property.Buildings">
+                                <li class="item">
+                                    <div class="item-row">
+                                        <div class="item-col col-md-2 item-col-img" style="max-width:130px;">
+                                            <a href="javascript:;;"
+                                               data-bind="attr: {href:Picture,target:'_blank'}, if: (Picture[0] !== '/')"
+                                               class="userlink">
+                                                    <img height="120" class=" rounded" src="" data-bind="attr: { src:Picture.replace('.jpg','-t.jpg')}">
+                                                </img>
+                                            </a>
+                                        </div>
+                                        <div class="item-col col-md-2 item-col-title no-overflow">
+                                             <div>
+                                                <a href="javascript:;;" data-bind="text: Title, attr: {href:'building.html?i='+_id+'&p='+$parent.Property._id}" class="userlink">Edit </a>
+                                             </div>
+                                         </div>
+                                        <div class="item-col  col-md-8 text-right">
+                                            <div>
+                                                <a style="padding-left: 10px;" href="javascript:;;"
+                                                    data-bind="attr: {href:'../floors/list.html?i='+_id+'&p='+$parent.Property._id}"
+                                                    class="userlink">Floors (<span
+                                                    data-bind="text:Floors.length"></span>)</a>
+
+                                                <a style="padding-left: 10px;" href="javascript:;;" data-bind="attr: {href:'edit.html?i='+_id+'&p='+$parent.Property._id}" class="userlink">Edit </a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </article>
+        <footer class="footer"></footer>
+    </div>
+</div>
+
+<div data-bind="htmlUrl: exportModal.templateUrl">
+</div>
+
+<!-- Reference block for JS -->
+<div class="ref" id="ref">
+    <div class="color-primary"></div>
+    <div class="chart">
+        <div class="color-primary"></div>
+        <div class="color-secondary"></div>
+    </div>
+</div>
+
+<script src="/admin/js/vendor.js"></script>
+<script src="/admin/js/app.js"></script>
+<script src="/admin/js/custom.js"></script>
+<script src="/admin/parts/export/modal.js"></script>
+
+<script type="text/javascript">
+    $(function () {
+        Site.init();
+        var PropertyID = QueryString("i");
+        var Model = {
+            ACL: Auth.ACL(),
+            _property: ko.observable(null),
+            get Property() {
+                return this._property();
+            },
+            set Property(property) {
+                return this._property(property);
+            },
+        };
+
+        API.property(PropertyID, function (Property) {
+            Model.Property = Property;
+            Model.Property.Buildings = _.filter(Property.Buildings, function (building) {
+                building.Floors = _.filter(building.Floors, function (floor) {
+                    return floor.Status > 0;
+                });
+                return building.Status > 0;
+            });
+
+            setupExportModal(Model, {
+                title: Property.Title,
+                source: {PropertyID: PropertyID},
+                entities: [
+                    ['Inspections', 'inspections'],
+                    ['Devices', 'devices'],
+                    ['Floors', 'floors'],
+                    ['Buildings', 'buildings'],
+                ]
+            });
+
+            setTimeout(function () {
+                ko.applyBindings(Model);
+            }, 10);
+        }, 'Floors');
+
+    });
+
+</script>
+</body>
+</html>

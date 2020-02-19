@@ -1,5 +1,6 @@
 'use strict';
 
+const _ = require('underscore');
 const mongoose = require('mongoose');
 const moment = require('moment');
 const Promise = require('bluebird');
@@ -14,16 +15,16 @@ class BaseDAO {
         return this.model.schema.path(field)
     }
 
-    all(conditions, options) {
+    async all(conditions, options) {
         conditions = conditions || {};
         return this.model.find(conditions, null, options);
     }
 
-    get(id) {
+    async get(id) {
         return this.model.findOne({_id: id});
     }
 
-    create(dataObject) {
+    async create(dataObject) {
         const newModel = new this.model(dataObject);
         return newModel.save();
     }
@@ -48,15 +49,59 @@ class BaseDAO {
     async update(dataObject, upsert) {
         const _id = dataObject._id;
         const preparedJSON = await this.prepareUpdateObject(dataObject);
-        return this.model.findOneAndUpdate({_id}, preparedJSON, {runValidators : true, upsert: !!upsert});
+        return this.model.findOneAndUpdate({_id}, preparedJSON, {runValidators: true, upsert: !!upsert});
     }
 
-    upsert(dataObject) {
+    async upsert(dataObject) {
         return this.update(dataObject, true);
     }
 
-    delete(_id) {
+    async delete(_id) {
         return this.model.remove({_id});
+    }
+
+    async copy(id, changes) {
+        const entity = await this.get(id);
+        const copiedEntity = await this.copyEntity(entity, changes);
+        const createdEntityCopy = await this.create(copiedEntity);
+        return createdEntityCopy;
+    }
+
+    async copyEntity(entity, changes = {}) {
+        const excluded = ['_id', '__v', 'updated_at'];//, 'created_at', 'updated_at'];
+        const attributesNames = this.pickSchema(excluded);
+        const copiedEntity = _.pick(entity, attributesNames);
+
+        const changedAttributesNames = _.keys(changes);
+        const isChanged = changedAttributeName => changedAttributesNames.indexOf(changedAttributeName) > 0;
+        const attributeExists = attributeName => attributesNames.indexOf(attributeName) >= 0;
+
+        if (attributeExists('created_at') && !isChanged('created_at')) {
+            copiedEntity.created_at = moment().toISOString();
+        }
+        // if (attributeExists('Title') && !isChanged('Title')) {
+        //     copiedEntity.Title = `Copy of ${copiedEntity.Title}`;
+        // }
+
+        for (const changeName of changedAttributesNames) {
+            const changeHandler = changes[changeName];
+            let changeValue = changeHandler;
+            if (_.isFunction(changeHandler)) {
+                changeValue = changeHandler(copiedEntity, entity);
+            }
+            if (changeValue instanceof Promise) {
+                changeValue = await changeValue;
+            }
+            copiedEntity[changeName] = changeValue;
+        }
+
+        return copiedEntity;
+    }
+
+    pickSchema(excluded = []) {
+        const fields = [];
+        this.model.schema.eachPath(path => (excluded.indexOf(path) < 0) && fields.push(path));
+        return fields;
     }
 }
 

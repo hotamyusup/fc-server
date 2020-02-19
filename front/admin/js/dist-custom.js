@@ -169,8 +169,9 @@ $(function () {
 				callback(data);
 			});
 		},
-		property: function (id, callback) {
-			API.get("/properties/"+id, function (data) {
+		property: function (id, callback, level) {
+		    const queryParamsString = level ? `?level=${level}` : '';
+			API.get(`/properties/${id}${queryParamsString}`, function (data) {
 				callback(data);
 			});
 		},
@@ -179,6 +180,36 @@ $(function () {
                 callback(data);
 			});
 		},
+        buildings: function (queryParams = {}, callback) {
+            const url = `/buildings?${Object.keys(queryParams).map(key => `${key}=${queryParams[key]}`)}`;
+            API.get(url, callback);
+        },
+		building: function (id, callback) {
+			API.get("/buildings/"+id, callback);
+		},
+        updateBuilding: function (id, building, callback) {
+            API.post("/buildings/" + id, building, callback);
+        },
+        copyBuilding: function (id, callback) {
+            API.get("/buildings/" + id + "/copy", callback);
+        },
+        floors: function (queryParams = {}, callback) {
+            const url = `/floors?${Object.keys(queryParams).map(key => `${key}=${queryParams[key]}`)}`;
+            API.get(url, callback);
+        },
+        floor: function (id, callback) {
+            API.get("/floors/"+id, callback);
+        },
+        updateFloor: function (id, floor, callback) {
+            API.post("/floors/" + id, floor, callback);
+        },
+        copyFloor: function (id, callback) {
+            API.get("/floors/" + id + "/copy", callback);
+        },
+        devices: function (queryParams = {}, callback) {
+            const url = `/devices?${Object.keys(queryParams).map(key => `${key}=${queryParams[key]}`)}`;
+            API.get(url, callback);
+        },
 		deleteInspection: function (id, callback) {
 			API.delete("/inspections/"+id, function (data) {
 				callback(data);
@@ -228,6 +259,22 @@ $(function () {
 			API.post("/organizations", organization, function (data) {
 				callback(data);
 			});
+		},
+		uploadImage: function (imageBlobFile, callback) {
+            var formData = new FormData();
+            formData.append("Photo", imageBlobFile);
+
+            $.ajax({
+                url: Config.APIURL + "/image",
+                type: "POST",
+                data: formData,
+                processData: false,
+                contentType: false,
+                success: function(imageFileName) {
+                    const imageURL = `${Config.APIURL}/img/${imageFileName}`;
+                    callback(imageURL);
+                }
+            });
 		},
 		createThumbnail: function (imageLink, callback) {
 			API.get("/image/generate-thumbnail/" + imageLink, function (data) {

@@ -17,7 +17,7 @@ class BaseController {
         this.batchEntitiesKey = 'entities';
     }
 
-    async handle(action, request, reply, func) {
+    async handle(action, request, reply, promise) {
         let {hash, format, filename} = request.query;
         hash = hash || '';
 
@@ -25,7 +25,7 @@ class BaseController {
         console.time(timerName);
         logger.info(`sessionId: ${hash} ${this.controllerName}.${action} start`);
         return Promise
-            .resolve(func)
+            .resolve(promise)
             .then(async result => {
                 logger.info(`sessionId: ${hash} ${this.controllerName}.${action} success`);
                 if (format === 'csv' || format === 'csv-file') {
@@ -133,6 +133,12 @@ class BaseController {
     get delete() {
         return {
             handler: (request, reply) => this.handle('delete', request, reply, this.DAO.delete(request.params[this.requestIDKey]))
+        }
+    }
+
+    get copy() {
+        return {
+            handler: (request, reply) => this.handle('copy', request, reply, this.DAO.copy(request.params[this.requestIDKey]))
         }
     }
 

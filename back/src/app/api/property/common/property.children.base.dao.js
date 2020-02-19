@@ -13,6 +13,19 @@ class PropertyChildrenBaseDAO extends BaseDAO {
         return this.model.find({PropertyID});
     }
 
+
+    forBuilding(BuildingID) {
+        return this.model.find({BuildingID});
+    }
+
+    forFloor(FloorID) {
+        return this.model.find({FloorID});
+    }
+
+    forDevice(DeviceID) {
+        return this.model.find({DeviceID});
+    }
+
     delete(id) {
         console.log(`delete(${id})`);
         return this.update({_id: id, Status: -1});

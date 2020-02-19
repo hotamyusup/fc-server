@@ -140,7 +140,7 @@
 											</div>
 											<div class="item-col item-col-title no-overflow">
 												<span class="item-title no-wrap" data-bind="text: Property.Buildings.length"></span>
-												 &emsp; <a href="javascript:;;" data-bind="attr: {href:'buildings.html?i='+Property._id}" class="userlink">List</a>
+												 &emsp; <a href="javascript:;;" data-bind="attr: {href:'buildings/list.html?i='+Property._id}" class="userlink">List</a>
 											</div>
 										</div>
 									</li>
@@ -301,7 +301,7 @@
 				API.constructiontype(data.ConstructionType, function (data) {
 					Model.ConstructionType = data;
 					i++;
-				});	
+				});
 				API.organization(data.Organization, function (data) {
 					Model.Organization = data;
 					i++;

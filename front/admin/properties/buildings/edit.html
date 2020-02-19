@@ -1,0 +1,349 @@
+<!doctype html>
+<html class="no-js" lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="x-ua-compatible" content="ie=edge">
+    <title>Fire Cloud Admin</title>
+    <meta name="description" content="">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="apple-touch-icon" href="apple-touch-icon.png">
+    <link rel="stylesheet" href="/admin/css/vendor.css">
+    <link rel="stylesheet" href="/admin/css/app.css">
+    <script>
+        var themeSettings = (localStorage.getItem('themeSettings')) ? JSON.parse(localStorage.getItem('themeSettings')) :
+            {};
+        var themeName = themeSettings.themeName || 'red';
+        if (themeName) {
+            document.write('<link rel="stylesheet" id="theme-style" href="/admin/css/app-' + themeName + '.css">');
+        } else {
+            document.write('<link rel="stylesheet" id="theme-style" href="/admin/css/app.css">');
+        }
+    </script>
+</head>
+<body>
+<div class="main-wrapper">
+    <div class="app" id="app">
+        <header class="header">
+            <div class="header-block header-block-collapse d-lg-none d-xl-none">
+                <button class="collapse-btn" id="sidebar-collapse-btn">
+                    <i class="fa fa-bars"></i>
+                </button>
+            </div>
+            <div class="header-block header-block-search"></div>
+            <div class="header-block header-block-buttons"></div>
+            <div class="header-block header-block-nav"></div>
+        </header>
+        <aside class="sidebar">
+            <div class="sidebar-container">
+                <div class="sidebar-header">
+                    <div class="brand">Fire Cloud Admin</div>
+                </div>
+                <nav class="menu">
+                    <ul class="sidebar-menu metismenu" id="sidebar-menu">
+                        <li class="active">
+                            <a href="/admin/properties">
+                                <i class="fa fa-th-large"></i> Properties
+                            </a>
+                        </li>
+                        <li data-bind="visible: ACL.isAdmin" style="display: none;">
+                            <a href="/admin/users">
+                                <i class="fa fa-users"></i> Users
+                            </a>
+                        </li>
+                        <li data-bind="visible: ACL.isAdmin" style="display: none;">
+                            <a href="/admin/organizations">
+                                <i class="fa fa-dot-circle-o"></i> Organizations
+                            </a>
+                        </li>
+                        <li data-bind="visible: ACL.isAdminOrEmployee" style="display: none;">
+                            <a href="/admin/equipments">
+                                <i class="fa fa-lightbulb-o"></i> Equipments
+                            </a>
+                        </li>
+                        <li data-bind="visible: ACL.isAdminOrEmployee" style="display: none;">
+                            <a href="/admin/constructiontypes">
+                                <i class="fa fa-building-o"></i> Construction Types
+                            </a>
+                        </li>
+                        <li data-bind="visible: ACL.isAdminOrEmployee" style="display: none;">
+                            <a href="/admin/occupancytypes">
+                                <i class="fa fa-home"></i> Occupancy Types
+                            </a>
+                        </li>
+                        <li data-bind="visible: ACL.isAdminOrEmployee" style="display: none;">
+                            <a href="/admin/bulkeditor">
+                                <i class="fa fa-table"></i> Bulk Editor
+                            </a>
+                        </li>
+                        <li>
+                            <a href="/admin/logout.html">
+                                <i class="fa fa-lock"></i> Log out
+                            </a>
+                        </li>
+                    </ul>
+                </nav>
+            </div>
+        </aside>
+        <div class="sidebar-overlay" id="sidebar-overlay"></div>
+        <div class="sidebar-mobile-menu-handle" id="sidebar-mobile-menu-handle"></div>
+        <div class="mobile-menu-handle"></div>
+        <article class="content dashboard-page">
+            <div class="card" data-bind="visible: !Building">
+                <div class="card-block">Loading
+                </div>
+            </div>
+            <section class="section" data-bind="visible: Building" style="display: none;">
+                <div class="row">
+
+                    <div class="col-xl-12">
+                        <ol class="breadcrumb" data-bind="if: Property && Building, visible: Property && Building" style="display: none;">
+                            <li class="breadcrumb-item">
+                                <a data-bind="
+                                        text: Property.Title,
+                                        attr: {href: '../property.html?i='+Property._id}
+                                    "
+                                   href="#"
+                                ></a>
+                            </li>
+                            <li class="breadcrumb-item">
+                                <a href="#"
+                                   data-bind="attr: {href: 'list.html?i='+Property._id}"
+                                >Buildings</a>
+                            </li>
+                            <li class="breadcrumb-item">
+                                <a href="#"
+                                   data-bind="
+                                        text: Building.Title,
+                                        attr: {href: 'building.html?i='+Building._id+'&p='+Building.PropertyID}
+                                    "
+                                ></a>
+                            </li>
+                            <li class="breadcrumb-item active" aria-current="page">Edit</li>
+                        </ol>
+                        <div class="card items" data-exclude="xs,sm,lg" data-bind="if: Building">
+                            <div class="card-header bordered">
+                                <div class="header-block">
+                                    <h3 class="title"> Edit Building </h3>
+                                </div>
+                                <div class="header-block pull-right">
+
+                                </div>
+                            </div>
+                            <ul class="item-list striped">
+                                <li class="item">
+                                    <div class="item-row">
+                                        <div class="item-col item-col-title no-overflow">
+                                            <h4 class="item-title no-wrap">Title</h4>
+                                        </div>
+                                        <div class="item-col item-col-title no-overflow">
+                                            <div class="form-group">
+                                                <input type="text" class="form-control required underlined" data-bind="value: Building.Title">
+                                            </div>
+                                        </div>
+                                    </div>
+                                </li>
+
+                                <li class="item">
+                                    <div class="item-row">
+                                        <div class="item-col item-col-title no-overflow">
+                                            <h4 class="item-title no-wrap">Picture</h4>
+                                        </div>
+
+                                        <div class="item-col item-col-title no-overflow" >
+                                          <div>
+                                              <a href="javascript:;;"
+                                                 data-bind="attr: {href:Building.Picture,target:'_blank'}, if: (Building.Picture[0] !== '/')"
+                                                 class="userlink">
+                                                  <img width="120" style="float: left;" class="rounded" src="" data-bind="attr: { src:Building.Picture.replace('.jpg','-t.jpg')}">
+                                                  </img>
+                                              </a>
+
+                                              <div class="form-group">
+                                                  <input name="buildingPictureFile"
+                                                         id="buildingPictureFile"
+                                                         type="file"
+                                                         class="form-control underlined ">
+                                              </div>
+                                          </div>
+                                        </div>
+
+                                    </div>
+                                </li>
+
+                                <li class="item">
+                                    <div class="item-row">
+                                        <div class="item-col item-col-title no-overflow">
+                                            <h4 class="item-title no-wrap">XPos</h4>
+                                        </div>
+                                        <div class="item-col item-col-title no-overflow">
+                                            <div class="form-group">
+                                                <input type="number" class="form-control required underlined" data-bind="value: Building.XPos">
+                                            </div>
+                                        </div>
+                                    </div>
+                                </li>
+
+                                <li class="item">
+                                    <div class="item-row">
+                                        <div class="item-col item-col-title no-overflow">
+                                            <h4 class="item-title no-wrap">YPos</h4>
+                                        </div>
+                                        <div class="item-col item-col-title no-overflow">
+                                            <div class="form-group">
+                                                <input type="number" class="form-control required underlined" data-bind="value: Building.YPos">
+                                            </div>
+                                        </div>
+                                    </div>
+                                </li>
+
+                                <li class="item">
+                                    <div class="item-row" data-bind="if: Building.Map">
+                                        <div class="item-col item-col-title no-overflow">
+                                            <h4 class="item-title no-wrap">Map</h4>
+                                        </div>
+                                        <div class="item-col item-col-title no-overflow">
+                                            <div>
+                                                <div data-bind="foreach: MAP_KEYS">
+                                                    <div class="form-group">
+                                                        <label class="control-label" data-bind="text: $data"></label>
+                                                        <input type="number" class="form-control required underlined"
+                                                               data-bind="value: $root.Building.Map[$data]">
+                                                    </div>
+                                                </div>
+
+                                                <div>
+
+                                                    <div class="form-group">
+                                                        <label class="control-label" >Image</label>
+
+                                                        <a href="javascript:;;"
+                                                           data-bind="attr: {href:$root.Building.Map.Image,target:'_blank'}, if: ($root.Building.Map.Image && $root.Building.Map.Image[0] !== '/')"
+                                                           class="userlink">
+                                                            <img height="120" style="float: left;" class="rounded" src="" data-bind="attr: { src:$root.Building.Map.Image.replace('.jpg','-t.jpg')}">
+                                                            </img>
+                                                        </a>
+                                                        <input name="buildingMapImageFile"
+                                                               id="buildingMapImageFile"
+                                                               type="file"
+                                                               class="form-control underlined ">
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </li>
+
+                                <li class="item">
+                                    <div class="item-row ">
+                                        <div class="item-col item-col-title no-overflow text-center">
+                                            <div>
+                                                <button data-bind="click: saveBuilding" class="btn btn-success" type="button">Save</button>
+                                            </div>
+                                        </div>
+                                        <div class="item-col item-col-title no-overflow text-center">
+                                            <div>
+                                                <button data-bind="click: deleteBuilding" class="btn btn-danger" type="button">Delete</button>
+                                            </div>
+                                        </div>
+                                        <div class="item-col item-col-title no-overflow text-center">
+                                            <div>
+                                                <button data-bind="click: copyBuilding" class="btn btn-secondary" type="button">Copy Building</button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </li>
+                            </ul>
+
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </article>
+        <footer class="footer"></footer>
+    </div>
+</div>
+<!-- Reference block for JS -->
+<div class="ref" id="ref">
+    <div class="color-primary"></div>
+    <div class="chart">
+        <div class="color-primary"></div>
+        <div class="color-secondary"></div>
+    </div>
+</div>
+<script src="/admin/js/vendor.js"></script>
+<script src="/admin/js/app.js"></script>
+<script src="/admin/js/custom.js"></script>
+<script type="text/javascript">
+    $(function () {
+        Site.init();
+        var ID = QueryString("i");
+        var Model = {
+            ACL: Auth.ACL(),
+            _building: ko.observable(null),
+            get Building() {
+                return this._building();
+            },
+            set Building(building) {
+                return this._building(building);
+            },
+            _property: ko.observable(null),
+            get Property() {
+                return this._property();
+            },
+            set Property(property) {
+                return this._property(property);
+            },
+            MAP_KEYS: ['Scale', 'Left', 'Top'], //, 'Image'],
+            saveBuilding() {
+                const {_id, Title, Picture, XPos, YPos, Map} = Model.Building;
+                const changeSet = {_id, Title, Picture, XPos, YPos, Map};
+                API.updateBuilding(_id, changeSet, _ => Site.redirect(`/properties/buildings/building.html?i=${_id}&p=${Model.Building.PropertyID}`));
+            },
+            deleteBuilding() {
+                const confirmed = confirm(`Dou you want to delete building ${Model.Building.Title}`);
+                if (!confirmed) {
+                    return;
+                }
+
+                const {_id} = Model.Building;
+                const changeSet = {_id, Status: -1};
+                API.updateBuilding(_id, changeSet, _ => Site.redirect(`/properties/buildings/list.html?i=${Model.Building.PropertyID}`));
+            },
+            copyBuilding() {
+                API.copyBuilding(Model.Building._id, copiedBuilding => Site.redirect(`/properties/buildings/building.html?i=${copiedBuilding._id}`));
+            }
+        };
+
+
+        API.building(ID, function (building) {
+            Model.Building = building;
+            API.property(building.PropertyID, function (property) {
+                Model.Property = property;
+            }, 'Property');
+            ko.applyBindings(Model);
+        });
+
+        $('#buildingPictureFile').change(function(e){ //input[type="file"]
+            if (e.target.files[0]) {
+                API.uploadImage(e.target.files[0], function(imageURL) {
+                    const building = Model.Building;
+                    building.Picture = imageURL;
+                    Model.Building = building;
+                });
+            }
+        });
+
+        $('#buildingMapImageFile').change(function(e){
+            if (e.target.files[0]) {
+                API.uploadImage(e.target.files[0], function(imageURL) {
+                    const building = Model.Building;
+                    building.Map.Image = imageURL;
+                    Model.Building = building;
+                });
+            }
+        });
+    });
+
+</script>
+</body>
+</html>

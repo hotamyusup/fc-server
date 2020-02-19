@@ -72,17 +72,23 @@ class PropertyController extends PropertyChildrenBaseController {
 
 
     get get() {
-        const getPropertyWithTreeOfChildren = async (Property) => {
+        const getPropertyWithTreeOfChildren = async (Property, level) => {
             const PropertyID = Property._id;
+
+            const levels = ['Property', 'Buildings', 'Floors', 'Devices', 'Records'];
+            let levelValue = levels.indexOf(level);
+            if (levelValue === -1) {
+                levelValue = 42;
+            }
 
             const mapToJSON = res => res.map(o => o.toJSON());
             return Promise
                 .props({
                     Property,
-                    Buildings: BuildingDAO.forProperty(PropertyID).then(mapToJSON),
-                    Floors: FloorDAO.forProperty(PropertyID).then(mapToJSON),
-                    Devices: DeviceDAO.forProperty(PropertyID).then(mapToJSON),
-                    Records: InspectionDAO.forProperty(PropertyID).then(mapToJSON),
+                    Buildings: levelValue < 1 ? [] : BuildingDAO.forProperty(PropertyID).then(mapToJSON),
+                    Floors: levelValue < 2 ? [] : FloorDAO.forProperty(PropertyID).then(mapToJSON),
+                    Devices: levelValue < 3 ? [] : DeviceDAO.forProperty(PropertyID).then(mapToJSON),
+                    Records: levelValue < 4 ? [] : InspectionDAO.forProperty(PropertyID).then(mapToJSON),
                 })
                 .then(({Property, Buildings, Floors, Devices, Records}) => {
                     const convertToIdMap = (entities) => {
@@ -142,7 +148,9 @@ class PropertyController extends PropertyChildrenBaseController {
                     }
                 }
 
-                this.handle('get', request, reply, getPropertyWithTreeOfChildren(Property));
+                const {level} = request.query;
+
+                this.handle('get', request, reply, getPropertyWithTreeOfChildren(Property, level));
             }
         }
     }

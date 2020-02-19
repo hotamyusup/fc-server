@@ -117,7 +117,7 @@
 												<div><a href="#" data-bind="click: $data.exportCsv" class="userlink">Export</a></div>
 											</div>
 											<div class="item-col text-right">
-												<div><a href="javascript:;;" data-bind="attr: {id:_id, href:'buildings.html?i='+_id}" class="userlink">Buildings (<span data-bind="text:Buildings.length"></span>)</a></div>
+												<div><a href="javascript:;;" data-bind="attr: {id:_id, href:'buildings/list.html?i='+_id}" class="userlink">Buildings (<span data-bind="text:Buildings.length"></span>)</a></div>
 											</div>
 										</div>
 									</li>
@@ -206,7 +206,7 @@
 													_id: device.DeviceType
 												});
 												let deviceTitle = "NOTFOUND";
-												let deviceEquipmentType = "NOTFOUND"; 
+												let deviceEquipmentType = "NOTFOUND";
 
 												if (!equipmentDevice) {
 													console.log(`device._id === ${device._id}`);
@@ -245,7 +245,7 @@
 													device.Notes = (device.Notes.length > 0) ? device.Notes:'';
 													content = content.concat(deviceTitle, ',', property.Title, ',', building.Title, ',', floor.Title,
 														',', device.DeviceLocation, ',', device.InstallationDate, ',', record.InspectionDate,
-														',', device.Notes, 
+														',', device.Notes,
 														',', deviceEquipmentType, ',', device.ModelNumber, ',', device.SerialNumber, ',',
 														frequencies[record.Frequency], ',', _.findWhere(users, {
 														_id: record.User
@@ -259,7 +259,7 @@
 													device.Notes = (device.Notes.length > 0) ? device.Notes:'';
 													content = content.concat(deviceTitle, ',', property.Title, ',', building.Title, ',', floor.Title,
 														',', device.DeviceLocation, ',', device.InstallationDate, ',', '',
-														',', device.Notes, 
+														',', device.Notes,
 														',', deviceEquipmentType, ',', device.ModelNumber, ',', device.SerialNumber, ',','\n'
 													);
 												}

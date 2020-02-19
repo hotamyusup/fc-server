@@ -7,20 +7,19 @@
     <meta name="description" content="">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="apple-touch-icon" href="apple-touch-icon.png">
-
     <link rel="stylesheet" href="/admin/css/vendor.css">
     <link rel="stylesheet" href="/admin/css/app.css">
     <script>
         var themeSettings = (localStorage.getItem('themeSettings')) ? JSON.parse(localStorage.getItem('themeSettings')) :
-                {};
+            {};
         var themeName = themeSettings.themeName || 'red';
         if (themeName) {
             document.write('<link rel="stylesheet" id="theme-style" href="/admin/css/app-' + themeName + '.css">');
-        } else {
+        }
+        else {
             document.write('<link rel="stylesheet" id="theme-style" href="/admin/css/app.css">');
         }
     </script>
-
 </head>
 <body>
 <div class="main-wrapper">
@@ -90,37 +89,67 @@
         <div class="sidebar-mobile-menu-handle" id="sidebar-mobile-menu-handle"></div>
         <div class="mobile-menu-handle"></div>
         <article class="content dashboard-page">
-            <section class="section" id="users">
+            <div class="card" data-bind="visible: !Building">
+                <div class="card-block">Loading
+                </div>
+            </div>
+            <section class="section" data-bind="visible: Building" style="display: none;">
                 <div class="row">
                     <div class="col-xl-12">
+                        <ol class="breadcrumb" data-bind="if: Property && Building, visible: Property && Building" style="display: none;">
+                            <li class="breadcrumb-item">
+                                <a data-bind="
+                                        text: Property.Title,
+                                        attr: {href: '../property.html?i='+Property._id}
+                                    "
+                                   href="#"
+                                ></a>
+                            </li>
+                            <li class="breadcrumb-item">
+                                <a href="#"
+                                   data-bind="attr: {href: '../buildings/list.html?i='+Property._id}"
+                                >Buildings</a>
+                            </li>
+                            <li class="breadcrumb-item">
+                                <a href="#"
+                                   data-bind="
+                                        text: Building.Title,
+                                        attr: {href: '../buildings/building.html?i='+Building._id+'&p='+Building.PropertyID}
+                                    "
+                                ></a>
+                            </li>
+                            <li class="breadcrumb-item active" aria-current="page">Floors</li>
+                        </ol>
                         <div class="card items" data-exclude="xs,sm,lg">
                             <div class="card-header bordered">
                                 <div class="header-block">
-                                    <h3 class="title"> Buildings </h3>
+                                    <h3 class="title"> Floors </h3>
 
                                 </div>
+
                                 <div class="header-block pull-right">
-                                    <span data-bind="text: Property.Title"></span>
+                                    <span data-bind="text: Building.Title"></span>
                                     <a href="#export-modal-window" data-toggle="modal" data-target="#export-modal-window">Export</a>
                                 </div>
                             </div>
-                            <ul class="item-list striped" data-bind="foreach: Property.Buildings">
+                            <ul class="item-list striped" data-bind="foreach: Building.Floors">
                                 <li class="item">
                                     <div class="item-row">
-                                        <div class="item-col item-col-title no-overflow">
-                                            <h4 class="item-title no-wrap" data-bind="text: Title"></h4>
+                                        <div class="item-col col-md-4 item-col-title no-overflow">
+                                            <a href="#" data-bind="attr: {href:'floor.html?i='+_id}" >
+                                                <h4 class="item-title no-wrap" data-bind="text: Title"></h4>
+                                            </a>
                                         </div>
-                                        <div class="item-col text-right">
-                                            <div><a href="javascript:;;"
-                                                    data-bind="attr: {href:Picture,target:'_blank'}" class="userlink">Picture</a>
+                                        <div class="item-col col-md-8 text-right">
+                                            <div>
+                                                <a style="padding-left: 10px;" href="javascript:;;" data-bind="attr: {href:'../devices.html?i='+_id+'&p='+$parent.Property._id+'&b='+$parent.Building._id}" class="userlink">Devices (<span data-bind="text:Devices.length"></span>)</a>
+                                                <a style="padding-left: 10px;" href="#" data-bind="attr: {href: 'edit.html?i='+_id+'&p='+PropertyID}" class="userlink">Edit</a>
+                                                <a style="padding-left: 10px;" href="#" data-bind="click: $parent.copyFloor" class="userlink">Copy</a>
+                                                <a style="padding-left: 10px;" href="#" data-bind="click: $parent.deleteFloor" class="userlink">Delete</a>
                                             </div>
+
                                         </div>
-                                        <div class="item-col text-right">
-                                            <div><a href="javascript:;;"
-                                                    data-bind="attr: {href:'floors.html?i='+_id+'&p='+$parent.Property._id}"
-                                                    class="userlink">Floors (<span
-                                                    data-bind="text:Floors.length"></span>)</a></div>
-                                        </div>
+
                                     </div>
                                 </li>
                             </ul>
@@ -144,45 +173,70 @@
         <div class="color-secondary"></div>
     </div>
 </div>
-
 <script src="/admin/js/vendor.js"></script>
 <script src="/admin/js/app.js"></script>
 <script src="/admin/js/custom.js"></script>
 <script src="/admin/parts/export/modal.js"></script>
-
 <script type="text/javascript">
     $(function () {
         Site.init();
         var ID = QueryString("i");
+        var PropertyID = QueryString("p");
         var Model = {
-            ACL: Auth.ACL()
+            ACL: Auth.ACL(),
+            deleteFloor(floor, evt) {
+                const confirmed = confirm(`Dou you want to delete floor ${floor.Title}`);
+                if (!confirmed) {
+                    return;
+                }
+
+                const {_id} = floor;
+                const changeSet = {_id, Status: -1};
+                API.updateFloor(_id, changeSet, _ => location.reload());
+            },
+            copyFloor(floor, evt) {
+                if (confirm('Are you sure you want to copy?')) {
+                    API.copyFloor(floor._id, copiedFloor => location.reload());
+                    //
+                    // floor.Title = 'Copy of ' + floor.Title;
+                    // floor.created_at = new Date();
+                    // floor.updated_at = new Date();
+                    // floor.PropertyID = PropertyID;
+                    // floor.BuildingID = ID;
+                    // delete floor._id;
+                    // var data = new Object();
+                    // data.content = JSON.stringify(floor);
+                    // API.post('/floors/duplicate',
+                    //     data,
+                    //     function (data) {
+                    //         location.reload();
+                    //     });
+                }
+            }
         };
 
-
-        API.property(ID, function (Property) {
-            Model.Property = Property;
-            Model.Property.Buildings = _.filter(Property.Buildings, function (building) {
-                building.Floors = _.filter(building.Floors, function (floor) {
-                    return floor.Status > 0;
+        API.property(PropertyID, function (data) {
+            Model.Property = data;
+            Model.Building = _.findWhere(data.Buildings,{_id:ID});
+            Model.Building.Floors = _.filter(Model.Building.Floors, function(floor) {
+                floor.Devices = _.filter(floor.Devices, function(device) {
+                    return device.Status > 0;
                 });
-                return building.Status > 0;
+                return floor.Status > 0;
             });
 
             setupExportModal(Model, {
-                title: Property.Title,
-                source: {PropertyID: ID},
+                title: [Model.Property.Title, Model.Building.Title].map(s => s.trim()).join(' / '),
+                source: {BuildingID: Model.Building._id},
                 entities: [
                     ['Inspections', 'inspections'],
                     ['Devices', 'devices'],
                     ['Floors', 'floors'],
-                    ['Buildings', 'buildings'],
                 ]
             });
 
-            setTimeout(function () {
-                ko.applyBindings(Model);
-            }, 1000);
-        });
+            ko.applyBindings(Model);
+        }, 'Devices');
     });
 
 </script>
