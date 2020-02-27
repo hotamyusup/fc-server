@@ -243,6 +243,7 @@
 													}
 													deviceCount++;
 													device.Notes = (device.Notes.length > 0) ? device.Notes:'';
+													device.SerialNumber = (device.SerialNumber.length > 0) ? device.SerialNumber:'n/a';
 													content = content.concat(deviceTitle, ',', property.Title, ',', building.Title, ',', floor.Title,
 														',', device.DeviceLocation, ',', device.InstallationDate, ',', record.InspectionDate,
 														',', device.Notes, 
@@ -257,6 +258,7 @@
 												if (device.Records.length <= 0) {
 													deviceCount++;
 													device.Notes = (device.Notes.length > 0) ? device.Notes:'';
+													device.SerialNumber = (device.SerialNumber.length > 0) ? device.SerialNumber:'n/a';
 													content = content.concat(deviceTitle, ',', property.Title, ',', building.Title, ',', floor.Title,
 														',', device.DeviceLocation, ',', device.InstallationDate, ',', '',
 														',', device.Notes, 
