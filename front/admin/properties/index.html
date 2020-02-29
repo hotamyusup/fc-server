@@ -242,8 +242,8 @@
 															status = "N/A";
 													}
 													deviceCount++;
-													device.Notes = (device.Notes.length > 0) ? device.Notes:'';
-													device.SerialNumber = (device.SerialNumber.length > 0) ? device.SerialNumber:'n/a';
+													device.Notes = (device.Notes.length > 0) ? device.Notes.replace(/,/g,';') : '';
+													device.SerialNumber = (device.SerialNumber.length > 0) ? device.SerialNumber.replace(/,/g,';') : 'n/a';
 													content = content.concat(deviceTitle, ',', property.Title, ',', building.Title, ',', floor.Title,
 														',', device.DeviceLocation, ',', device.InstallationDate, ',', record.InspectionDate,
 														',', device.Notes,
@@ -251,19 +251,19 @@
 														frequencies[record.Frequency], ',', _.findWhere(users, {
 														_id: record.User
 													}).Title,
-														 ',', status, ',', record.Reason, ',', record.Note, ',', record.Photos.length > 0 ? record.Photos[0].URL : '', ',', '\n');
+														 ',', status, ',', record.Reason.replace(/,/g,';'), ',', record.Note.replace(/,/g,';'), ',', record.Photos.length > 0 ? record.Photos[0].URL : '', ',', '\n');
 												});
 
 
 												//add device even if no record
 												if (device.Records.length <= 0) {
 													deviceCount++;
-													device.Notes = (device.Notes.length > 0) ? device.Notes:'';
-													//device.SerialNumber = (device.SerialNumber.length > 0) ? device.SerialNumber:'n/a';
+													device.Notes = (device.Notes.length > 0) ? device.Notes.replace(/,/g,';'):'';
+													//device.SerialNumber = (device.SerialNumber.length > 0) ? device.SerialNumber.replace(/,/g,';'):'n/a';
 													content = content.concat(deviceTitle, ',', property.Title, ',', building.Title, ',', floor.Title,
 														',', device.DeviceLocation, ',', device.InstallationDate, ',', '',
 														',', device.Notes,
-														',', deviceEquipmentType, ',', device.ModelNumber, ',', device.SerialNumber, ',','\n'
+														',', deviceEquipmentType, ',', device.ModelNumber.replace(/,/g,';'), ',', device.SerialNumber, ',','\n'
 													);
 												}
 
