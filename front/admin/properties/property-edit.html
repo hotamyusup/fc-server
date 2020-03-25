@@ -109,8 +109,11 @@
                                             <h4 class="item-title no-wrap">Organization</h4>
                                         </div>
                                         <div class="item-col item-col-title no-overflow">
-                                            <span class="item-title no-wrap"
-                                                  data-bind="text: Organization.Title"></span>
+                                            <select class="form-control underlined required"
+                                                    id="organizationSelect"
+                                                    name="PropertyManager"
+                                                    data-bind="options: Organizations, optionsText: 'Title', optionsValue: '_id', value: Property.Organization">
+                                            </select>
                                         </div>
                                     </div>
                                 </li>
@@ -120,7 +123,9 @@
                                             <h4 class="item-title no-wrap">Title</h4>
                                         </div>
                                         <div class="item-col item-col-title no-overflow">
-                                            <h4 class="item-title no-wrap" data-bind="text: Property.Title"></h4>
+                                            <div class="form-group">
+                                                <input type="text" class="form-control required underlined" data-bind="value: Property.Title">
+                                            </div>
                                         </div>
                                     </div>
                                 </li>
@@ -371,8 +376,9 @@
                 Model.ConstructionType = data;
                 i++;
             });
-            API.organization(property.Organization, function (data) {
-                Model.Organization = data;
+
+            API.organizations(function (data) {
+                Model.Organizations = data;
                 i++;
             });
 
@@ -396,7 +402,7 @@
 
         $("#submit").click(function (e) {
             e.preventDefault();
-            const {_id, Contacts, PropertyManager} = Model.Property;
+            const {_id, Contacts, PropertyManager, Title, Organization} = Model.Property;
 
             const nonValidContacts = _.filter(Contacts,
                 contact => _.keys(contact).filter(key => _.isEmpty(`${contact[key]||''}`.trim())).length > 0
@@ -408,6 +414,8 @@
 
             const changeSet = {
                 _id,
+                Title,
+                Organization,
                 PropertyManager,
                 Contacts,
             };
