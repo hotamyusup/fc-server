@@ -100,7 +100,7 @@
 									</div>
 
                                     <div class="header-block pull-right">
-                                        <span data-bind="text: deviceName"></span>
+                                            <span data-bind="text: deviceName"></span>
                                         <span>Inspection History</span>
                                         <a href="#export-modal-window" data-toggle="modal" data-target="#export-modal-window">Export</a>
                                     </div>
@@ -120,7 +120,7 @@
 											</div>
 											<div class="item-col item-col-title no-overflow">
 												<h4 class="item-title no-wrap" data-bind="if: $data.DeviceStatus !== null">
-													<span data-bind="text: DeviceStatus.toString().replace('0','Fail').replace('1','Pass')"></span>
+													<span data-bind="text: DeviceStatus.toString().replace('1','Fail').replace('0','Pass')"></span>
 												</h4>
 											</div>
 											<div class="item-col text-right">
