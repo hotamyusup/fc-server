@@ -92,6 +92,57 @@
 				<section class="section" id="users">
 					<div class="row">
 						<div class="col-xl-12">
+                            <ol class="breadcrumb" data-bind="if: Property && Building, visible: Property && Building" style="display: none;">
+                                <li class="breadcrumb-item">
+                                    <a data-bind="
+                                        text: Property.Title,
+                                        attr: {href: '/admin/properties/property.html?i='+Property._id}
+                                    "
+                                       href="#"
+                                    ></a>
+                                </li>
+                                <li class="breadcrumb-item">
+                                    <a href="#"
+                                       data-bind="attr: {href: '/admin/properties/buildings/list.html?i='+Property._id}"
+                                    >Buildings</a>
+                                </li>
+                                <li class="breadcrumb-item">
+                                    <a href="#"
+                                       data-bind="
+                                        text: Building.Title,
+                                        attr: {href: '/admin/properties/buildings/building.html?i='+Building._id+'&p='+Building.PropertyID}
+                                    "
+                                    ></a>
+                                </li>
+                                <li class="breadcrumb-item">
+                                    <a href="#"
+                                       data-bind="attr: {href: '/admin/properties/floors/list.html?i='+Building._id+'&p='+Building.PropertyID}"
+                                    >Floors</a>
+                                </li>
+                                <li class="breadcrumb-item">
+                                    <a href="#"
+                                       data-bind="
+                                        text: Floor.Title,
+                                        attr: {href: '/admin/properties/floors/floor.html?i='+Floor._id+'&b='+ Building._id + '&p='+Building.PropertyID}
+                                    "
+                                    ></a>
+                                </li>
+                                <li class="breadcrumb-item">
+                                    <a href="#"
+                                       data-bind="attr: {href: '/admin/properties/devices.html?i='+Floor._id+'&b='+ Building._id + '&p='+Building.PropertyID}"
+                                    >Devices</a>
+                                </li>
+                                <li class="breadcrumb-item">
+                                    <a href="#"
+                                       data-bind="
+                                        text: deviceName,
+                                        attr: {href: '/admin/properties/device.html?i='+Device._id+'&f='+ Floor._id + '&b='+ Building._id + '&p='+Building.PropertyID}
+                                    "
+                                    ></a>
+                                </li>
+                                <li class="breadcrumb-item active" aria-current="page">Inspections</li>
+                            </ol>
+
 							<div class="card items" data-exclude="xs,sm,lg">
 								<div class="card-header bordered">
 									<div class="header-block">
@@ -100,7 +151,9 @@
 									</div>
 
                                     <div class="header-block pull-right">
+                                        <a href="javascript:;;" data-bind="attr: {href:'device.html?i='+Device._id+'&p='+Property._id+'&b='+Building._id+'&f='+Floor._id}" class="userlink">
                                             <span data-bind="text: deviceName"></span>
+                                        </a>
                                         <span>Inspection History</span>
                                         <a href="#export-modal-window" data-toggle="modal" data-target="#export-modal-window">Export</a>
                                     </div>

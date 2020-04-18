@@ -92,14 +92,58 @@
 					<section class="section" id="users">
 						<div class="row">
 							<div class="col-xl-12">
+                                <ol class="breadcrumb" data-bind="if: Property && Building, visible: Property && Building" style="display: none;">
+                                    <li class="breadcrumb-item">
+                                        <a data-bind="
+                                        text: Property.Title,
+                                        attr: {href: '/admin/properties/property.html?i='+Property._id}
+                                    "
+                                           href="#"
+                                        ></a>
+                                    </li>
+                                    <li class="breadcrumb-item">
+                                        <a href="#"
+                                           data-bind="attr: {href: '/admin/properties/buildings/list.html?i='+Property._id}"
+                                        >Buildings</a>
+                                    </li>
+                                    <li class="breadcrumb-item">
+                                        <a href="#"
+                                           data-bind="
+                                        text: Building.Title,
+                                        attr: {href: '/admin/properties/buildings/building.html?i='+Building._id+'&p='+Building.PropertyID}
+                                    "
+                                        ></a>
+                                    </li>
+                                    <li class="breadcrumb-item">
+                                        <a href="#"
+                                           data-bind="attr: {href: '/admin/properties/floors/list.html?i='+Building._id+'&p='+Building.PropertyID}"
+                                        >Floors</a>
+                                    </li>
+                                    <li class="breadcrumb-item">
+                                        <a href="#"
+                                           data-bind="
+                                        text: Floor.Title,
+                                        attr: {href: '/admin/properties/floors/floor.html?i='+Floor._id+'&b='+ Building._id + '&p='+Building.PropertyID}
+                                    "
+                                        ></a>
+                                    </li>
+                                    <li class="breadcrumb-item">
+                                        <a href="#"
+                                           data-bind="attr: {href: '/admin/properties/devices.html?i='+Floor._id+'&b='+ Building._id + '&p='+Building.PropertyID}"
+                                        >Devices</a>
+                                    </li>
+                                    <li class="breadcrumb-item active" aria-current="page" data-bind="text: _.findWhere(_.findWhere(Equipments,{_id:Device.EquipmentType}).Devices, {_id:Device.DeviceType}).Title">Device</li>
+                                </ol>
+
 								<div class="card items" data-exclude="xs,sm,lg">
 									<div class="card-header bordered">
 										<div class="header-block">
-											<h3 class="title"> Devices </h3>
-										</div>
-										<div class="header-block pull-right" data-bind="text: Floor.Title">
-											
-										</div>
+											<h3 class="title">Device</h3>
+                                            </div>
+										<div class="header-block pull-right">
+                                            <span data-bind="visible: Device.Status === 2"  style="display: none;" class="btn-info">Force Pending</span>
+                                            <span data-bind="visible: Device.Status === -1" style="display: none;"  class="btn-danger">Deleted</span>
+                                        </div>
 									</div>
 									<ul class="item-list striped">
 										<li class="item">
@@ -187,10 +231,10 @@
 										<li class="item">
 											<div class="item-row">
 												<div class="item-col item-col-title no-overflow">
-													<h4 class="item-title no-wrap">Records</h4>
+													<h4 class="item-title no-wrap">Inspections</h4>
 												</div>
 												<div class="item-col item-col-title no-overflow">
-													<h4 class="item-title no-wrap" data-bind="text: Device.ModelNumber"></h4>
+                                                    <div><a href="javascript:;;" data-bind="attr: {href:'records.html?i='+Device._id+'&p='+Property._id+'&b='+Building._id+'&f='+Floor._id}" class="userlink">History</a></div>
 												</div>
 											</div>
 										</li>
