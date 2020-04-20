@@ -15,9 +15,9 @@ class BaseDAO {
         return this.model.schema.path(field)
     }
 
-    async all(conditions, options) {
+    async all(conditions, options, fields) {
         conditions = conditions || {};
-        return this.model.find(conditions, null, options);
+        return this.model.find(conditions, fields, options);
     }
 
     async get(id) {
