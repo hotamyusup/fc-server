@@ -125,7 +125,7 @@
                                     <div class="item-row">
                                         <div class="item-col col-md-2 item-col-img" style="max-width:130px;">
                                             <a href="javascript:;;"
-                                               data-bind="attr: {href:Picture,target:'_blank'}, if: (Picture[0] !== '/')"
+                                               data-bind="attr: {href:Picture,target:'_blank'}, if: (Picture && Picture[0] !== '/')"
                                                class="userlink">
                                                     <img height="120" class=" rounded" src="" data-bind="attr: { src:Picture.replace('.jpg','-t.jpg')}">
                                                 </img>

@@ -152,7 +152,7 @@
                                         <div class="item-col item-col-title no-overflow" >
                                           <div>
                                               <a href="javascript:;;"
-                                                 data-bind="attr: {href:Building.Picture,target:'_blank'}, if: (Building.Picture[0] !== '/')"
+                                                 data-bind="attr: {href:Building.Picture,target:'_blank'}, if: (Building.Picture && Building.Picture[0] !== '/')"
                                                  class="userlink">
                                                   <img width="120" style="float: left;" class="rounded" src="" data-bind="attr: { src:Building.Picture.replace('.jpg','-t.jpg')}">
                                                   </img>
