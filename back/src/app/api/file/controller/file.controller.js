@@ -5,9 +5,9 @@ const easyimg = require('easyimage');
 const uuid = require('node-uuid');
 const path = require('path');
 
-class ImageController {
+class FileController {
     constructor() {
-        this.controllerName = 'ImageController';
+        this.controllerName = 'FileController';
     }
 
     get get() {
@@ -20,31 +20,33 @@ class ImageController {
     }
 
     get save() {
+        const uploadsFilePath = path.normalize(__dirname + '/../public/file/');
+
         return {
             auth: false,
-            handler: async(request, reply) => {
+            handler: async (request, reply) => {
+                let {fileName} = request.query;
                 const action = 'saveFile';
-                logger.info(`${this.controllerName}.${action} start`);
 
-                const file = request.payload.file;
-                console.log('file === ', file);
-                const filename = uuid.v4();
+                try {
+                    logger.info(`${this.controllerName}.${action} start ${fileName ? fileName : ''}`);
 
-                const fileDirPath = path.normalize(__dirname + '/../public/file/');
-                const filePath = fileDirPath + filename;
+                    const file = request.payload.file;
+                    fileName = fileName || uuid.v4();
+                    const newFilePath = uploadsFilePath + fileName;
 
-                fs.writeFile(filePath, file, (err) => {
-                    if (err) {
-                        logger.error(`${this.controllerName}.${action} write image file error: ${err}`);
-                    }
-                });
+                    fs.renameSync(file.path, newFilePath);
 
-                logger.info(`${this.controllerName}.${action} finish`);
-                return reply(filename);
+                    return reply(fileName);
+                } catch (err) {
+                    logger.error(`${this.controllerName}.${action} fileName ${fileName}, error = ${err}`);
+                }
             },
             payload: {
-                maxBytes: 100000000,
+                maxBytes: 1024100000,
                 timeout: 11000000,
+                output: 'file',
+                uploads: uploadsFilePath,
             },
             timeout: {
                 socket: 12000000,
@@ -53,5 +55,5 @@ class ImageController {
     }
 }
 
-module.exports = new ImageController();
+module.exports = new FileController();
 
