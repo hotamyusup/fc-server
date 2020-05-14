@@ -189,9 +189,10 @@
 											if (floor.Status <= 0) return;
 											//content = content.concat(property.Title, ',', building.Title, ',', floor.Title, '\n');
 											content = content.concat('device', ',', 'property', ',', 'building', ',', 'floor',
-														',','location', ',', 'installation date', ',', 'inspection date',
+														',','location', ',', 'installation date',
 														',','notes',
 														',','equipment type', ',','model no', ',', 'serial no',
+														',','inspection date',
 														',', 'inspection frequency', ',', 'inspector', ',', 'pass/fail',
 														',', 'reason', ',', 'inspector note', ',', 'image url','\n');
 
@@ -244,14 +245,28 @@
 													deviceCount++;
 													device.Notes = (device.Notes.length > 0) ? device.Notes.replace(/,/g,';') : '';
 													device.SerialNumber = (device.SerialNumber.length > 0) ? device.SerialNumber.replace(/,/g,';') : 'n/a';
+													//temp comment
+														//',', _.findWhere(users, { _id: record.User }).Title,
+													//record.User.Title = _.findWhere(users, { _id: record.User }).Title;
+													try {
+														record.User.Title = _.findWhere(users, { _id: record.User }).Title;
+														//console.log(`record.User Title === `, record.User.Title);
+													}
+													catch(err){
+														record.User.Title = 'no user title'; 
+														//console.log(`record.User error === `, err.message);
+													}
+
 													content = content.concat(deviceTitle, ',', property.Title, ',', building.Title, ',', floor.Title,
-														',', device.DeviceLocation, ',', device.InstallationDate, ',', record.InspectionDate,
+														',', device.DeviceLocation, ',', device.InstallationDate,
 														',', device.Notes,
-														',', deviceEquipmentType, ',', device.ModelNumber.replace(/,/g,';'), ',', device.SerialNumber, ',',
-														frequencies[record.Frequency], ',', _.findWhere(users, {
-														_id: record.User
-													}).Title,
-														 ',', status, ',', record.Reason.replace(/,/g,';'), ',', record.Note.replace(/,/g,';'), ',', record.Photos.length > 0 ? record.Photos[0].URL : '', ',', '\n');
+														',', deviceEquipmentType, ',', device.ModelNumber.replace(/,/g,';'), 
+														',', device.SerialNumber, 
+														',', record.InspectionDate, 
+														',', frequencies[record.Frequency], 
+														',', record.User.Title,
+														',', status, ',', record.Reason.replace(/,/g,';'), ',', record.Note.replace(/,/g,';'), 
+														',', record.Photos.length > 0 ? record.Photos[0].URL : '', ',', '\n');
 												});
 
 
@@ -261,9 +276,10 @@
 													device.Notes = (device.Notes.length > 0) ? device.Notes.replace(/,/g,';'):'';
 													//device.SerialNumber = (device.SerialNumber.length > 0) ? device.SerialNumber.replace(/,/g,';'):'n/a';
 													content = content.concat(deviceTitle, ',', property.Title, ',', building.Title, ',', floor.Title,
-														',', device.DeviceLocation, ',', device.InstallationDate, ',', '',
+														',', device.DeviceLocation, ',', device.InstallationDate,
 														',', device.Notes,
-														',', deviceEquipmentType, ',', device.ModelNumber.replace(/,/g,';'), ',', device.SerialNumber, ',','\n'
+														',', deviceEquipmentType, ',', device.ModelNumber.replace(/,/g,';'),
+														 ',', device.SerialNumber, ',','\n'
 													);
 												}
 
