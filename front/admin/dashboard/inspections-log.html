@@ -1,0 +1,301 @@
+<!doctype html>
+<html class="no-js" lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="x-ua-compatible" content="ie=edge">
+    <title>Fire Cloud Admin</title>
+    <meta name="description" content="">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="apple-touch-icon" href="apple-touch-icon.png">
+    <link rel="stylesheet" href="/admin/css/vendor.css">
+    <link rel="stylesheet" href="/admin/css/app.css">
+    <link rel="manifest" href="/manifest.json">
+    <script>
+        var themeSettings = (localStorage.getItem('themeSettings')) ? JSON.parse(localStorage.getItem('themeSettings')) :
+            {};
+        var themeName = themeSettings.themeName || 'red';
+        if (themeName) {
+            document.write('<link rel="stylesheet" id="theme-style" href="/admin/css/app-' + themeName + '.css">');
+        } else {
+            document.write('<link rel="stylesheet" id="theme-style" href="/admin/css/app.css">');
+        }
+    </script>
+</head>
+<body>
+<div class="main-wrapper">
+    <div class="app" id="app">
+        <header class="header">
+            <div class="header-block header-block-collapse d-lg-none d-xl-none">
+                <button class="collapse-btn" id="sidebar-collapse-btn">
+                    <i class="fa fa-bars"></i>
+                </button>
+            </div>
+            <div class="header-block header-block-search"></div>
+            <div class="header-block header-block-buttons"></div>
+            <div class="header-block header-block-nav"></div>
+        </header>
+        <aside class="sidebar">
+            <div class="sidebar-container">
+                <div class="sidebar-header">
+                    <div class="brand">Fire Cloud Admin</div>
+                </div>
+                <nav class="menu">
+                    <ul class="sidebar-menu metismenu" id="sidebar-menu">
+                        <li>
+                            <a href="/admin/properties">
+                                <i class="fa fa-th-large"></i> Properties
+                            </a>
+                        </li>
+                        <li data-bind="if: ACL.isAdmin">
+                            <a href="/admin/users">
+                                <i class="fa fa-users"></i> Users
+                            </a>
+                        </li>
+                        <li data-bind="visible: ACL.isAdmin" style="display: none;">
+                            <a href="/admin/organizations">
+                                <i class="fa fa-dot-circle-o"></i> Organizations
+                            </a>
+                        </li>
+                        <li data-bind="visible: ACL.isAdmin" style="display: none;" class="active">
+                            <a href="/admin/roles">
+                                <i class="fa fa-tags"></i> Roles
+                            </a>
+                        </li>
+                        <li data-bind="if: ACL.isAdminOrEmployee">
+                            <a href="/admin/equipments">
+                                <i class="fa fa-lightbulb-o"></i> Equipments
+                            </a>
+                        </li>
+                        <li data-bind="if: ACL.isAdminOrEmployee">
+                            <a href="/admin/constructiontypes">
+                                <i class="fa fa-building-o"></i> Construction Types
+                            </a>
+                        </li>
+                        <li data-bind="if: ACL.isAdminOrEmployee">
+                            <a href="/admin/occupancytypes">
+                                <i class="fa fa-home"></i> Occupancy Types
+                            </a>
+                        </li>
+                        <li data-bind="visible: ACL.isAdminOrEmployee" style="display: none;">
+                            <a href="/admin/bulkeditor">
+                                <i class="fa fa-table"></i> Bulk Editor
+                            </a>
+                        </li>
+                        <li>
+                            <a href="/admin/logout.html">
+                                <i class="fa fa-lock"></i> Log out
+                            </a>
+                        </li>
+                    </ul>
+                </nav>
+            </div>
+        </aside>
+        <div class="sidebar-overlay" id="sidebar-overlay"></div>
+        <div class="sidebar-mobile-menu-handle" id="sidebar-mobile-menu-handle"></div>
+        <div class="mobile-menu-handle"></div>
+        <article class="content dashboard-page">
+            <section class="section" id="users">
+                <div class="row">
+                    <div class="col-xl-12">
+                        <div class="card items" data-exclude="xs,sm,lg">
+                            <div class="card-header bordered">
+                                <div class="header-block">
+                                    <h3 class="title"> Roles </h3>
+
+                                </div>
+                                <div class="header-block pull-right">
+                                    <a class="btn btn-primary btn-sm" href="create.html">Create</a>
+                                </div>
+                            </div>
+                            <ul class="item-list striped" data-bind="foreach: roles">
+                                <li class="item">
+                                    <div class="item-row">
+                                        <div class="item-col item-col-title no-overflow"
+                                             data-bind="style: {opacity: Active ? 1 : 0.4}">
+                                            <h4 class="item-title no-wrap" data-bind="text: Title"></h4>
+                                        </div>
+                                        <div class="item-col text-right">
+                                            <div><a href="javascript:;;"
+                                                    data-bind="attr: {id:_id, href:'edit.html?i='+_id}"
+                                                    class="userlink">Edit</a></div>
+                                        </div>
+                                    </div>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </article>
+        <footer class="footer"></footer>
+    </div>
+</div>
+<!-- Reference block for JS -->
+<div class="ref" id="ref">
+    <div class="color-primary"></div>
+    <div class="chart">
+        <div class="color-primary"></div>
+        <div class="color-secondary"></div>
+    </div>
+</div>
+<script src="/admin/js/vendor.js"></script>
+<script src="/admin/js/app.js"></script>
+<script src="/admin/js/custom.js"></script>
+<script type="text/javascript">
+    $(function () {
+        var success = Site.init(['Admin']);
+        if (success) {
+            // API.roles(function (data) {
+            //     data = _.sortBy(data, 'Title');
+            //     ko.applyBindings({ roles: data, ACL: Auth.ACL()});
+            // });
+        }
+    });
+
+</script>
+
+<script type="text/javascript">
+    // if ('serviceWorker' in navigator) {
+    //     navigator.serviceWorker.register('/firebase-messaging-sw.js')
+    //         .then(function (registration) {
+    //             console.log('Registration successful, scope is:', registration.scope);
+    //         }).catch(function (err) {
+    //         console.log('Service worker registration failed, error:', err);
+    //     });
+    // }
+</script>
+
+
+<!-- The core Firebase JS SDK is always required and must be listed first -->
+<script src="https://www.gstatic.com/firebasejs/7.14.5/firebase-app.js"></script>
+
+<!-- TODO: Add SDKs for Firebase products that you want to use
+     https://firebase.google.com/docs/web/setup#available-libraries -->
+<script src="https://www.gstatic.com/firebasejs/7.14.5/firebase-analytics.js"></script>
+<script src="https://www.gstatic.com/firebasejs/7.14.5/firebase-messaging.js"></script>
+<!--<script src="/firebase-messaging-sw.js"></script>-->
+
+<script>
+    // Your web app's Firebase configuration
+    var firebaseConfig = {
+        apiKey: "AIzaSyCugZvIGDQ_j4Fx_0HHHMiHE-VIuSoxr00",
+        authDomain: "firecloud-fireprotected-test.firebaseapp.com",
+        databaseURL: "https://firecloud-fireprotected-test.firebaseio.com",
+        projectId: "firecloud-fireprotected-test",
+        storageBucket: "firecloud-fireprotected-test.appspot.com",
+        messagingSenderId: "570771048919",
+        appId: "1:570771048919:web:f553f8c2663d9ff62ca392",
+        measurementId: "G-0BP8Y7HTB3"
+    };
+    // Initialize Firebase
+    firebase.initializeApp(firebaseConfig);
+
+    // браузер поддерживает уведомления
+    // вообще, эту проверку должна делать библиотека Firebase, но она этого не делает
+    if ('Notification' in window) {
+        var messaging = firebase.messaging();
+
+        messaging.usePublicVapidKey('BM_VTRDRusuWhanFC7Rh4Zp2ZUlmKme1BT45fdRDxRYFdt2VI40SYvQ0ZGdWTHxoH1wU7UjyGahPdwXg_ENPw6I');
+
+        messaging.onMessage((payload) => {
+            console.log('Message received. ', payload);
+            const {data} = payload;
+
+            const notificationTitle = data.title;
+            const notificationOptions = {
+                icon: "http://localhost:1221/assets/img/cfp-logo.png",
+                ...data,
+            };
+
+            // navigator.serviceWorker.getRegistration('/firebase-cloud-messaging-push-scope').then(registration => {
+            //     registration.showNotification(
+            //         'MSG::' + notificationTitle,
+            //         notificationOptions
+            //     )
+            // });
+
+            navigator.serviceWorker.ready.then(registration => {
+                registration.showNotification('MSG::'  +notificationTitle, notificationOptions);
+            });
+        });
+
+        if (Notification.permission === 'granted') {
+            subscribe();
+        } else {
+            subscribe(); // could add onClick handler
+
+            // $('#subscribe').on('click', function () {
+            //     subscribe();
+            // });
+        }
+
+        messaging.onTokenRefresh(function () {
+            messaging.getToken().then(function (refreshedToken) {
+                console.log('Token refreshed.');
+                console.log(refreshedToken);
+                sendTokenToServer(refreshedToken);
+            }).catch(function (err) {
+                console.log('Unable to retrieve refreshed token ', err);
+            });
+        });
+    }
+
+    function subscribe() {
+        // запрашиваем разрешение на получение уведомлений
+        messaging.requestPermission()
+            .then(function () {
+                // получаем ID устройства
+                messaging.getToken()
+                    .then(function (currentToken) {
+                        console.log(`currentToken`, currentToken);
+
+                        if (currentToken) {
+                            sendTokenToServer(currentToken);
+                        } else {
+                            console.warn('Не удалось получить токен.');
+                            setTokenSentToServer(false);
+                        }
+                    })
+                    .catch(function (err) {
+                        console.warn('При получении токена произошла ошибка.', err);
+                        setTokenSentToServer(false);
+                    });
+            })
+            .catch(function (err) {
+                console.warn('Не удалось получить разрешение на показ уведомлений.', err);
+            });
+    }
+
+    // отправка ID на сервер
+    function sendTokenToServer(currentToken) {
+        if (!isTokenSentToServer(currentToken)) {
+            console.log('Отправка токена на сервер...');
+
+            var url = ''; // адрес скрипта на сервере который сохраняет ID устройства
+            $.post(url, {
+                token: currentToken
+            });
+
+            setTokenSentToServer(currentToken);
+        } else {
+            console.log('Токен уже отправлен на сервер.');
+        }
+    }
+
+    // используем localStorage для отметки того,
+    // что пользователь уже подписался на уведомления
+    function isTokenSentToServer(currentToken) {
+        return window.localStorage.getItem('sentFirebaseMessagingToken') == currentToken;
+    }
+
+    function setTokenSentToServer(currentToken) {
+        window.localStorage.setItem(
+            'sentFirebaseMessagingToken',
+            currentToken ? currentToken : ''
+        );
+    }
+
+</script>
+
+</body>
+</html>
