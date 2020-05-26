@@ -1,6 +1,7 @@
 'use strict';
 
 const UserController = require("../controller/user.controller");
+const FCMDeviceTokenController = require("../controller/fcm-device-token.controller");
 
 const USER_ROUTES = [
     {method: 'GET', path: '/users', config: UserController.all},
@@ -9,6 +10,8 @@ const USER_ROUTES = [
     {method: 'POST', path: '/users/{UserID}', config: UserController.update},
     {method: 'POST', path: '/users', config: UserController.create},
     {method: 'DELETE', path: '/users/{UserID}', config: UserController.delete},
+    {method: 'POST', path: '/me/addTokenToUser', config: FCMDeviceTokenController.addTokenToUser},
+    {method: 'POST', path: '/me/deleteTokenFromUser', config: FCMDeviceTokenController.deleteTokenFromUser},
 ];
 
 module.exports = USER_ROUTES;

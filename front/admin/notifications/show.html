@@ -9,7 +9,6 @@
     <link rel="apple-touch-icon" href="apple-touch-icon.png">
     <link rel="stylesheet" href="/admin/css/vendor.css">
     <link rel="stylesheet" href="/admin/css/app.css">
-    <link rel="manifest" href="/manifest.json">
     <script>
         var themeSettings = (localStorage.getItem('themeSettings')) ? JSON.parse(localStorage.getItem('themeSettings')) :
             {};
@@ -100,24 +99,29 @@
                         <div class="card items" data-exclude="xs,sm,lg">
                             <div class="card-header bordered">
                                 <div class="header-block">
-                                    <h3 class="title"> Roles </h3>
-
+                                    <h3 class="title"> Notifications </h3>
                                 </div>
                                 <div class="header-block pull-right">
-                                    <a class="btn btn-primary btn-sm" href="create.html">Create</a>
+                                    <a class="btn btn-primary btn-sm" href="create.html">Mark All Read</a>
                                 </div>
                             </div>
-                            <ul class="item-list striped" data-bind="foreach: roles">
+                            <ul class="item-list striped" data-bind="foreach: notifications">
                                 <li class="item">
                                     <div class="item-row">
-                                        <div class="item-col item-col-title no-overflow"
-                                             data-bind="style: {opacity: Active ? 1 : 0.4}">
-                                            <h4 class="item-title no-wrap" data-bind="text: Title"></h4>
+                                        <div class="item-col" data-bind="style: {opacity: Read ? 1 : 0.8}">
+                                            <div>
+                                                <h4 class="item-title no-wrap" data-bind="text: Title"></h4>
+                                                <div data-bind="text: Body"></div>
+                                            </div>
                                         </div>
-                                        <div class="item-col text-right">
-                                            <div><a href="javascript:;;"
-                                                    data-bind="attr: {id:_id, href:'edit.html?i='+_id}"
-                                                    class="userlink">Edit</a></div>
+                                        <div class="item-col text-right"
+                                             data-bind="visible: Read"
+                                             style="display: none;">
+                                            <div>
+                                                <a href="javascript:;;"
+                                                   data-bind="attr: {id:_id, href:'edit.html?i='+_id}"
+                                                   class="userlink">Mark as read</a>
+                                            </div>
                                         </div>
                                     </div>
                                 </li>
@@ -138,28 +142,21 @@
         <div class="color-secondary"></div>
     </div>
 </div>
-<script src="https://www.gstatic.com/firebasejs/7.14.5/firebase-app.js"></script>
-<script src="https://www.gstatic.com/firebasejs/7.14.5/firebase-messaging.js"></script>
-
-<script src="/admin/js/config-front.js"></script>
 <script src="/admin/js/vendor.js"></script>
 <script src="/admin/js/app.js"></script>
 <script src="/admin/js/custom.js"></script>
-<script src="/admin/js/fcm-init.js"></script>
-
 <script type="text/javascript">
     $(function () {
-        var success = Site.init(['Admin']);
+        var success = Site.init(['Admin', 'Employee']);
         if (success) {
-            // API.roles(function (data) {
-            //     data = _.sortBy(data, 'Title');
-            //     ko.applyBindings({ roles: data, ACL: Auth.ACL()});
-            // });
+            API.notifications(function (data) {
+                console.log('data === ', data);
+                data = _.sortBy(data, 'created_at');
+                ko.applyBindings({notifications: data, ACL: Auth.ACL()});
+            });
         }
     });
 
 </script>
-
-
 </body>
 </html>

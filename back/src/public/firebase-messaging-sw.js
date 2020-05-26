@@ -1,91 +1,41 @@
-console.log('[firebase-messaging-sw.js] init');
+console.log(`[firebase-messaging-sw.js] init`);
+
+importScripts('/admin/js/config-front.js');
 
 // Had to be defined before 'importScripts
 self.addEventListener('notificationclick', function (event) {
-    event.stopImmediatePropagation();
-
-    event.notification.close();
-    console.log('Notification notificationclick triggered::', event);
-    event.waitUntil(
-        clients.openWindow(event.notification.data)
-    );
+    // event.notification.close();
+    console.log(`[firebase-messaging-sw.js] notificationclick triggered:`, event);
+    const url = event.notification.data;
+    if (url) {
+        event.waitUntil(clients.openWindow(url));
+    }
 });
 
-self.addEventListener("notificationclose", function(event) {
-    console.log('notification close');
+self.addEventListener("notificationclose", function (event) {
+    // console.log('notification closed');
 });
 
 importScripts('https://www.gstatic.com/firebasejs/7.14.4/firebase-app.js');
 importScripts('https://www.gstatic.com/firebasejs/7.14.4/firebase-messaging.js');
 
 // https://firebase.google.com/docs/web/setup#config-object
-firebase.initializeApp({
-    apiKey: "AIzaSyCugZvIGDQ_j4Fx_0HHHMiHE-VIuSoxr00",
-    authDomain: "firecloud-fireprotected-test.firebaseapp.com",
-    databaseURL: "https://firecloud-fireprotected-test.firebaseio.com",
-    projectId: "firecloud-fireprotected-test",
-    storageBucket: "firecloud-fireprotected-test.appspot.com",
-    messagingSenderId: "570771048919",
-    appId: "1:570771048919:web:f553f8c2663d9ff62ca392",
-    measurementId: "G-0BP8Y7HTB3"
-});
+firebase.initializeApp(configFront.firebase);
 
 const messaging = firebase.messaging();
 
-// messaging.setBackgroundMessageHandler(function(payload) {
-//     console.log('[firebase-messaging-sw.js] Received background message ', payload);
-//     // Customize notification here
-//
-//     return self.registration.showNotification(payload.data.title,
-//         Object.assign({data: payload.data}, payload.data));
-// });
-
 messaging.setBackgroundMessageHandler(function (payload) {
-    console.log('[firebase-messaging-sw.js] Received background message ', payload);
-    // Customize notification here
+    console.log(`[firebase-messaging-sw.js] Received background message `, payload);
     const {data} = payload;
 
     const notificationTitle = data.title;
     const notificationOptions = {
-        icon: "http://localhost:1111/assets/img/cfp-logo.png",
+        icon: `${configFront.APIURL}/assets/img/cfp-logo.png`,
         ...data
     };
 
-    return self.registration.showNotification('BG:::' + notificationTitle, notificationOptions);
+    return self.registration.showNotification(notificationTitle, notificationOptions);
 });
-// [END background_handler]
-
-//
-// self.addEventListener('notificationclick', function(event) {
-//     console.log('SW: Clicked notification', event)
-//
-//     let data = event.notification.data
-//
-//     event.notification.close()
-//
-//     self.clients.openWindow(event.notification.data.link)
-// })
-//
-// self.addEventListener('push', event => {
-//     let data = {}
-//
-//     if (event.data) {
-//         data = event.data.json()
-//     }
-//
-//     console.log('SW: Push received', data)
-//
-//     if (data.notification && data.notification.title) {
-//         self.registration.showNotification(data.notification.title, {
-//             body: data.notification.body,
-//             icon: 'http://localhost:1111/assets/img/cfp-logo.png',
-//             data
-//         })
-//     } else {
-//         console.log('SW: No notification payload, not showing notification')
-//     }
-// })
-
 
 /*
 // FCM message example:
