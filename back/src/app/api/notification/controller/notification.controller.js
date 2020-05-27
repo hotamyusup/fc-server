@@ -19,7 +19,7 @@ class NotificationController extends BaseController {
                 const currentUser = this.getCurrentUser(request);
 
                 const options = {
-                    sort: sort ? JSON.parse(decodeURIComponent(sort)) : undefined,
+                    sort: sort ? JSON.parse(decodeURIComponent(sort)) : '-created_at',
                     limit: limit ? parseInt(limit) : undefined,
                     skip: skip ? parseInt(skip) : undefined,
                 };
