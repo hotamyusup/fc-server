@@ -102,24 +102,26 @@
                                     <h3 class="title"> Notifications </h3>
                                 </div>
                                 <div class="header-block pull-right">
-                                    <a class="btn btn-primary btn-sm" href="create.html">Mark All Read</a>
+                                    <a class="btn btn-primary btn-sm"
+                                       href="javascript:;;"
+                                       data-bind="click: $root.markAllAsRead">Mark All Read</a>
                                 </div>
                             </div>
                             <ul class="item-list striped" data-bind="foreach: notifications">
                                 <li class="item">
                                     <div class="item-row">
-                                        <div class="item-col" data-bind="style: {opacity: Read ? 1 : 0.8}">
+                                        <div class="item-col" data-bind="style: {opacity: Read ? 0.8 : 1}">
                                             <div>
                                                 <h4 class="item-title no-wrap" data-bind="text: Title"></h4>
                                                 <div data-bind="text: Body"></div>
                                             </div>
                                         </div>
                                         <div class="item-col text-right"
-                                             data-bind="visible: Read"
+                                             data-bind="visible: !Read"
                                              style="display: none;">
                                             <div>
                                                 <a href="javascript:;;"
-                                                   data-bind="attr: {id:_id, href:'edit.html?i='+_id}"
+                                                   data-bind="click: $root.markAsRead"
                                                    class="userlink">Mark as read</a>
                                             </div>
                                         </div>
@@ -149,11 +151,35 @@
     $(function () {
         var success = Site.init(['Admin', 'Employee']);
         if (success) {
-            API.notifications(function (data) {
-                console.log('data === ', data);
-                data = _.sortBy(data, 'created_at');
-                ko.applyBindings({notifications: data, ACL: Auth.ACL()});
-            });
+            const fetchNotifications = () => {
+                console.log('fetchNotifications');
+                API.notifications(data => {
+                    data = _.sortBy(data, 'created_at');
+                    Model.notifications = data;
+                });
+            }
+
+            const Model = {
+                ACL: Auth.ACL(),
+                _notifications: ko.observable(null),
+                get notifications() {
+                    return this._notifications();
+                },
+                set notifications(notifications) {
+                    return this._notifications(notifications);
+                },
+                markAsRead(notification) {
+                    API.notificationMarkAsRead(notification._id, fetchNotifications)
+                },
+                markAllAsRead() {
+                    API.notificationMarkAllAsRead(fetchNotifications)
+                },
+            };
+
+            fetchNotifications();
+
+            ko.applyBindings(Model);
+
         }
     });
 

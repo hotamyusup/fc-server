@@ -10,6 +10,11 @@ class NotificationDAO extends BaseDAO {
     constructor() {
         super(NotificationModel);
     }
+
+    async markAllRead(userID) {
+        return NotificationModel.updateMany({User: userID, Read: false}, {$set: {Read: true}});
+    }
+
 }
 
 module.exports = new NotificationDAO();

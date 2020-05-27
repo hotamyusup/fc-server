@@ -17,6 +17,10 @@ class BaseController {
         this.batchEntitiesKey = 'entities';
     }
 
+    getCurrentUser(request) {
+        return request.auth && request.auth.credentials;
+    }
+
     async handle(action, request, reply, promise) {
         let {hash, format, filename} = request.query;
         hash = hash || '';
