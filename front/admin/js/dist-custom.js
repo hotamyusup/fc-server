@@ -240,6 +240,35 @@ $(function () {
 				callback(data);
 			});
 		},
+		addTokenToCurrentUser: function (token, callback) {
+		    const tokenData = {
+                Token: token,
+                UserAgent: navigator.userAgent
+            };
+			API.post("/me/addTokenToUser", tokenData, function (data) {
+                callback && callback(data);
+			});
+		},
+        deleteTokenFromCurrentUser: function (token, callback) {
+            API.post("/me/deleteTokenFromUser", {Token: token}, function (data) {
+                callback && callback(data);
+            });
+        },
+        notifications: function (callback) {
+			API.get("/notifications?limit=100", function (data) {
+				callback(data);
+			});
+		},
+        notificationMarkAsRead: function (notificationID, callback) {
+			API.post(`/notifications/${notificationID}/read`, {},function (data) {
+                callback && callback(data);
+			});
+		},
+        notificationMarkAllAsRead: function (callback) {
+			API.post(`/notifications/readAll`, {},function (data) {
+                callback && callback(data);
+			});
+		},
 		organizations: function (callback) {
 			API.get("/organizations", function (data) {
 				callback(data);
