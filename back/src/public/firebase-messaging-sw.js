@@ -31,6 +31,7 @@ messaging.setBackgroundMessageHandler(function (payload) {
     const notificationTitle = data.title;
     const notificationOptions = {
         icon: `${configFront.APIURL}/assets/img/cfp-logo.png`,
+        sound: `${configFront.APIURL}/assets/notification-sound.mp3`,
         ...data
     };
 

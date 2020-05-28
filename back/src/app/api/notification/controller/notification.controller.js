@@ -12,6 +12,38 @@ class NotificationController extends BaseController {
         this.batchEntitiesKey = 'Notifications';
     }
 
+    get stats() {
+        return {
+            handler: async (request, reply) => {
+                const {hash, sort, limit, skip} = request.query;
+                const currentUser = this.getCurrentUser(request);
+
+                const options = {
+                    sort: sort ? JSON.parse(decodeURIComponent(sort)) : '-created_at',
+                    limit: limit ? parseInt(limit) : undefined,
+                    skip: skip ? parseInt(skip) : undefined,
+                };
+
+                const conditions = {
+                    User: currentUser
+                };
+
+                const lastNotifications = await this.DAO.all(conditions, options);
+                const notReadNotifications = await this.DAO.all({
+                    ...conditions,
+                    Read: false
+                }, {});
+
+                const stats = {
+                    notifications: lastNotifications,
+                    notReadCount: notReadNotifications.length
+                }
+
+                this.handle('stats', request, reply, stats);
+            }
+        };
+    }
+
     get all() {
         return {
             handler: (request, reply) => {

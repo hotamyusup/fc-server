@@ -32,7 +32,43 @@
 				</div>
 				<div class="header-block header-block-search"></div>
 				<div class="header-block header-block-buttons"></div>
-				<div class="header-block header-block-nav"></div>
+				<div class="header-block header-block-nav">
+                <ul class="nav-profile">
+                    <li class="notifications new">
+                        <a href="" data-toggle="dropdown" aria-expanded="false">
+                            <i class="fa fa-bell-o"></i>
+                            <sup data-bind="style: {opacity: ACL.user.notificationsStats.notReadCount ? 1 : 0}">
+                                <span class="counter"
+                                      data-bind="text: ACL.user.notificationsStats.notReadCount"></span>
+                            </sup>
+                        </a>
+                        <div class="dropdown-menu notifications-dropdown-menu" x-placement="bottom-start"
+                             style="position: absolute; will-change: transform; top: 0px; left: 0px; transform: translate3d(-116px, 25px, 0px);">
+                            <ul class="notifications-container" data-bind="foreach: ACL.user.notificationsStats.notifications">
+                                <li data-bind="style: {opacity: Read ? 0.6 : 1}">
+                                    <a href="javascript:;;"
+                                       data-bind="attr: {id:_id, href:'/admin/notifications/show.html?id='+_id}"
+                                       class="notification-item">
+                                        <div class="body-col">
+                                            <p>
+                                                <span data-bind="text: Title" class="accent"/>
+                                            </p>
+                                            <p data-bind="text: Body"/>
+                                        </div>
+                                    </a>
+                                </li>
+                            </ul>
+                            <footer>
+                                <ul>
+                                    <li>
+                                        <a href="/admin/notifications/show.html"> View All </a>
+                                    </li>
+                                </ul>
+                            </footer>
+                        </div>
+                    </li>
+                </ul>
+            </div>
 			</header>
                 <aside class="sidebar">
                     <div class="sidebar-container">
@@ -280,9 +316,14 @@
 			<div class="color-secondary"></div>
 		</div>
 	</div>
-	<script src="/admin/js/vendor.js"></script>
-	<script src="/admin/js/app.js"></script>
-	<script src="/admin/js/custom.js"></script>
+<script src="https://www.gstatic.com/firebasejs/7.14.5/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/7.14.5/firebase-messaging.js"></script>
+
+<script src="/admin/js/config-front.js"></script>
+<script src="/admin/js/vendor.js"></script>
+<script src="/admin/js/app.js"></script>
+<script src="/admin/js/custom.js"></script>
+<script src="/admin/js/fcm-init.js"></script>
 	<script type="text/javascript">
 		$(function () {
 			Site.init();

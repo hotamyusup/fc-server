@@ -1,15 +1,3 @@
-if ('serviceWorker' in navigator) {
-    navigator.serviceWorker
-        .register('/firebase-messaging-sw.js')
-        .then(function (registration) {
-            console.log('Registration successful, scope is:', registration.scope);
-            firebase.messaging().useServiceWorker(registration);
-        })
-        .catch(function (err) {
-            console.log('Service worker registration failed, error:', err);
-        });
-}
-
 var firebaseConfig = configFront.firebase;
 firebase.initializeApp(firebaseConfig);
 
@@ -17,6 +5,9 @@ if ('Notification' in window) {
     var messaging = firebase.messaging();
 
     messaging.usePublicVapidKey(configFront.firebase.publicVapidKey);
+
+    const notificationSoundSrc = '/assets/notification-sound.mp3';
+    const notificationSoundAudio = new Audio(notificationSoundSrc);
 
     messaging.onMessage((payload) => {
         console.log('Message received. ', payload);
@@ -26,9 +17,13 @@ if ('Notification' in window) {
         const icon = `${configFront.APIURL}/assets/img/cfp-logo.png`;
         const notificationOptions = {icon, ...data};
 
-        navigator.serviceWorker.ready.then(registration => {
-            registration.showNotification(notificationTitle, notificationOptions);
-        });
+        try {
+            notificationSoundAudio.play();
+        } catch (e) {
+
+        }
+
+        User && User.fetchNotifications();
     });
 
     if (Notification.permission === 'granted') {
@@ -101,3 +96,9 @@ function clearTokenSentToServer() {
 function setTokenSentToServer(currentToken) {
     window.localStorage.setItem('sentFirebaseMessagingToken', currentToken);
 }
+
+document.onvisibilitychange = function () {
+    if (!document.hidden) {
+        User && User.fetchNotifications();
+    }
+};

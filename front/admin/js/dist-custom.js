@@ -113,9 +113,10 @@ $(function () {
 	},
 	Auth = {
 	    ACL: function() {
-            var user = (localStorage.getItem('user')) ? JSON.parse(localStorage.getItem('user')) : null;
-            var userType = user && user.Type;
-            var model = {
+            const user = Auth.getCurrentUser();
+            const userType = user && user.Type;
+            const model = {
+                user,
                 isAdmin: userType === 'Admin',
                 isEmployee: userType === 'Employee',
                 isCustomer: userType === 'Customer',
@@ -127,16 +128,42 @@ $(function () {
 
             return model;
         },
+        getCurrentUser: function() {
+	        if (User) {
+	            return User;
+            }
+
+            const storedUserData = (localStorage.getItem('user')) ? JSON.parse(localStorage.getItem('user')) : null;
+            if (storedUserData) {
+                User = {
+                    ...storedUserData,
+                    _notificationsStats: ko.observable({notifications: [], notReadCount: 0}),
+                    get notificationsStats() {
+                        return this._notificationsStats();
+                    },
+                    set notificationsStats(notificationsStats) {
+                        return this._notificationsStats(notificationsStats);
+                    },
+                    fetchNotifications() {
+                        API.notificationsStats({limit: 6}, notificationsStats => {
+                            User.notificationsStats = notificationsStats
+                        })
+                    }
+                };
+
+                User.fetchNotifications();
+                return User;
+            }
+        },
 		check: function (userTypesAccessList = []) {
-			var user = (localStorage.getItem('user')) ? JSON.parse(localStorage.getItem('user')) : null;
+            const user = Auth.getCurrentUser();
 			if (user == null) {
 				console.log("N/A");
 				Site.redirect("/login.html");
                 return false;
 			} else {
-				User = user;
-				if (userTypesAccessList.length && userTypesAccessList.indexOf(User.Type) === -1) {
-				    console.log('User type ' + User.Type + ' is not available to access this page');
+				if (userTypesAccessList.length && userTypesAccessList.indexOf(user.Type) === -1) {
+				    console.log('User type ' + user.Type + ' is not available to access this page');
                     Site.redirect("/index.html");
                     return false;
                 }
@@ -254,9 +281,33 @@ $(function () {
                 callback && callback(data);
             });
         },
-        notifications: function (callback) {
-			API.get("/notifications?limit=100", function (data) {
+        notificationsStats: function (options, callback) {
+		    if (typeof options === 'function') {
+		        callback = options;
+                options = {};
+            }
+            options.limit = options.limit || 100;
+            options.skip = options.skip || 0;
+
+			API.get(`/notifications/stats?limit=${options.limit}&skip=${options.skip}`, function (data) {
 				callback(data);
+			});
+		},
+        notification: function (id, callback) {
+		    API.get(`/notifications/${id}`, function (data) {
+                callback && callback(data);
+			});
+		},
+        notifications: function (options, callback) {
+		    if (typeof options === 'function') {
+		        callback = options;
+                options = {};
+            }
+            options.limit = options.limit || 100;
+            options.skip = options.skip || 0;
+
+			API.get(`/notifications?limit=${options.limit}&offset=${options.offset}`, function (data) {
+                callback && callback(data);
 			});
 		},
         notificationMarkAsRead: function (notificationID, callback) {

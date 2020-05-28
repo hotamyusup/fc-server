@@ -31,7 +31,43 @@
             </div>
             <div class="header-block header-block-search"></div>
             <div class="header-block header-block-buttons"></div>
-            <div class="header-block header-block-nav"></div>
+            <div class="header-block header-block-nav">
+                <ul class="nav-profile">
+                    <li class="notifications new">
+                        <a href="" data-toggle="dropdown" aria-expanded="false">
+                            <i class="fa fa-bell-o"></i>
+                            <sup data-bind="style: {opacity: ACL.user.notificationsStats.notReadCount ? 1 : 0}">
+                                <span class="counter"
+                                      data-bind="text: ACL.user.notificationsStats.notReadCount"></span>
+                            </sup>
+                        </a>
+                        <div class="dropdown-menu notifications-dropdown-menu" x-placement="bottom-start"
+                             style="position: absolute; will-change: transform; top: 0px; left: 0px; transform: translate3d(-116px, 25px, 0px);">
+                            <ul class="notifications-container" data-bind="foreach: ACL.user.notificationsStats.notifications">
+                                <li data-bind="style: {opacity: Read ? 0.6 : 1}">
+                                    <a href="javascript:;;"
+                                       data-bind="attr: {id:_id, href:'/admin/notifications/show.html?id='+_id}"
+                                       class="notification-item">
+                                        <div class="body-col">
+                                            <p>
+                                                <span data-bind="text: Title" class="accent"/>
+                                            </p>
+                                            <p data-bind="text: Body"/>
+                                        </div>
+                                    </a>
+                                </li>
+                            </ul>
+                            <footer>
+                                <ul>
+                                    <li>
+                                        <a href="/admin/notifications/show.html"> View All </a>
+                                    </li>
+                                </ul>
+                            </footer>
+                        </div>
+                    </li>
+                </ul>
+            </div>
         </header>
         <aside class="sidebar">
             <div class="sidebar-container">
@@ -94,6 +130,27 @@
         <div class="mobile-menu-handle"></div>
         <article class="content dashboard-page">
             <section class="section" id="users">
+                <div class="modal fade" id="notificationModalLong" tabindex="-1" role="dialog" aria-labelledby="notificationModalLongTitle" aria-hidden="true">
+                    <div class="modal-dialog" role="document" data-bind="if: $root.notificationModal">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title" id="notificationModalLongTitle" data-bind="text: $root.notificationModal.Title"></h5>
+                                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                    <span aria-hidden="true">&times;</span>
+                                </button>
+                            </div>
+                            <div class="modal-body">
+                                <p data-bind="text: $root.notificationModal.Body"></p>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" data-bind="click: $root.closeModal" class="btn btn-secondary" data-dismiss="modal">Close</button>
+<!--                                <button type="button" class="btn btn-primary">Save changes</button>-->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+
                 <div class="row">
                     <div class="col-xl-12">
                         <div class="card items" data-exclude="xs,sm,lg">
@@ -111,10 +168,14 @@
                                 <li class="item">
                                     <div class="item-row">
                                         <div class="item-col" data-bind="style: {opacity: Read ? 0.8 : 1}">
+                                            <a href="javascript:;;"
+                                               style="text-decoration: none;"
+                                               data-bind="click: $root.showNotification"
+                                               class="userlink">
                                             <div>
                                                 <h4 class="item-title no-wrap" data-bind="text: Title"></h4>
                                                 <div data-bind="text: Body"></div>
-                                            </div>
+                                            </div></a>
                                         </div>
                                         <div class="item-col text-right"
                                              data-bind="visible: !Read"
@@ -144,23 +205,36 @@
         <div class="color-secondary"></div>
     </div>
 </div>
+<script src="https://www.gstatic.com/firebasejs/7.14.5/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/7.14.5/firebase-messaging.js"></script>
+
+<script src="/admin/js/config-front.js"></script>
 <script src="/admin/js/vendor.js"></script>
 <script src="/admin/js/app.js"></script>
 <script src="/admin/js/custom.js"></script>
+<script src="/admin/js/fcm-init.js"></script>
 <script type="text/javascript">
     $(function () {
         var success = Site.init(['Admin', 'Employee']);
         if (success) {
+
             const fetchNotifications = () => {
-                console.log('fetchNotifications');
                 API.notifications(data => {
-                    data = _.sortBy(data, 'created_at');
                     Model.notifications = data;
                 });
+
+                User && User.fetchNotifications();
             }
 
             const Model = {
                 ACL: Auth.ACL(),
+                _notificationModal: ko.observable(null),
+                get notificationModal() {
+                    return this._notificationModal();
+                },
+                set notificationModal(notificationModal) {
+                    return this._notificationModal(notificationModal);
+                },
                 _notifications: ko.observable(null),
                 get notifications() {
                     return this._notifications();
@@ -171,15 +245,35 @@
                 markAsRead(notification) {
                     API.notificationMarkAsRead(notification._id, fetchNotifications)
                 },
+                closeModal() {
+                    Model.markAsRead(Model.notificationModal);
+                    history.pushState(null, "", location.href.split("?")[0]);
+                },
                 markAllAsRead() {
                     API.notificationMarkAllAsRead(fetchNotifications)
                 },
+                showNotification(notification) {
+                    if (notification._id) {
+                        API.notification(notification._id, function (notification) {
+                            Model.notificationModal = notification;
+                            $("#notificationModalLong").modal();
+                        });
+                    }
+                }
             };
 
-            fetchNotifications();
+            const notificationID = QueryString("id");
+            if (notificationID) {
+               Model.showNotification({_id: notificationID});
+            }
 
             ko.applyBindings(Model);
+            fetchNotifications();
 
+            const messaging = firebase && firebase.messaging();
+            if (messaging) {
+                messaging.onMessage(fetchNotifications);
+            }
         }
     });
 

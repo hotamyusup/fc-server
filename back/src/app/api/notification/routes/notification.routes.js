@@ -3,6 +3,7 @@
 const NotificationController = require("../controller/notification.controller");
 
 const NOTIFICATION_ROUTES = [
+    {method: 'GET', path: '/notifications/stats', config: NotificationController.stats},
     {method: 'GET', path: '/notifications/{NotificationID}', config: NotificationController.get},
     {method: 'GET', path: '/notifications', config: NotificationController.all},
     {method: 'POST', path: '/notifications/readAll', config: NotificationController.markAllNotificationsAsRead},
