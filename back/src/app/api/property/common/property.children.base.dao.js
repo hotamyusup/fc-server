@@ -1,5 +1,6 @@
 'use strict';
 
+const moment = require('moment');
 const mongoose = require('mongoose');
 const Promise = require('bluebird');
 const BaseDAO = require('../../../core/base.dao');
@@ -13,7 +14,6 @@ class PropertyChildrenBaseDAO extends BaseDAO {
         return this.model.find({PropertyID});
     }
 
-
     forBuilding(BuildingID) {
         return this.model.find({BuildingID});
     }
@@ -24,6 +24,18 @@ class PropertyChildrenBaseDAO extends BaseDAO {
 
     forDevice(DeviceID) {
         return this.model.find({DeviceID});
+    }
+
+    forDate(date = new Date(), additionalConditions) {
+        const findForDateConditions = {
+            created_at: {
+                $gte: moment(date).startOf('day').toDate(),
+                $lte: moment(date).endOf('day').toDate()
+            },
+            ...additionalConditions
+        };
+
+        return this.all(findForDateConditions)
     }
 
     delete(id) {

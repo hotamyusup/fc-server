@@ -92,23 +92,42 @@ class BaseController {
 
     get upsert() {
         return {
-            handler: (request, reply) => this.handle('upsert', request, reply, this.DAO.upsert(request.payload))
+            handler: (request, reply) => {
+                const upsertFlow = this.DAO.upsert(request.payload).then(upsertedEntity => {
+                    this.onUpsert(upsertedEntity, this.getCurrentUser(request));
+                    return upsertedEntity;
+                });
+
+                return this.handle('upsert', request, reply, upsertFlow);
+            }
         }
     }
 
     get batch() {
         return {
             payload: {
-                maxBytes: 1000 * 1000 * 50, // 50 Mb
+                maxBytes: 1024 * 1024 * 50, // 50 Mb
                 timeout: 1000 * 60 * 6, // 1.5 min, should be less 2 min - socket timeout
             },
             timeout: {
                 socket: 1000 * 60 * 8 // 8 min, socket timeout
             },
             handler: (request, reply) => {
-                this.handle('batch', request, reply,
-                    Promise.map(request.payload[this.batchEntitiesKey],
-                        propertyJSON => this.DAO.upsert(propertyJSON))
+                const action = 'batch';
+                const {hash} = request.query;
+
+                const batchUpsertEntityFn = entityJSON => this.DAO.upsert(entityJSON).then(upsertedEntity => {
+                    this.onUpsert(upsertedEntity, this.getCurrentUser(request));
+                    return upsertedEntity;
+                });
+
+                this.handle(action, request, reply,
+                    Promise
+                        .map(request.payload[this.batchEntitiesKey], batchUpsertEntityFn)
+                        .catch(error => {
+                            logger.error(`sessionId: ${hash} ${this.controllerName}.${action} error: ${error}`);
+                            throw error;
+                        })
                 );
             }
         }
@@ -124,13 +143,27 @@ class BaseController {
 
     get create() {
         return {
-            handler: (request, reply) => this.handle('create', request, reply, this.DAO.create(request.payload))
+            handler: (request, reply) => {
+                const createFlow = this.DAO.create(request.payload).then(createdEntity => {
+                    this.onCreate(createdEntity, this.getCurrentUser(request));
+                    return createdEntity;
+                });
+
+                return this.handle('create', request, reply, createFlow);
+            }
         }
     }
 
     get update() {
         return {
-            handler: (request, reply) => this.handle('update', request, reply, this.DAO.update(request.payload))
+            handler: (request, reply) => {
+                const updateFlow = this.DAO.update(request.payload).then(updatedEntity => {
+                    this.onUpdate(updatedEntity, this.getCurrentUser(request));
+                    return updatedEntity;
+                });
+
+                return this.handle('update', request, reply, updateFlow);
+            }
         };
     }
 
@@ -166,6 +199,18 @@ class BaseController {
         const csv = await parseAsync(result, opts);
 
         return csv;
+    }
+
+    onCreate(createdEntity, currentUser) {
+
+    }
+
+    onUpdate(updatedEntity, currentUser) {
+
+    }
+
+    onUpsert(upsertedEntity, currentUser) {
+
     }
 }
 

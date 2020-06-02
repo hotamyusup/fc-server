@@ -5,8 +5,9 @@ const mongoose = require('mongoose');
 const moment = require('moment');
 const Promise = require('bluebird');
 
-class BaseDAO {
+const logger = require('./logger');
 
+class BaseDAO {
     constructor(model) {
         this.model = model;
     }
@@ -49,7 +50,7 @@ class BaseDAO {
     async update(dataObject, upsert) {
         const _id = dataObject._id;
         const preparedJSON = await this.prepareUpdateObject(dataObject);
-        return this.model.findOneAndUpdate({_id}, preparedJSON, {runValidators: true, upsert: !!upsert});
+        return this.model.findOneAndUpdate({_id}, preparedJSON, {runValidators: true, upsert: !!upsert, new: true});
     }
 
     async upsert(dataObject) {
