@@ -24,7 +24,7 @@ const DeviceSchema = new Schema({
     YPos: {type: Number},
     // Records: [{type: Schema.Types.ObjectId, ref: 'Inspection'}],
     Status: {type: Number},
-    created_at: {type: Date},
+    created_at: {type: Date, default: Date.now},
     updated_at: {type: Date, validate: validateUpdatedAt},
     FloorID: {type: Schema.Types.ObjectId, ref: 'Floor'},
     BuildingID: {type: Schema.Types.ObjectId, ref: 'Building'},

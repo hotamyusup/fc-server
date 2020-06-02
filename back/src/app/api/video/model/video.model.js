@@ -14,7 +14,7 @@ const VideoSchema = new Schema({
     DeviceType: {type: Schema.Types.ObjectId, ref: 'EquipmentDevice'},
     ModelNumber: {type: String},
     Status: {type: Number},
-    created_at: {type: Date},
+    created_at: {type: Date, default: Date.now},
     updated_at: {type: Date},
 });
 

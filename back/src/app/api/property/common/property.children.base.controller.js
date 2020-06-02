@@ -21,7 +21,7 @@ class PropertyChildrenBaseController extends BaseController {
     get get() {
         return {
             handler: async (request, reply) => {
-                const entity = this.DAO.get(request.params[this.requestIDKey]);
+                const entity = await this.DAO.get(request.params[this.requestIDKey]);
                 const user = request.auth && request.auth.credentials;
 
                 if (user.Type === 'Customer') {

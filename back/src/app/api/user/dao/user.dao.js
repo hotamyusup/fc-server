@@ -28,6 +28,10 @@ class UserDAO extends BaseDAO {
         return UserModel.find({Organization: organizationID});
     }
 
+    getUsersByTypes(usersTypes) {
+        return UserModel.find({Type: {$in: usersTypes}});
+    }
+
     findUserByEmail(email) {
         const $regex = new RegExp(email, "i");
         return UserModel.findOne({Email: {$regex}});

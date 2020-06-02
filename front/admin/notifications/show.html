@@ -1,0 +1,282 @@
+<!doctype html>
+<html class="no-js" lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="x-ua-compatible" content="ie=edge">
+    <title>Fire Cloud Admin</title>
+    <meta name="description" content="">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="apple-touch-icon" href="apple-touch-icon.png">
+    <link rel="stylesheet" href="/admin/css/vendor.css">
+    <link rel="stylesheet" href="/admin/css/app.css">
+    <script>
+        var themeSettings = (localStorage.getItem('themeSettings')) ? JSON.parse(localStorage.getItem('themeSettings')) :
+            {};
+        var themeName = themeSettings.themeName || 'red';
+        if (themeName) {
+            document.write('<link rel="stylesheet" id="theme-style" href="/admin/css/app-' + themeName + '.css">');
+        } else {
+            document.write('<link rel="stylesheet" id="theme-style" href="/admin/css/app.css">');
+        }
+    </script>
+</head>
+<body>
+<div class="main-wrapper">
+    <div class="app" id="app">
+        <header class="header">
+            <div class="header-block header-block-collapse d-lg-none d-xl-none">
+                <button class="collapse-btn" id="sidebar-collapse-btn">
+                    <i class="fa fa-bars"></i>
+                </button>
+            </div>
+            <div class="header-block header-block-search"></div>
+            <div class="header-block header-block-buttons"></div>
+            <div class="header-block header-block-nav">
+                <ul class="nav-profile">
+                    <li class="notifications new">
+                        <a href="" data-toggle="dropdown" aria-expanded="false">
+                            <i class="fa fa-bell-o"></i>
+                            <sup data-bind="style: {opacity: ACL.user.notificationsStats.notReadCount ? 1 : 0}">
+                                <span class="counter"
+                                      data-bind="text: ACL.user.notificationsStats.notReadCount"></span>
+                            </sup>
+                        </a>
+                        <div class="dropdown-menu notifications-dropdown-menu" x-placement="bottom-start"
+                             style="position: absolute; will-change: transform; top: 0px; left: 0px; transform: translate3d(-116px, 25px, 0px);">
+                            <ul class="notifications-container" data-bind="foreach: ACL.user.notificationsStats.notifications">
+                                <li data-bind="style: {opacity: Read ? 0.6 : 1}">
+                                    <a href="javascript:;;"
+                                       data-bind="attr: {id:_id, href:'/admin/notifications/show.html?id='+_id}"
+                                       class="notification-item">
+                                        <div class="body-col">
+                                            <p>
+                                                <span data-bind="text: Title" class="accent"/>
+                                            </p>
+                                            <p data-bind="text: Body"/>
+                                        </div>
+                                    </a>
+                                </li>
+                            </ul>
+                            <footer>
+                                <ul>
+                                    <li>
+                                        <a href="/admin/notifications/show.html"> View All </a>
+                                    </li>
+                                </ul>
+                            </footer>
+                        </div>
+                    </li>
+                </ul>
+            </div>
+        </header>
+        <aside class="sidebar">
+            <div class="sidebar-container">
+                <div class="sidebar-header">
+                    <div class="brand">Fire Cloud Admin</div>
+                </div>
+                <nav class="menu">
+                    <ul class="sidebar-menu metismenu" id="sidebar-menu">
+                        <li>
+                            <a href="/admin/properties">
+                                <i class="fa fa-th-large"></i> Properties
+                            </a>
+                        </li>
+                        <li data-bind="if: ACL.isAdmin">
+                            <a href="/admin/users">
+                                <i class="fa fa-users"></i> Users
+                            </a>
+                        </li>
+                        <li data-bind="visible: ACL.isAdmin" style="display: none;">
+                            <a href="/admin/organizations">
+                                <i class="fa fa-dot-circle-o"></i> Organizations
+                            </a>
+                        </li>
+                        <li data-bind="visible: ACL.isAdmin" style="display: none;" class="active">
+                            <a href="/admin/roles">
+                                <i class="fa fa-tags"></i> Roles
+                            </a>
+                        </li>
+                        <li data-bind="if: ACL.isAdminOrEmployee">
+                            <a href="/admin/equipments">
+                                <i class="fa fa-lightbulb-o"></i> Equipments
+                            </a>
+                        </li>
+                        <li data-bind="if: ACL.isAdminOrEmployee">
+                            <a href="/admin/constructiontypes">
+                                <i class="fa fa-building-o"></i> Construction Types
+                            </a>
+                        </li>
+                        <li data-bind="if: ACL.isAdminOrEmployee">
+                            <a href="/admin/occupancytypes">
+                                <i class="fa fa-home"></i> Occupancy Types
+                            </a>
+                        </li>
+                        <li data-bind="visible: ACL.isAdminOrEmployee" style="display: none;">
+                            <a href="/admin/bulkeditor">
+                                <i class="fa fa-table"></i> Bulk Editor
+                            </a>
+                        </li>
+                        <li>
+                            <a href="/admin/logout.html">
+                                <i class="fa fa-lock"></i> Log out
+                            </a>
+                        </li>
+                    </ul>
+                </nav>
+            </div>
+        </aside>
+        <div class="sidebar-overlay" id="sidebar-overlay"></div>
+        <div class="sidebar-mobile-menu-handle" id="sidebar-mobile-menu-handle"></div>
+        <div class="mobile-menu-handle"></div>
+        <article class="content dashboard-page">
+            <section class="section" id="users">
+                <div class="modal fade" id="notificationModalLong" tabindex="-1" role="dialog" aria-labelledby="notificationModalLongTitle" aria-hidden="true">
+                    <div class="modal-dialog" role="document" data-bind="if: $root.notificationModal">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title" id="notificationModalLongTitle" data-bind="text: $root.notificationModal.Title"></h5>
+                                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                    <span aria-hidden="true">&times;</span>
+                                </button>
+                            </div>
+                            <div class="modal-body">
+                                <p data-bind="text: $root.notificationModal.Body"></p>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" data-bind="click: $root.closeModal" class="btn btn-secondary" data-dismiss="modal">Close</button>
+<!--                                <button type="button" class="btn btn-primary">Save changes</button>-->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+
+                <div class="row">
+                    <div class="col-xl-12">
+                        <div class="card items" data-exclude="xs,sm,lg">
+                            <div class="card-header bordered">
+                                <div class="header-block">
+                                    <h3 class="title"> Notifications </h3>
+                                </div>
+                                <div class="header-block pull-right">
+                                    <a class="btn btn-primary btn-sm"
+                                       href="javascript:;;"
+                                       data-bind="click: $root.markAllAsRead">Mark All Read</a>
+                                </div>
+                            </div>
+                            <ul class="item-list striped" data-bind="foreach: notifications">
+                                <li class="item">
+                                    <div class="item-row">
+                                        <div class="item-col" data-bind="style: {opacity: Read ? 0.8 : 1}">
+                                            <a href="javascript:;;"
+                                               style="text-decoration: none;"
+                                               data-bind="click: $root.showNotification"
+                                               class="userlink">
+                                            <div>
+                                                <h4 class="item-title no-wrap" data-bind="text: Title"></h4>
+                                                <div data-bind="text: Body"></div>
+                                            </div></a>
+                                        </div>
+                                        <div class="item-col text-right"
+                                             data-bind="visible: !Read"
+                                             style="display: none;">
+                                            <div>
+                                                <a href="javascript:;;"
+                                                   data-bind="click: $root.markAsRead"
+                                                   class="userlink">Mark as read</a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </article>
+        <footer class="footer"></footer>
+    </div>
+</div>
+<!-- Reference block for JS -->
+<div class="ref" id="ref">
+    <div class="color-primary"></div>
+    <div class="chart">
+        <div class="color-primary"></div>
+        <div class="color-secondary"></div>
+    </div>
+</div>
+<script src="https://www.gstatic.com/firebasejs/7.14.5/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/7.14.5/firebase-messaging.js"></script>
+
+<script src="/admin/js/config-front.js"></script>
+<script src="/admin/js/vendor.js"></script>
+<script src="/admin/js/app.js"></script>
+<script src="/admin/js/custom.js"></script>
+<script src="/admin/js/fcm-init.js"></script>
+<script type="text/javascript">
+    $(function () {
+        var success = Site.init(['Admin', 'Employee']);
+        if (success) {
+
+            const fetchNotifications = () => {
+                API.notifications(data => {
+                    Model.notifications = data;
+                });
+
+                User && User.fetchNotifications();
+            }
+
+            const Model = {
+                ACL: Auth.ACL(),
+                _notificationModal: ko.observable(null),
+                get notificationModal() {
+                    return this._notificationModal();
+                },
+                set notificationModal(notificationModal) {
+                    return this._notificationModal(notificationModal);
+                },
+                _notifications: ko.observable(null),
+                get notifications() {
+                    return this._notifications();
+                },
+                set notifications(notifications) {
+                    return this._notifications(notifications);
+                },
+                markAsRead(notification) {
+                    API.notificationMarkAsRead(notification._id, fetchNotifications)
+                },
+                closeModal() {
+                    Model.markAsRead(Model.notificationModal);
+                    history.pushState(null, "", location.href.split("?")[0]);
+                },
+                markAllAsRead() {
+                    API.notificationMarkAllAsRead(fetchNotifications)
+                },
+                showNotification(notification) {
+                    if (notification._id) {
+                        API.notification(notification._id, function (notification) {
+                            Model.notificationModal = notification;
+                            $("#notificationModalLong").modal();
+                        });
+                    }
+                }
+            };
+
+            const notificationID = QueryString("id");
+            if (notificationID) {
+               Model.showNotification({_id: notificationID});
+            }
+
+            ko.applyBindings(Model);
+            fetchNotifications();
+
+            const messaging = firebase && firebase.messaging();
+            if (messaging) {
+                messaging.onMessage(fetchNotifications);
+            }
+        }
+    });
+
+</script>
+</body>
+</html>
