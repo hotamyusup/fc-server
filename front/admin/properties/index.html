@@ -245,6 +245,9 @@
 													deviceCount++;
 													device.Notes = (device.Notes.length > 0) ? device.Notes.replace(/,/g,';') : '';
 													device.SerialNumber = (device.SerialNumber.length > 0) ? device.SerialNumber.replace(/,/g,';') : 'n/a';
+
+													device.DeviceLocation = (device.DeviceLocation.length > 0) ? device.DeviceLocation.replace(/,/g,';') : '-';
+
 													//temp comment
 														//',', _.findWhere(users, { _id: record.User }).Title,
 													//record.User.Title = _.findWhere(users, { _id: record.User }).Title;
@@ -257,7 +260,8 @@
 														//console.log(`record.User error === `, err.message);
 													}
 
-													content = content.concat(deviceTitle, ',', property.Title, ',', building.Title, ',', floor.Title,
+													content = content.concat(deviceTitle, ',', property.Title, ',', building.Title,
+														',', floor.Title.replace(/,/g,';'),
 														',', device.DeviceLocation, ',', device.InstallationDate,
 														',', device.Notes,
 														',', deviceEquipmentType, ',', device.ModelNumber.replace(/,/g,';'), 
@@ -275,7 +279,9 @@
 													deviceCount++;
 													device.Notes = (device.Notes.length > 0) ? device.Notes.replace(/,/g,';'):'';
 													//device.SerialNumber = (device.SerialNumber.length > 0) ? device.SerialNumber.replace(/,/g,';'):'n/a';
-													content = content.concat(deviceTitle, ',', property.Title, ',', building.Title, ',', floor.Title,
+													device.DeviceLocation = (device.DeviceLocation.length > 0) ? device.DeviceLocation.replace(/,/g,';') : '-';
+													content = content.concat(deviceTitle, ',', property.Title, ',', building.Title,
+														',', floor.Title.replace(/,/g,';'),
 														',', device.DeviceLocation, ',', device.InstallationDate,
 														',', device.Notes,
 														',', deviceEquipmentType, ',', device.ModelNumber.replace(/,/g,';'),
