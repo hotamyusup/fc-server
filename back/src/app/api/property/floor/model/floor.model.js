@@ -15,7 +15,7 @@ const FloorSchema = new Schema({
     YPos: {type: Number},
     // Devices: [{ type: Schema.Types.ObjectId, ref: 'Device'}],
     Status: {type: Number},
-    created_at: {type: Date},
+    created_at: {type: Date, default: Date.now},
     updated_at: {type: Date, validate: validateUpdatedAt},
     BuildingID: {type: Schema.Types.ObjectId, ref: 'Building'},
     PropertyID: {type: Schema.Types.ObjectId, ref: 'Property'}

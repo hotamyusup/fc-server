@@ -16,7 +16,7 @@ const BuildingSchema = new Schema({
     Picture: {type: String},
     // Floors: [{ type: Schema.Types.ObjectId, ref: 'Floor' }],
     Status: {type: Number},
-    created_at: {type: Date},
+    created_at: {type: Date, default: Date.now},
     updated_at: {type: Date, validate: validateUpdatedAt},
     PropertyID: {type: Schema.Types.ObjectId, ref: 'Property'}
 }, {

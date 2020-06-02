@@ -11,7 +11,7 @@ const DocumentSchema = new Schema({
     options: {type: Schema.Types.Object}, // owner email, to notify, etc.
     signer: {type: Schema.Types.Object}, // tenant
     signed_at: {type: Date},
-    created_at: {type: Date},
+    created_at: {type: Date, default: Date.now},
     updated_at: {type: Date},
     notified_at: {type: Date},
     PropertyID: {type: Schema.Types.ObjectId, ref: 'Property'},

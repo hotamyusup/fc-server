@@ -10,7 +10,7 @@ const NotificationSchema = new Schema({
     Icon: {type: String},
     URL: {type: String},
     Read: {type: Boolean, required: true, default: false},
-    created_at: {type: Date}
+    created_at: {type: Date, default: Date.now},
 });
 
 const NotificationModel = mongoose.model('Notification', NotificationSchema);

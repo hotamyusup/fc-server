@@ -17,7 +17,7 @@ const InspectionSchema = new Schema({
     Status: {type: Number},
     User: {type: Schema.Types.ObjectId, ref: 'User'},
     Photos: [PhotoSchema],
-    created_at: {type: Date},
+    created_at: {type: Date, default: Date.now},
     updated_at: {type: Date, validate: validateUpdatedAt},
     DeviceID: {type: Schema.Types.ObjectId, ref: 'Device'},
     FloorID: {type: Schema.Types.ObjectId, ref: 'Floor'},

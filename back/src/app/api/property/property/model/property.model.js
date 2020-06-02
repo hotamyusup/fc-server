@@ -32,7 +32,7 @@ const PropertySchema = new Schema({
     AddDate: {type: Date},
     UpdateDate: {type: Date},
     Status: {type: Number},
-    created_at: {type: Date},
+    created_at: {type: Date, default: Date.now},
     updated_at: {type: Date, validate: validateUpdatedAt},
 }, {
     usePushEach: true
