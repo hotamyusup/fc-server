@@ -57,7 +57,15 @@ const start = async() => {
 
     await server.start();
 
+    if (server.info) {
     logger.info('Server is listening: ' + server.info.uri);
+    } else if (server.connections) {
+        server.connections.forEach(connection => {
+            logger.info('Server is listening: ' + connection.info.uri);
+        });
+    } else {
+        logger.info('Server started');
+    }
 };
 
 start();
