@@ -7,6 +7,8 @@ console.log('++++++++++++++++++++++++++++++++++++|A|P|P|_|_|S|T|A|R|T|++++++++++
 console.log('+++++++++++++++++++++++++++++++++++++-+-+-+-+-+-+-+-+-+-+++++++++++++++++++++++++++++++++++++');
 console.log('\n\n');
 
+const fs = require('fs');
+
 const Hapi = require('hapi');
 const Inert = require('inert');
 
@@ -35,6 +37,16 @@ const start = async() => {
     await server.register(Inert);
 
     server.connection({port: config.server.port, routes: {cors: true}});
+
+    if (fs.existsSync(config.server.https.key) && fs.existsSync(config.server.https.cert)) {
+        const tls = {
+            key: fs.readFileSync(config.server.https.key),
+            cert: fs.readFileSync(config.server.https.cert)
+        };
+
+        server.connection({port: config.server.https.port, tls});
+    }
+
     server.route(APP_ROUTES);
 
     await server.register(hashAuth);
