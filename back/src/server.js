@@ -46,6 +46,8 @@ const start = async () => {
         };
 
         server.connection({port: config.server.https.port, tls});
+    } else {
+        console.log(`SSL certificate didn't found by path: ${config.server.https.key}`);
     }
 
     server.route(APP_ROUTES);
