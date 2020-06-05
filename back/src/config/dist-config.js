@@ -12,6 +12,11 @@ const server = {
     },
     get url() {
         return this.protocol + this.host + ':' + this.p;
+    },
+    https: {
+        port: 443,
+        key: '/etc/letsencrypt/live/fireprotected.com/privkey.pem',
+        cert: '/etc/letsencrypt/live/fireprotected.com/cert.pem'
     }
 };
 
