@@ -137,6 +137,17 @@ $(function () {
             if (storedUserData) {
                 User = {
                     ...storedUserData,
+                    get notificationGranted() {
+                        return Notification.permission === 'granted';
+                    },
+                    _notificationIcon: ko.observable('fa-bell-o'),
+                    get notificationIcon() {
+                        const newIcon = this.notificationGranted ? 'fa-bell-o' : 'fa-bell-slash-o';
+                        if (this._notificationIcon() !== newIcon) {
+                            this._notificationIcon(newIcon)
+                        }
+                        return this._notificationIcon;
+                    },
                     _notificationsStats: ko.observable({notifications: [], notReadCount: 0}),
                     get notificationsStats() {
                         return this._notificationsStats();
@@ -306,7 +317,7 @@ $(function () {
             options.limit = options.limit || 100;
             options.skip = options.skip || 0;
 
-			API.get(`/notifications?limit=${options.limit}&offset=${options.offset}`, function (data) {
+			API.get(`/notifications?limit=${options.limit}&skip=${options.skip}`, function (data) {
                 callback && callback(data);
 			});
 		},
