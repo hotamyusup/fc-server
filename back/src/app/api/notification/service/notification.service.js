@@ -68,6 +68,13 @@ class NotificationService {
                     Body: data.body,
                     Icon: data.icon,
                     URL: data.url,
+
+                    PropertyID: data.PropertyID,
+                    BuildingID: data.BuildingID,
+                    FloorID: data.FloorID,
+                    DeviceID: data.DeviceID,
+                    InspectionID: data.InspectionID,
+
                     created_at: new Date()
                 });
 
@@ -91,7 +98,7 @@ class NotificationService {
                 }
             }
         } catch (error) {
-            logger.error(`NotificationService.notify ${userID}, data = ${JSON.stringify(data)}) error: ${error}`);
+            logger.error(`NotificationService.notify((${user._id}, data = ${JSON.stringify(data)}) error: ${error}`);
             throw error;
         }
     }

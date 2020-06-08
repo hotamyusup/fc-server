@@ -195,7 +195,7 @@
                                     </div>
 								</div>
 								<ul class="item-list striped" data-bind="foreach: Device.Records">
-									<li class="item" data-bind="style : { opacity: (Status == -1 ? 0.6 : 1)}">
+									<li class="item" data-bind="style : { opacity: ($data.Status == -1 ? 0.6 : 1)}">
 										<div class="item-row">
 											<div class="item-col item-col-title no-overflow">
 												<h4 class="item-title no-wrap" data-bind="if: $data.created_at">

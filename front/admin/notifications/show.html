@@ -136,6 +136,12 @@
                             </div>
                             <div class="modal-body">
                                 <p data-bind="text: $root.notificationModal.Body"></p>
+
+                                <div data-bind="foreach: $root.getNotificationUrls($root.notificationModal)">
+                                    <small>
+                                        <a href="javascript:;;" data-bind="text: $data.text, attr: {href: $data.link}" style="margin-right: 10px;" target="_blank"></a>
+                                    </small>
+                                </div>
                             </div>
                             <div class="modal-footer">
                                 <button type="button" data-bind="click: $root.closeModal" class="btn btn-secondary" data-dismiss="modal">Close</button>
@@ -163,14 +169,23 @@
                                 <li class="item">
                                     <div class="item-row">
                                         <div class="item-col" data-bind="style: {opacity: Read ? 0.8 : 1}">
-                                            <a href="javascript:;;"
-                                               style="text-decoration: none;"
-                                               data-bind="click: $root.showNotification"
-                                               class="userlink">
+
                                             <div>
-                                                <h4 class="item-title no-wrap" data-bind="text: Title"></h4>
+                                                <h4 class="item-title title no-wrap">
+                                                    <a href="javascript:;;"
+                                                       style="text-decoration: none;"
+                                                       data-bind="text: Title, click: $root.showNotification"
+                                                       class="userlink">
+
+                                                    </a>
+                                                </h4>
                                                 <div data-bind="text: Body"></div>
-                                            </div></a>
+                                                <div data-bind="foreach: $root.getNotificationUrls($data)">
+                                                    <small>
+                                                        <a href="javascript:;;" data-bind="text: $data.text, attr: {href: $data.link}" style="margin-right: 10px;" target="_blank"></a>
+                                                    </small>
+                                                </div>
+                                            </div>
                                         </div>
                                         <div class="item-col text-right"
                                              data-bind="visible: !Read"
@@ -223,6 +238,41 @@
 
             const Model = {
                 ACL: Auth.ACL(),
+                getNotificationUrls(notification){
+                    const urls = [];
+                    if (notification.PropertyID) {
+                        urls.push({
+                            text: 'Property',
+                            link: `/admin/properties/property.html?i=${notification.PropertyID}`
+                        })
+                    }
+                    if (notification.BuildingID) {
+                        urls.push({
+                            text: 'Building',
+                            link: `/admin/properties/buildings/building.html?i=${notification.BuildingID}`
+                        })
+                    }
+                    if (notification.FloorID) {
+                        urls.push({
+                            text: 'Floor',
+                            link: `/admin/properties/floors/floor.html?i=${notification.FloorID}`
+                        })
+                    }
+                    if (notification.PropertyID && notification.BuildingID && notification.FloorID && notification.DeviceID) {
+                        urls.push({
+                            text: 'Device',
+                            link: `/admin/properties/device.html?i=${notification.DeviceID}&p=${notification.PropertyID}&b=${notification.BuildingID}&f=${notification.FloorID}`
+                        })
+                    }
+                    if (notification.PropertyID && notification.BuildingID && notification.FloorID && notification.DeviceID && notification.InspectionID) {
+                        urls.push({
+                            text: 'Inspection',
+                            link: `/admin/properties/record.html?i=${notification.InspectionID}&p=${notification.PropertyID}&b=${notification.BuildingID}&f=${notification.FloorID}&d=${notification.DeviceID}`
+                        })
+                    }
+
+                    return urls;
+                },
                 _notificationModal: ko.observable(null),
                 get notificationModal() {
                     return this._notificationModal();
