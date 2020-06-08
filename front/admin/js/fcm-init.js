@@ -29,11 +29,19 @@ if ('Notification' in window) {
     if (Notification.permission === 'granted') {
         subscribeToFCM();
     } else {
-        subscribeToFCM(); // could add onClick handler
-        //
-        // $('#subscribe').on('click', function () {
-        //     subscribe();
-        // });
+        $('#notificationNavItem').on('click', function () {
+            subscribeToFCM();
+        });
+    }
+
+    if ('permissions' in navigator) {
+        navigator.permissions.query({ name: 'notifications' }).then(function (notificationPerm) {
+            notificationPerm.onchange = function () {
+                if (User && User.notificationIcon) {
+                    User.notificationIcon();
+                }
+            };
+        });
     }
 
     messaging.onTokenRefresh(function () {
