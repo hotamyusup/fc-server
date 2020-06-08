@@ -29,8 +29,8 @@ if ('Notification' in window) {
     if (Notification.permission === 'granted') {
         subscribeToFCM();
     } else {
-        // subscribeToFCM(); // could add onClick handler
-
+        subscribeToFCM(); // could add onClick handler
+        //
         // $('#subscribe').on('click', function () {
         //     subscribe();
         // });
