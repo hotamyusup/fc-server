@@ -44,15 +44,15 @@
                         <div class="dropdown-menu notifications-dropdown-menu" x-placement="bottom-start"
                              style="position: absolute; will-change: transform; top: 0px; left: 0px; transform: translate3d(-116px, 25px, 0px);">
                             <ul class="notifications-container" data-bind="foreach: ACL.user.notificationsStats.notifications">
-                                <li data-bind="style: {opacity: Read ? 0.6 : 1}">
+                                <li data-bind="style: {opacity: read ? 0.6 : 1}">
                                     <a href="javascript:;;"
                                        data-bind="attr: {id:_id, href:'/admin/notifications/show.html?id='+_id}"
                                        class="notification-item">
                                         <div class="body-col">
                                             <p>
-                                                <span data-bind="text: Title" class="accent"/>
+                                                <span data-bind="text: $data.notificationEvent.data.title" class="accent"/>
                                             </p>
-                                            <p data-bind="text: Body"/>
+                                            <p data-bind="text: $data.notificationEvent.data.body"/>
                                         </div>
                                     </a>
                                 </li>
@@ -129,15 +129,15 @@
                     <div class="modal-dialog" role="document" data-bind="if: $root.notificationModal">
                         <div class="modal-content">
                             <div class="modal-header">
-                                <h5 class="modal-title" id="notificationModalLongTitle" data-bind="text: $root.notificationModal.Title"></h5>
+                                <h5 class="modal-title" id="notificationModalLongTitle" data-bind="text: $root.notificationModal.notificationEvent.data.title"></h5>
                                 <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                                     <span aria-hidden="true">&times;</span>
                                 </button>
                             </div>
                             <div class="modal-body">
-                                <p data-bind="text: $root.notificationModal.Body"></p>
+                                <p data-bind="text: $root.notificationModal.notificationEvent.data.body"></p>
 
-                                <div data-bind="foreach: $root.getNotificationUrls($root.notificationModal)">
+                                <div data-bind="foreach: $root.getNotificationUrls($root.notificationModal.notificationEvent.data)">
                                     <small>
                                         <a href="javascript:;;" data-bind="text: $data.text, attr: {href: $data.link}" style="margin-right: 10px;" target="_blank"></a>
                                     </small>
@@ -168,19 +168,19 @@
                             <ul class="item-list striped" data-bind="foreach: notifications">
                                 <li class="item">
                                     <div class="item-row">
-                                        <div class="item-col" data-bind="style: {opacity: Read ? 0.8 : 1}">
+                                        <div class="item-col" data-bind="style: {opacity: read ? 0.8 : 1}">
 
                                             <div>
                                                 <h4 class="item-title title no-wrap">
                                                     <a href="javascript:;;"
                                                        style="text-decoration: none;"
-                                                       data-bind="text: Title, click: $root.showNotification"
+                                                       data-bind="text: $data.notificationEvent.data.title, click: $root.showNotification"
                                                        class="userlink">
 
                                                     </a>
                                                 </h4>
-                                                <div data-bind="text: Body"></div>
-                                                <div data-bind="foreach: $root.getNotificationUrls($data)">
+                                                <div data-bind="text: $data.notificationEvent.data.body"></div>
+                                                <div data-bind="foreach: $root.getNotificationUrls($data.notificationEvent.data)">
                                                     <small>
                                                         <a href="javascript:;;" data-bind="text: $data.text, attr: {href: $data.link}" style="margin-right: 10px;" target="_blank"></a>
                                                     </small>
@@ -188,7 +188,7 @@
                                             </div>
                                         </div>
                                         <div class="item-col text-right"
-                                             data-bind="visible: !Read"
+                                             data-bind="visible: !read"
                                              style="display: none;">
                                             <div>
                                                 <a href="javascript:;;"

@@ -45,15 +45,15 @@
                         <div class="dropdown-menu notifications-dropdown-menu" x-placement="bottom-start"
                              style="position: absolute; will-change: transform; top: 0px; left: 0px; transform: translate3d(-116px, 25px, 0px);">
                             <ul class="notifications-container" data-bind="foreach: ACL.user.notificationsStats.notifications">
-                                <li data-bind="style: {opacity: Read ? 0.6 : 1}">
+                                <li data-bind="style: {opacity: read ? 0.6 : 1}">
                                     <a href="javascript:;;"
                                        data-bind="attr: {id:_id, href:'/admin/notifications/show.html?id='+_id}"
                                        class="notification-item">
                                         <div class="body-col">
                                             <p>
-                                                <span data-bind="text: Title" class="accent"/>
+                                                <span data-bind="text: $data.notificationEvent.data.title" class="accent"/>
                                             </p>
-                                            <p data-bind="text: Body"/>
+                                            <p data-bind="text: $data.notificationEvent.data.body"/>
                                         </div>
                                     </a>
                                 </li>
@@ -135,7 +135,7 @@
 
 									</div>
 									<div class="header-block pull-right">
-                                            <a style="margin-right: 20px;" href="#export-modal-window" data-toggle="modal" data-target="#export-modal-window">Inspections</a>
+                                            <a href="/admin/properties/inspections-log.html" style="margin-right: 20px;">Inspections</a>
                                             <a href="#export-modal-window" data-toggle="modal" data-target="#export-modal-window">Export</a>
 									</div>
 								</div>

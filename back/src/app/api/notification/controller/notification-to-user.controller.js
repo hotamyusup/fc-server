@@ -1,13 +1,13 @@
 'use strict';
 
 const BaseController = require("../../../core/base.controller");
-const NotificationDAO = require("../dao/notification.dao");
+const NotificationToUserDAO = require("../dao/notification-to-user.dao");
 const logger = require('../../../core/logger');
 
-class NotificationController extends BaseController {
+class NotificationToUserController extends BaseController {
     constructor() {
-        super(NotificationDAO);
-        this.controllerName = 'NotificationController';
+        super(NotificationToUserDAO);
+        this.controllerName = 'NotificationToUserController';
         this.requestIDKey = 'NotificationID';
         this.batchEntitiesKey = 'Notifications';
     }
@@ -25,13 +25,13 @@ class NotificationController extends BaseController {
                 };
 
                 const conditions = {
-                    User: currentUser
+                    user: currentUser
                 };
 
                 const lastNotifications = await this.DAO.all(conditions, options);
                 const notReadNotifications = await this.DAO.all({
                     ...conditions,
-                    Read: false
+                    read: false
                 }, {});
 
                 const stats = {
@@ -57,7 +57,7 @@ class NotificationController extends BaseController {
                 };
 
                 const conditions = {
-                    User: currentUser
+                    user: currentUser
                 };
 
                 this.handle('all', request, reply, this.DAO.all(conditions, options));
@@ -73,7 +73,7 @@ class NotificationController extends BaseController {
                 const {hash} = request.query;
                 const currentUser = request.auth && request.auth.credentials;
                 logger.info(`sessionId: ${hash} ${this.controllerName}.${action} start`);
-                return this.handle(action, request, reply, NotificationDAO.markAllRead(currentUser));
+                return this.handle(action, request, reply, NotificationToUserDAO.markAllRead(currentUser));
             }
         }
     }
@@ -86,11 +86,9 @@ class NotificationController extends BaseController {
                 const NotificationID = request.params[this.requestIDKey];
                 logger.info(`sessionId: ${hash} ${this.controllerName}.${action} start NotificationID = ${NotificationID}`);
                 try {
-                    const notification = await NotificationDAO.get(NotificationID);
-                    console.log(`${notification.User}`);
-                    console.log(`${this.getCurrentUser(request)._id}`);
-                    if (notification && (`${notification.User}` == `${this.getCurrentUser(request)._id}`)) {
-                        notification.Read = true;
+                    const notification = await NotificationToUserDAO.get(NotificationID);
+                    if (notification && (`${notification.user}` == `${this.getCurrentUser(request)._id}`)) {
+                        notification.read = true;
                         const savedNotification = await notification.save();
                         logger.info(`sessionId: ${hash} ${this.controllerName}.${action} done NotificationID = ${NotificationID}`);
 
@@ -107,4 +105,4 @@ class NotificationController extends BaseController {
     }
 }
 
-module.exports = new NotificationController();
+module.exports = new NotificationToUserController();
