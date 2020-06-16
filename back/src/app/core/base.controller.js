@@ -21,6 +21,14 @@ class BaseController {
         return request.auth && request.auth.credentials;
     }
 
+    async onAction(action, request, result) {
+        const {hash} = request.query;
+        logger.debug(`sessionId: ${hash} ${this.controllerName}.${action} onAction()`)
+        if (this[`on_${action}`]) {
+            this[`on_${action}`](request, result);
+        }
+    }
+
     async handle(action, request, reply, promise) {
         let {hash, format, filename} = request.query;
         hash = hash || '';
@@ -45,6 +53,11 @@ class BaseController {
                         return reply(csv);
                     }
                 } else {
+                    // promise
+                    this.onAction(action, request, result)
+                        .catch(err => {
+                            logger.error(`sessionId: ${hash} ${this.controllerName}.${action} onAction() error ${err}`);
+                        });
                     return reply(result);
                 }
             })
@@ -92,14 +105,7 @@ class BaseController {
 
     get upsert() {
         return {
-            handler: (request, reply) => {
-                const upsertFlow = this.DAO.upsert(request.payload).then(upsertedEntity => {
-                    this.onUpsert(upsertedEntity, this.getCurrentUser(request));
-                    return upsertedEntity;
-                });
-
-                return this.handle('upsert', request, reply, upsertFlow);
-            }
+            handler: (request, reply) => this.handle('upsert', request, reply, this.DAO.upsert(request.payload))
         }
     }
 
@@ -112,18 +118,25 @@ class BaseController {
             timeout: {
                 socket: 1000 * 60 * 8 // 8 min, socket timeout
             },
-            handler: (request, reply) => {
+            handler: async (request, reply) => {
                 const action = 'batch';
                 const {hash} = request.query;
+                const entitiesJSON = request.payload[this.batchEntitiesKey];
 
-                const batchUpsertEntityFn = entityJSON => this.DAO.upsert(entityJSON).then(upsertedEntity => {
-                    this.onUpsert(upsertedEntity, this.getCurrentUser(request));
-                    return upsertedEntity;
-                });
+                if (!!this.on_batch) {
+                    const entitiesToUpdate = await this.DAO.all({_id: {$in: [...entitiesJSON.map(e => e._id)]}})
+                    const update2entity = _.indexBy(entitiesToUpdate, '_id');
+
+                    request.ctx = {
+                        batch: {
+                            new: entitiesJSON.filter(e => !update2entity[e._id]).map(e => e._id)
+                        }
+                    };
+                }
 
                 this.handle(action, request, reply,
                     Promise
-                        .map(request.payload[this.batchEntitiesKey], batchUpsertEntityFn)
+                        .map(entitiesJSON, entityJSON => this.DAO.upsert(entityJSON))
                         .catch(error => {
                             logger.error(`sessionId: ${hash} ${this.controllerName}.${action} error: ${error}`);
                             throw error;
@@ -135,36 +148,20 @@ class BaseController {
 
     get getBatch() {
         return {
-            handler: (request, reply) => {
-                this.handle('getBatch', request, reply, this.DAO.all({_id: {$in: request.payload}}));
-            }
+            handler: (request, reply) => this.handle('getBatch', request, reply, this.DAO.all({_id: {$in: request.payload}}))
         }
     }
 
     get create() {
         return {
-            handler: (request, reply) => {
-                const createFlow = this.DAO.create(request.payload).then(createdEntity => {
-                    this.onCreate(createdEntity, this.getCurrentUser(request));
-                    return createdEntity;
-                });
-
-                return this.handle('create', request, reply, createFlow);
-            }
+            handler: (request, reply) => this.handle('create', request, reply, this.DAO.create(request.payload))
         }
     }
 
     get update() {
         return {
-            handler: (request, reply) => {
-                const updateFlow = this.DAO.update(request.payload).then(updatedEntity => {
-                    this.onUpdate(updatedEntity, this.getCurrentUser(request));
-                    return updatedEntity;
-                });
-
-                return this.handle('update', request, reply, updateFlow);
-            }
-        };
+            handler: (request, reply) => this.handle('update', request, reply, this.DAO.update(request.payload))
+        }
     }
 
     get delete() {
@@ -199,18 +196,6 @@ class BaseController {
         const csv = await parseAsync(result, opts);
 
         return csv;
-    }
-
-    onCreate(createdEntity, currentUser) {
-
-    }
-
-    onUpdate(updatedEntity, currentUser) {
-
-    }
-
-    onUpsert(upsertedEntity, currentUser) {
-
     }
 }
 
