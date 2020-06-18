@@ -130,7 +130,7 @@ class DailyEventsDispatcherService {
                 const {Properties} = await PropertyFlattenerService.getPropertiesFlatByIDs([PropertyID]);
                 const property = Properties[0];
 
-                if (property.HasInspect || property.HasRepair) {
+                if (property.HasInspect) {
                     if (!propertyCache['property-inspection:start']) {
                         const {inspection, user} = propertyInspections[0];
 
@@ -155,7 +155,7 @@ class DailyEventsDispatcherService {
                         // progress
                         const completedInspections = await InspectionDAO.getPropertyInspectionsForToday(PropertyID);
                         const completedInspectionsCount = completedInspections.length;
-                        const totalInspectionsCount = (property.InspectCount || 0) + (property.RepairCount || 0) + completedInspectionsCount;
+                        const totalInspectionsCount = (property.InspectCount || 0) + completedInspectionsCount;
                         const progress = parseInt((completedInspectionsCount * 100) / totalInspectionsCount);
 
                         const lastProgressEvent = _.max(propertyCache['property-inspection:progress'], event => event.created_at);
