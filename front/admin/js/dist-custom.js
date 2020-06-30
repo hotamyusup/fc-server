@@ -137,8 +137,11 @@ $(function () {
             if (storedUserData) {
                 User = {
                     ...storedUserData,
+                    get notificationSupported() {
+                        return ('Notification' in window);
+                    },
                     get notificationGranted() {
-                        return Notification.permission === 'granted';
+                        return this.notificationSupported && Notification.permission === 'granted';
                     },
                     _notificationIcon: ko.observable('fa-bell-o'),
                     get notificationIcon() {
