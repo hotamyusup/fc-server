@@ -158,8 +158,8 @@
 							</div>
 							<div class="form-group">
 								<input type="hidden" id="id" data-bind="value: User._id">
-								<button type="submit" id="submit" class="btn btn-primary">Submit</button>
-								<button type="submit" id="delete" class="btn btn-danger-outline pull-right">Delete</button>
+								<button data-bind="click: saveUser" id="submit" class="btn btn-primary">Submit</button>
+								<button data-bind="click: deleteUser" id="delete" class="btn btn-danger-outline pull-right">Delete</button>
 							</div>
 						</form>
 					</div>
@@ -277,7 +277,33 @@
                     },
                     set Organizations(organization) {
                         return this._organizations(organization);
-                    }
+                    },
+                    saveUser() {
+                        var valid = Site.validate($("#form"));
+                        if (valid) {
+                            var User = {
+                                _id: $("#id").val(),
+                                UserID: $("#id").val(),
+                                Title: $("#title").val(),
+                                Email: $("#email").val(),
+                                Phone: $("#phone").val(),
+                                Type: $("#type").val(),
+                                Password: $("#password").val(),
+                                Organization: $("#organization").val()
+                            };
+
+                            API.updateUser($("#id").val(), User, function (data) {
+                                Site.redirect("/users/");
+                            });
+                        }
+                    },
+                    deleteUser() {
+                        if (confirm('Are you sure you want to delete user?')) {
+                            API.deleteUser($("#id").val(), function () {
+                                Site.redirect("/users/");
+                            });
+                        }
+                    },
                 };
                 ko.applyBindings(UserModel);
 
@@ -286,36 +312,6 @@
                     API.organizations(function (data) {
                         UserModel.Organizations = data;
                     });
-                });
-
-                $("#delete").click(function (e) {
-                    e.preventDefault();
-                    if (confirm('Are you sure you want to delete user?')) {
-                        API.deleteUser($("#id").val(), function () {
-                            Site.redirect("/users/");
-                        });
-                    }
-                });
-
-                $("#submit").click(function (e) {
-                    e.preventDefault();
-                    var valid = Site.validate($("#form"));
-                    if (valid) {
-                        var User = {
-                            _id: $("#id").val(),
-                            UserID: $("#id").val(),
-                            Title: $("#title").val(),
-                            Email: $("#email").val(),
-                            Phone: $("#phone").val(),
-                            Type: $("#type").val(),
-                            Password: $("#password").val(),
-                            Organization: $("#organization").val()
-                        };
-
-                        API.updateUser($("#id").val(), User, function (data) {
-                            Site.redirect("/users/");
-                        });
-                    }
                 });
             }
 		});
