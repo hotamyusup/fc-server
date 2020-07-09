@@ -35,7 +35,7 @@
             <div class="header-block header-block-buttons"></div>
             <div class="header-block header-block-nav">
                 <ul class="nav-profile">
-                    <li id="notificationNavItem" class="notifications new">
+                    <li id="notificationNavItem" data-bind="if: ACL.user.notificationSupported" class="notifications new">
                         <a  href="" data-toggle="dropdown" aria-expanded="false">
                             <i class="fa" data-bind="css: ACL.user.notificationIcon"></i>
                             <sup data-bind="style: {opacity: ACL.user.notificationsStats.notReadCount ? 1 : 0}">
