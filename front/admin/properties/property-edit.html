@@ -415,7 +415,7 @@
 
                 if (nonValidContacts.length) {
                     return alert('All Contacts fields are required');
-                }
+                }f
 
                 const changeSet = {
                     _id,
@@ -435,7 +435,7 @@
 
                 const {_id} = Model.Property;
                 const changeSet = {_id, Status: -1};
-                API.updateProperty(_id, changeSet, ()=> {});
+                API.updateProperty(_id, changeSet, ()=> Site.redirect(`/properties/property.html?i=${_id}`));
             },
         };
 
