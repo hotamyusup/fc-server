@@ -27,14 +27,6 @@ class InspectionController extends PropertyChildrenBaseController {
         DailyEventsDispatcherService.onInspectionAdded(createdInspection, currentUser);
     }
 
-    on_update(request, updatedInspection) {
-        const currentUser = this.getCurrentUser(request);
-        if (!updatedInspection || !currentUser) {
-            logger.error(`${this.controllerName}.on_update(updatedInspection not null = ${!!updatedInspection}, currentUser not null = ${!!currentUser}) error, not all params are provided`);
-            return;
-        }
-    }
-
     on_upsert(request, upsertedInspection) {
         const currentUser = this.getCurrentUser(request);
         if (!upsertedInspection || !currentUser) {

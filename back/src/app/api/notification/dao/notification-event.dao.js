@@ -65,7 +65,7 @@ async function processNotification(notification) {
 
 async function sendToUsers(notification, users) {
     const usersWithTokens = _.filter(users, user => user.FCMTokens && user.FCMTokens.length);
-    await Promise.map(usersWithTokens, user => NotificationToUserDAO.create(notification, user));
+    await Promise.map(usersWithTokens, user => NotificationToUserDAO.create(notification, user), {concurrency: 10});
 
     notification.status = 'Finished';
     await notification.save();

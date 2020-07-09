@@ -137,8 +137,11 @@ $(function () {
             if (storedUserData) {
                 User = {
                     ...storedUserData,
+                    get notificationSupported() {
+                        return ('Notification' in window);
+                    },
                     get notificationGranted() {
-                        return Notification.permission === 'granted';
+                        return this.notificationSupported && Notification.permission === 'granted';
                     },
                     _notificationIcon: ko.observable('fa-bell-o'),
                     get notificationIcon() {
@@ -400,6 +403,12 @@ $(function () {
 		},
 		notifyDocument: function (documentID, callback) {
 			API.get("/documents/" + documentID + "/notify", callback);
+		},
+		documentsNotifyBatch: function (documents, callback) {
+			API.post("/documents/notify-batch", {documents}, callback);
+		},
+		documentsBatch: function (documents, callback) {
+			API.post("/documents/batch", {documents}, callback);
 		},
 		equipments: function (callback) {
 			API.get("/equipments", function (data) {

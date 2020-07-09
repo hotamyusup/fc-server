@@ -140,7 +140,7 @@
 								</div>
 								<ul class="item-list striped" data-bind="foreach: properties">
                                     <!-- ko if: (!$root.ACL.isCustomer || $root.ACL.sameOrganization($data.Organization)) -->
-									<li class="item">
+									<li class="item" data-bind="style: {opacity: ($data.Status == -1) ? 0.6 : 1}">
 										<div class="item-row">
 											<div class="item-col item-col-title no-overflow">
 												<h4 class="item-title no-wrap" data-bind="text: $data.Title"></h4>
@@ -204,9 +204,15 @@
 		}
 		$(function() {
 			Site.init();
-			API.properties(function(data) {
-				data = _.sortBy(data, 'Title');
-				data.forEach(property => {
+			API.properties(function(properties) {
+                const ACL = Auth.ACL();
+
+                if (!ACL.isAdmin) {
+                    properties = _.filter(properties, p => p.Status > -1);
+                }
+
+				properties = _.sortBy(properties, 'Title');
+				properties.forEach(property => {
 					property.Buildings = _.filter(property.Buildings, function(building) {
 						return building.Status > 0;
 					});
@@ -342,18 +348,15 @@
 					}
 				});
 
-                const Model = {
-                    ACL: Auth.ACL(),
-                    properties: data
-                };
+                const Model = {ACL, properties};
 
                 setupExportModal(Model, {
                     title: 'Server',
                 });
 
                 ko.applyBindings(Model);
-			});
-		});
+            });
+        });
 	</script>
 </body>
 

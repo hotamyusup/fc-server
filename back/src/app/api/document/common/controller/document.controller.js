@@ -24,8 +24,8 @@ class DocumentController extends BaseController {
         this.controllerName = 'DocumentController';
         this.redirectUrl = '/documents/';
         this.requestIDKey = 'DocumentID';
+        this.batchEntitiesKey = 'documents';
     }
-
 
     get getForProperty() {
         return {
@@ -102,6 +102,25 @@ class DocumentController extends BaseController {
                     document.Status = 0;
                     return document.save();
                 }));
+            }
+        }
+    }
+
+    get notifyOnEmailBatch() {
+        return {
+            handler: (request, reply) => {
+                const hash = request.query.hash || '';
+                const action = 'notifyOnEmailBatch';
+                const entitiesJSON = request.payload[this.batchEntitiesKey];
+
+                return this.handle(action, request, reply,
+                    Promise
+                        .map(entitiesJSON, entityJSON => this.DAO.get(entityJSON._id).then(notifyOnEmail))
+                        .catch(error => {
+                            logger.error(`sessionId: ${hash} ${this.controllerName}.${action} error: ${error}`);
+                            throw error;
+                        })
+                );
             }
         }
     }

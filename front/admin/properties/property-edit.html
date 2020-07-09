@@ -341,9 +341,14 @@
                                 </li>
                                 <li class="item">
                                     <div class="item-row">
-                                        <div class="item-col item-col-title no-overflow">
-                                            <div class="form-group">
-                                                <button type="submit" id="submit" class="btn btn-primary">Save Changes</button>
+                                        <div class="item-col item-col-title no-overflow text-left">
+                                            <div>
+                                                <button data-bind="click: saveProperty" class="btn btn-success" type="button">Save Changes</button>
+                                            </div>
+                                        </div>
+                                        <div class="item-col item-col-title no-overflow text-right">
+                                            <div>
+                                                <button data-bind="click: deleteProperty" class="btn btn-danger" type="button">Delete</button>
                                             </div>
                                         </div>
                                     </div>
@@ -401,6 +406,37 @@
                 Model.Property.Contacts.splice(index, 1);
                 Model.Property = Model.Property;
             },
+            saveProperty() {
+                const {_id, Contacts, PropertyManager, Title, Organization} = Model.Property;
+
+                const nonValidContacts = _.filter(Contacts,
+                    contact => _.keys(contact).filter(key => _.isEmpty(`${contact[key]||''}`.trim())).length > 0
+                );
+
+                if (nonValidContacts.length) {
+                    return alert('All Contacts fields are required');
+                }
+
+                const changeSet = {
+                    _id,
+                    Title,
+                    Organization,
+                    PropertyManager,
+                    Contacts,
+                };
+
+                API.updateProperty(_id, changeSet, _ => Site.redirect(`/properties/property.html?i=${_id}`))
+            },
+            deleteProperty() {
+                const confirmed = confirm(`Dou you want to delete property ${Model.Property.Title}`);
+                if (!confirmed) {
+                    return;
+                }
+
+                const {_id} = Model.Property;
+                const changeSet = {_id, Status: -1};
+                API.updateProperty(_id, changeSet, ()=> {});
+            },
         };
 
 
@@ -439,29 +475,6 @@
                     clearInterval(Loader);
                 }
             }, 100);
-        });
-
-        $("#submit").click(function (e) {
-            e.preventDefault();
-            const {_id, Contacts, PropertyManager, Title, Organization} = Model.Property;
-
-            const nonValidContacts = _.filter(Contacts,
-                contact => _.keys(contact).filter(key => _.isEmpty(`${contact[key]||''}`.trim())).length > 0
-            );
-
-            if (nonValidContacts.length) {
-                return alert('All Contacts fields are required');
-            }
-
-            const changeSet = {
-                _id,
-                Title,
-                Organization,
-                PropertyManager,
-                Contacts,
-            };
-
-            API.updateProperty(_id, changeSet, _ => Site.redirect(`/properties/property.html?i=${_id}`))
         });
     });
 
