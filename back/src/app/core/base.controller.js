@@ -7,10 +7,14 @@ const Boom = require('boom');
 const {parseAsync} = require('json2csv');
 
 const logger = require('./logger');
+const BaseDBExportService = require("./base.db-export.service");
 
 class BaseController {
-    constructor(dao) {
-        this.DAO = dao;
+    constructor(dao, dbExportService) {
+        if (dao) {
+            this.DAO = dao;
+            this.dbExportService = dbExportService || new BaseDBExportService(dao);
+        }
 
         this.controllerName = 'BaseController';
         this.requestIDKey = 'entityID';
@@ -175,6 +179,165 @@ class BaseController {
             handler: (request, reply) => this.handle('copy', request, reply, this.DAO.copy(request.params[this.requestIDKey]))
         }
     }
+
+    get exportCSV() {
+        return {
+            handler: async (request, reply) => {
+                try {
+                    const {hash, from, sort, limit, skip, filename} = request.query;
+                    const action = 'exportCSV';
+
+                    logger.info(`sessionId: ${hash} ${this.controllerName}.${action} start`);
+
+                    const conditions = {};
+                    if (from) {
+                        conditions.updated_at = {
+                            $gt: moment(from).toDate()
+                        }
+                    }
+
+                    ['DeviceID', 'FloorID', 'BuildingID', 'PropertyID'].forEach(key => {
+                        if (request.query[key]) {
+                            conditions[key] = request.query[key];
+                        }
+                    });
+
+                    const csvFilePath = await this.dbExportService.export(conditions)
+                    const defaultFilename = `${this.batchEntitiesKey}.export.csv;`;
+
+                    reply.file(csvFilePath)
+                        .header('Content-Type', 'application/octet-stream')
+                        .header('content-disposition', `attachment; filename=${filename || defaultFilename}`);
+
+                } catch (e) {
+                    console.log('e === ', e);
+                }
+            }
+        }
+    }
+
+    // get exportCSV() {
+    //     return {
+    //         handler: async (request, reply) => {
+    //             try {
+    //                 const {hash, from, sort, limit, skip, filename} = request.query;
+    //                 const action = 'exportCSV';
+    //
+    //                 logger.info(`sessionId: ${hash} ${this.controllerName}.${action} start`);
+    //
+    //                 const options = {
+    //                     sort: sort ? JSON.parse(decodeURIComponent(sort)) : undefined,
+    //                     limit: limit ? parseInt(limit) : undefined,
+    //                     skip: skip ? parseInt(skip) : undefined
+    //                 };
+    //
+    //                 const conditions = {};
+    //                 if (from) {
+    //                     conditions.updated_at = {
+    //                         $gt: moment(from).toDate()
+    //                     }
+    //                 }
+    //
+    //                 ['DeviceID', 'FloorID', 'BuildingID', 'PropertyID'].forEach(key => {
+    //                     if (request.query[key]) {
+    //                         conditions[key] = request.query[key];
+    //                     }
+    //                 });
+    //
+    //                 const generateLookup = ($lookup) => {
+    //                     return this.DAO.fieldExists($lookup.localField)
+    //                         ? [
+    //                             {
+    //                                 $lookup: {
+    //                                     foreignField: "_id",
+    //                                     ...$lookup
+    //                                 }
+    //                             },
+    //                             {
+    //                                 $unwind: `$${$lookup.as}`
+    //                             }
+    //                         ]
+    //                         : []
+    //                 }
+    //
+    //                 const aggregation = this.DAO.aggregate([
+    //                         {
+    //                             $match: conditions
+    //                         },
+    //                         ...generateLookup({
+    //                                 from: "properties",
+    //                                 localField: "PropertyID",
+    //                                 as: "Property"
+    //                             }
+    //                         ),
+    //                         ...generateLookup({
+    //                             from: "buildings",
+    //                             localField: "BuildingID",
+    //                             as: "Building"
+    //                         }),
+    //                         ...generateLookup({
+    //                             from: "floors",
+    //                             localField: "FloorID",
+    //                             as: "Floor"
+    //                         }),
+    //                         ...generateLookup({
+    //                             from: "devices",
+    //                             localField: "DeviceID",
+    //                             as: "Device"
+    //                         }),
+    //                         ...generateLookup({
+    //                                 from: "users",
+    //                                 localField: "UserID",
+    //                                 as: "User"
+    //                             }
+    //                         ),
+    //
+    //                         {
+    //                             $addFields: {
+    //                                 "Property": "$Property.Title",
+    //                                 "Building": "$Building.Title",
+    //                                 "Floor": "$Floor.Title",
+    //                                 "Device": "$Device.Title",
+    //                                 "User": "$User.Title",
+    //                             }
+    //                         },
+    //
+    //                         {
+    //                             $out: "target_collection"
+    //                         }
+    //                     ]
+    //                 ).allowDiskUse(true).cursor({batchSize: 1000}).exec();
+    //
+    //                 const cursor = aggregation;
+    //
+    //                 let docCounter = 0;
+    //                 const result = [];
+    //                 let doc;
+    //                 while ((doc = await cursor.next())) {
+    //                     if (docCounter === 0) {
+    //                         console.log(`${docCounter} - ${doc._id} - `, doc);
+    //                     }
+    //
+    //                     console.log(`${docCounter++} - ${doc._id}`);
+    //                     result.push(doc);
+    //                 }
+    //
+    //                 console.log('result === ', result.slice(0, 4));
+    //
+    //                 const csv = await this.parseCSV(result);
+    //                 const defaultFilename = `${this.batchEntitiesKey}.${action}.report.csv;`;
+    //
+    //                 return reply(csv)
+    //                     .header('Content-Type', 'application/octet-stream')
+    //                     .header('content-disposition', `attachment; filename=${filename || defaultFilename}`);
+    //
+    //
+    //             } catch (e) {
+    //                 console.log('e === ', e);
+    //             }
+    //         }
+    //     }
+    // }
 
     async parseCSV(result) {
         if (!_.isArray(result)) {

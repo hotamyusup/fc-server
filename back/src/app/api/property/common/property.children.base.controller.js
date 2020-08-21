@@ -105,6 +105,7 @@ class PropertyChildrenBaseController extends BaseController {
     }
 
 
+    // @deprecated
     async parseCSV(result) {
         if (!_.isArray(result)) {
             result = [result];

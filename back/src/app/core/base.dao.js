@@ -16,6 +16,10 @@ class BaseDAO {
         return this.model.schema.path(field)
     }
 
+    fieldExists(field) {
+        return !!this.fieldDefinition(field)
+    }
+
     async all(conditions, options, fields) {
         conditions = conditions || {};
         return this.model.find(conditions, fields, options);
@@ -61,6 +65,10 @@ class BaseDAO {
         return this.model.remove({_id});
     }
 
+    aggregate(params) {
+        return this.model.aggregate(params);
+    }
+
     async copy(id, changes) {
         const entity = await this.get(id);
         const copiedEntity = await this.copyEntity(entity, changes);
@@ -103,6 +111,10 @@ class BaseDAO {
         const fields = [];
         this.model.schema.eachPath(path => (excluded.indexOf(path) < 0) && fields.push(path));
         return fields;
+    }
+
+    get collectionName() {
+        return this.model.collection.name
     }
 }
 
