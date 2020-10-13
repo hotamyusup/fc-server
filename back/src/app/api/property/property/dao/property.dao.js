@@ -27,18 +27,22 @@ class PropertyDAO extends PropertyChildrenBaseDAO {
         const property = await super.prepareUpdateObject(propertyJSON);
 
         if (!property.Latitude || !property.Longitude) {
-            const geocodingResponse = await GeocoderService.geocode({
-                address: property.Street + ', ' + property.City + ', ' + property.ZipCode + ', ' + property.State,
-                zipcode: property.ZipCode,
-                city: property.City,
-            });
+            try {
+                const geocodingResponse = await GeocoderService.geocode({
+                    address: property.Street + ', ' + property.City + ', ' + property.ZipCode + ', ' + property.State,
+                    zipcode: property.ZipCode,
+                    city: property.City,
+                });
 
-            if (geocodingResponse && geocodingResponse[0]) {
-                property.Latitude = geocodingResponse[0].latitude;
-                property.Longitude = geocodingResponse[0].longitude;
-            } else {
-                const addressString = property.Street + ', ' + property.City + ', ' + property.ZipCode + ', ' + property.State;
-                logger.info(`PropertyDAO.prepareUpdateObject() geocoding result is empty for Property ${property._id} : ${property.Title()} - address: ${addressString}`)
+                if (geocodingResponse && geocodingResponse[0]) {
+                    property.Latitude = geocodingResponse[0].latitude;
+                    property.Longitude = geocodingResponse[0].longitude;
+                } else {
+                    const addressString = property.Street + ', ' + property.City + ', ' + property.ZipCode + ', ' + property.State;
+                    logger.info(`PropertyDAO.prepareUpdateObject() geocoding result is empty for Property ${property._id} : ${property.Title()} - address: ${addressString}`)
+                }
+            } catch (e) {
+                logger.error(`PropertyDAO.prepareUpdateObject():${property._id} geocoding error =  ${e}`)
             }
         }
 
