@@ -37,6 +37,9 @@ var local = {
             return 'mongodb://' + this.host + ':' + this.port + '/' + this.db;
         }
     },
+    google: {
+        apiKey: 'AIzaSyB2qLbJ9eYe6p0UK9sPy3CeWzmpynez4Fg' // console.cloud.google.com API key
+    },
     firebase: {
         databaseURL: "https://firecloud-fireprotected-test.firebaseio.com",
         serviceAccount: {

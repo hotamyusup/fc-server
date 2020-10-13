@@ -2,10 +2,9 @@
 
 const mongoose = require('mongoose');
 const Promise = require('bluebird');
-const geocoder = require('node-geocoder')('google', 'http');
 
+const GeocoderService = require("../../../geocoder/service/geocoder.service");
 const logger = require("../../../../core/logger");
-const BaseDAO = require("../../../../core/base.dao");
 
 const PropertyModel = require("../model/property.model");
 const PropertyChildrenBaseDAO = require("../../common/property.children.base.dao");
@@ -27,41 +26,25 @@ class PropertyDAO extends PropertyChildrenBaseDAO {
     async prepareUpdateObject(propertyJSON) {
         const property = await super.prepareUpdateObject(propertyJSON);
 
-        const coords = await geocode({
-            address: property.Street + ', ' + property.City + ', ' + property.zipcode + ', ' + property.State,
-            zipcode: property.ZipCode,
-            city: property.City,
-        });
+        if (!property.Latitude || !property.Longitude) {
+            const geocodingResponse = await GeocoderService.geocode({
+                address: property.Street + ', ' + property.City + ', ' + property.ZipCode + ', ' + property.State,
+                zipcode: property.ZipCode,
+                city: property.City,
+            });
 
-        if (coords) {
-            property.Latitude = coords.latitude;
-            property.Longitude = coords.longitude;
+            if (geocodingResponse && geocodingResponse[0]) {
+                property.Latitude = geocodingResponse[0].latitude;
+                property.Longitude = geocodingResponse[0].longitude;
+            } else {
+                const addressString = property.Street + ', ' + property.City + ', ' + property.ZipCode + ', ' + property.State;
+                logger.info(`PropertyDAO.prepareUpdateObject() geocoding result is empty for Property ${property._id} : ${property.Title()} - address: ${addressString}`)
+            }
         }
 
         return property;
     }
 }
 
-const geocode = (geoObject) => {
-    return new Promise((resolve, reject) => {
-        geocoder.geocode(geoObject, function (err, res) {
-                if (!err) {
-                    if (!err && res.length > 0) {
-                        resolve({
-                            latitude: res[0].latitude,
-                            longitude: res[0].longitude
-                        })
-                    } else {
-                        resolve();
-                    }
-                } else {
-                    logger.error(`gecoder error ${err}, return undefined coordinates`);
-                    // reject(err);
-                    resolve();
-                }
-            }
-        );
-    })
-};
 
 module.exports = new PropertyDAO();
