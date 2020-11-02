@@ -4,6 +4,7 @@ const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 
 const ContactSchema = require("./contact.schema");
+const MapImageSchema = require("../../common/map/model/map-image.schema");
 
 const updatedAtValidator = require("../../../../core/validators/updated-at.validator");
 const validateUpdatedAt = [updatedAtValidator, 'newer version of entity already stored, updated_at > new value'];
@@ -22,7 +23,8 @@ const PropertySchema = new Schema({
     Client: {type: String},
     PropertyManager: {type: Schema.Types.ObjectId, ref: 'User'},
     QRCode: {type: String},
-    Map: {type: String},
+    Map: {type: String}, // @deprecated
+    MapImage: {type: MapImageSchema},
     Picture: {type: String},
     Pictures: [String],
     // Buildings: [{type: Schema.Types.ObjectId, ref: 'Building'}],

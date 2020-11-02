@@ -4,6 +4,7 @@ const API_ROUTES = [
     ...require("./document/upload/routes/upload.document.routes"),
 
     ...require("./file/routes/file.routes"),
+    ...require("./geocoder/routes/geocoder.routes"),
     ...require("./image/routes/image.routes"),
     ...require("./video/routes/video.routes"),
     ...require("./organization/routes/organization.routes"),

@@ -42,6 +42,16 @@ class PropertyChildrenBaseDAO extends BaseDAO {
         console.log(`delete(${id})`);
         return this.update({_id: id, Status: -1});
     }
+
+    async prepareUpdateObject(propertyEntityJSON) {
+        const propertyEntity = await super.prepareUpdateObject(propertyEntityJSON);
+        if (propertyEntity.QRCode) {
+           if (`${propertyEntity.QRCode}`.substr(-2) === '.0') {
+                propertyEntity.QRCode = `${parseInt(propertyEntity.QRCode)}`;
+           }
+        }
+        return propertyEntity;
+    }
 }
 
 module.exports = PropertyChildrenBaseDAO;
