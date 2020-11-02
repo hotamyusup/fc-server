@@ -3,6 +3,7 @@
 const FloorController = require("../controller/floor.controller");
 
 const FLOOR_ROUTES = [
+    {method: 'GET', path: '/floors/export-csv', config: FloorController.exportCSV},
     {method: 'GET', path: '/floors', config: FloorController.all},
     {method: 'GET', path: '/floors/{FloorID}', config: FloorController.get},
     {method: 'GET', path: '/floors/{FloorID}/copy', config: FloorController.copy},

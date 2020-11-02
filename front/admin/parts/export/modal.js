@@ -65,7 +65,7 @@ function setupExportModal(bindingContext, params = {}) {
 
             const filename = `${route}${fileNameParams}${from ? `_from_${from}`: ''}.csv`;
 
-            const url = `${Site.APIURL}/${route}?hash=${user._id}${queryParams}${fromParams}&format=csv-file&filename=${filename}`;
+            const url = `${Site.APIURL}/${route}/export-csv?hash=${user._id}${queryParams}${fromParams}&filename=${filename}`;
             console.log(`url == ${url}`);
             window.open(url);
         },

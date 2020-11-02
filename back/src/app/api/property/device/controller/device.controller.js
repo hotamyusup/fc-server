@@ -8,10 +8,11 @@ const PropertyChildrenBaseController = require("../../common/property.children.b
 const InspectionDAO = require("../../inspection/dao/inspection.dao");
 
 const DeviceDAO = require("../dao/device.dao");
+const DeviceDBExportService = require('../service/device.db-export.service');
 
 class DeviceController extends PropertyChildrenBaseController {
     constructor() {
-        super(DeviceDAO);
+        super(DeviceDAO, DeviceDBExportService);
         this.controllerName = 'DeviceController';
         this.requestIDKey = 'DeviceID';
         this.batchEntitiesKey = 'devices';
