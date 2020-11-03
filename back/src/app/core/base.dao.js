@@ -16,12 +16,12 @@ class BaseDAO {
         return this.model.schema.path(field)
     }
 
-    async all(conditions, options, fields) {
+    all(conditions, options, fields) {
         conditions = conditions || {};
         return this.model.find(conditions, fields, options);
     }
 
-    async get(id) {
+    get(id) {
         return this.model.findOne({_id: id});
     }
 
