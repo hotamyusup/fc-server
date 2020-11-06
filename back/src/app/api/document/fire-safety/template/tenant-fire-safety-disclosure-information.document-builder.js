@@ -516,7 +516,7 @@ class TenantFireSafetyDisclosureDocumentBuilder {
                     {
                         columns: [
                             {
-                                text: property.Title,
+                                text: `${property.Title} - ${residentialUnit}`,
                                 width: "70%"
                             },
                             {
