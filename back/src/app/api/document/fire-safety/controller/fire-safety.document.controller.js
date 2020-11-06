@@ -187,13 +187,15 @@ class FireSafetyDocumentController extends BaseController {
 
                     await Promise.map(filteredFloors, async floor => {
                         const building = id2building[floor.BuildingID];
-                        const docDefinition = await TenantFireSafetyDisclosureDocumentBuilder.build(floor._id);
+
+                        //removed by FC management request
+                        //const docDefinition = await TenantFireSafetyDisclosureDocumentBuilder.build(floor._id);
 
                         const floorFileName = `${building.Title} - ${floor.Title}`.replace(/[^a-z0-9 -]/gi, '_').trim();
 
-                        const filePath = `${floorsDirPath}/${floorFileName}.pdf`;
+                        //const filePath = `${floorsDirPath}/${floorFileName}.pdf`;
 
-                        const pdfDocument = await PDFMakeService.createPDFDocument(docDefinition, filePath);
+                        //const pdfDocument = await PDFMakeService.createPDFDocument(docDefinition, filePath);
 
                         const devices = await DeviceDAO.all({
                                 FloorID: floor._id,
