@@ -92,15 +92,18 @@ class TenantFireSafetyDisclosureDocumentBuilder {
         const left = floor.Map.Left;
         const top = floor.Map.Top;
 
-        const w = image.width;
-        const h = image.height;
-        const canvasWidth = boundsByDevices.x * 1.8; //w - left;
-        const canvasHeight = boundsByDevices.y * 1.8; //h - top;
+        let canvasWidth = boundsByDevices.x * 1.8;
+        let canvasHeight =  boundsByDevices.y * 1.8;
+        if (canvasWidth > image.width * scale) {
+            canvasWidth = image.width * scale;
+        }
+        if (canvasHeight > image.height * scale) {
+            canvasHeight = image.height * scale;
+        }
 
         const mapCanvas = new Canvas(canvasWidth, canvasHeight);
         const ctx = mapCanvas.getContext('2d');
-
-        ctx.drawImage(image, left, top, w, h, 0, 0, w * scale, h * scale);
+        ctx.drawImage(image, left, top, image.width, image.height, 0, 0, canvasWidth, canvasHeight);
 
         const getImageFromBase64 = base64 => {
             return new Promise((resolve, reject) => {
