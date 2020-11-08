@@ -156,6 +156,7 @@ class TenantFireSafetyDisclosureDocumentBuilder {
             const devicesSortedByType = devices
                 .filter(getStyleFromDevice)
                 .filter(device => device.Status !== -1)
+                .filter(device => device.QRCode !== "")
                 .filter(filterEmergencyExit)
                 .filter(filterInUnitSmokedetectors);
 
@@ -164,7 +165,7 @@ class TenantFireSafetyDisclosureDocumentBuilder {
             if (alarmPanelsCount === 0) {
                 const buildingAlarmPanels = await DeviceDAO.all({
                     BuildingID: building._id,
-                    DeviceType: {$in: ["56fa327ddfe0b7562268266e", "5aeb69c13efe111289717df9"]}
+                    DeviceType: {$in: ["56fa327ddfe0b7562268266e"]}
                 });
 
                 const buildingAlarmPanelsFloors = await FloorDAO.all({
@@ -678,9 +679,6 @@ const equipment2type = {
     "56fa327ddfe0b7562268266e": { // FIRE ALARM PANEL - DeviceType
         type: "alarmpanel"
     },
-    "5aeb69c13efe111289717df9": { // SMOKE CONTROL PANEL - DeviceType
-        type: "alarmpanel"
-    },
 
     "56fa327ddfe0b75622682677": { // CARBON MONOXIDE DETECTOR - DeviceType
         type: "smokedetector"
@@ -710,6 +708,9 @@ const equipment2type = {
         type: "smokedetector"
     },
     "5d4b600162dd8f13bdfaa3f6": { // IN UNIT/SMOKE ALARM - DeviceType
+        type: "smokedetector"
+    },
+    "5f0cdb4602034a44e889fc0e": { // IN UNIT/CO/SMOKE ALARM - DeviceType
         type: "smokedetector"
     },
 };
