@@ -515,12 +515,13 @@ class TenantFireSafetyDisclosureDocumentBuilder {
                 });
             }
 
+            const residentialUnitTitle = residentialUnit ? ` - Unit ${residentialUnit}` : '';
             const documentDefinition = {
                 content: [
                     {
                         columns: [
                             {
-                                text: `${property.Title} - Unit ${residentialUnit}`,
+                                text: `${property.Title}${residentialUnitTitle}`,
                                 width: "70%"
                             },
                             {
