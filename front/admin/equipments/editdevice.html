@@ -204,6 +204,9 @@
 					e.preventDefault();
 					var valid = Site.validate($("#form"));
 					if (valid) {
+						$(this).attr("disabled", true);
+						setTimeout(()=> $(this).removeAttr('disabled'), 3000);
+
 						var Device = {
 							EquipmentID: EquipmentID,
 							Title: $("#title").val(),

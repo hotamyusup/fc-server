@@ -209,6 +209,9 @@
                     e.preventDefault();
                     var valid = Site.validate($("#form"));
                     if (valid) {
+                        $(this).attr("disabled", true);
+                        setTimeout(()=> $(this).removeAttr('disabled'), 3000);
+
                         var User = {
                             Title: $("#title").val(),
                             Email: $("#email").val(),
