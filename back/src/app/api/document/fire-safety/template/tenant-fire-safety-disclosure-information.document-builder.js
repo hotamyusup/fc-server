@@ -74,37 +74,6 @@ class TenantFireSafetyDisclosureDocumentBuilder {
             });
         });
 
-        const boundsByDevices = devices.reduce((bounds, device) => {
-            if (device.XPos > bounds.x) {
-                bounds.x = device.XPos;
-            }
-            if (device.YPos > bounds.y) {
-                bounds.y = device.YPos;
-            }
-
-            return bounds;
-        }, {x: 200, y: 100});
-
-        const mapImage = floor.Map.Image || (building.Map && building.Map.Image) || property.Map;
-        const image = await loadImageByUrl(mapImage);
-
-        const scale = floor.Map.Scale;
-        const left = floor.Map.Left;
-        const top = floor.Map.Top;
-
-        let canvasWidth = boundsByDevices.x * 1.8;
-        let canvasHeight =  boundsByDevices.y * 1.8;
-        if (canvasWidth > image.width * scale) {
-            canvasWidth = image.width * scale;
-        }
-        if (canvasHeight > image.height * scale) {
-            canvasHeight = image.height * scale;
-        }
-
-        const mapCanvas = new Canvas(canvasWidth, canvasHeight);
-        const ctx = mapCanvas.getContext('2d');
-        ctx.drawImage(image, left, top, image.width, image.height, 0, 0, canvasWidth, canvasHeight);
-
         const getImageFromBase64 = base64 => {
             return new Promise((resolve, reject) => {
                 const img = new Canvas.Image();
@@ -200,6 +169,45 @@ class TenantFireSafetyDisclosureDocumentBuilder {
             const isTypeShouldBeDrawnOnMap = type => ['smokedetector'].indexOf(type) === -1;
 
             const mapDrawnDevices = annualInspectedDevices.filter(d => isTypeShouldBeDrawnOnMap(getStyleFromDevice(d).type));
+
+            const boundsByDevices = mapDrawnDevices.reduce((bounds, device) => {
+                if (device.XPos > bounds.x) {
+                    bounds.x = device.XPos;
+                }
+                if (device.YPos > bounds.y) {
+                    bounds.y = device.YPos;
+                }
+
+                return bounds;
+            }, {x: 200, y: 100});
+
+            boundsByDevices.width = boundsByDevices.x * 1.8;
+            boundsByDevices.height = boundsByDevices.y * 1.8;
+
+            const mapImage = floor.Map.Image || (building.Map && building.Map.Image) || property.Map;
+            const image = await loadImageByUrl(mapImage);
+
+            const scale = floor.Map.Scale;
+            const left = floor.Map.Left;
+            const top = floor.Map.Top;
+
+            let croppedWidth = boundsByDevices.width / scale;
+            let croppedHeight = boundsByDevices.height / scale;
+
+            if (croppedWidth > image.width - left) {
+                croppedWidth = image.width - left;
+            }
+            if (croppedHeight > image.height - top) {
+                croppedHeight = image.height - top;
+            }
+
+            let canvasWidth = croppedWidth * scale;
+            let canvasHeight =  croppedHeight * scale;
+
+            const mapCanvas = new Canvas(canvasWidth, canvasHeight);
+            const ctx = mapCanvas.getContext('2d');
+            ctx.drawImage(image, left, top, croppedWidth, croppedHeight, 0, 0, canvasWidth, canvasHeight);
+
             setAngleForClusteredDevices(mapDrawnDevices);
 
             const type2devices = _.groupBy(annualInspectedDevices, 'DeviceType');
@@ -515,12 +523,13 @@ class TenantFireSafetyDisclosureDocumentBuilder {
                 });
             }
 
+            const residentialUnitTitle = residentialUnit ? ` - Unit ${residentialUnit}` : '';
             const documentDefinition = {
                 content: [
                     {
                         columns: [
                             {
-                                text: `${property.Title} - Unit ${residentialUnit}`,
+                                text: `${property.Title}${residentialUnitTitle}`,
                                 width: "70%"
                             },
                             {
