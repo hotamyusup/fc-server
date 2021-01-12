@@ -295,14 +295,11 @@
 
 													device.DeviceLocation = (device.DeviceLocation.length > 0) ? device.DeviceLocation.replace(/,/g,';') : '-';
 
-													//temp comment
-														//',', _.findWhere(users, { _id: record.User }).Title,
+													//would like to refactor this - as it is to tell us the user title or not found
 													let temp_user;
 													try {
 														temp_user = _.findWhere(users, { _id: record.User }).Title;
-														//record.User.Title = _.findWhere(users, { _id: record.User });
-														//console.log(`record.User === `, record.User);
-														temp_user = (temp_user == 'undefined') ? 'empty user' : temp_user;
+														temp_user = (temp_user == '') ? 'empty user' : temp_user;
 													}catch(e){
 														temp_user = 'no user found';
 													}
