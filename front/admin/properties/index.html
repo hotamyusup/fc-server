@@ -297,14 +297,14 @@
 
 													//temp comment
 														//',', _.findWhere(users, { _id: record.User }).Title,
-													//record.User.Title = _.findWhere(users, { _id: record.User }).Title;
+													let temp_user;
 													try {
-														record.User.Title = _.findWhere(users, { _id: record.User }).Title;
-														//console.log(`record.User Title === `, record.User.Title);
-													}
-													catch(err){
-														record.User.Title = 'no user title';
-														//console.log(`record.User error === `, err.message);
+														temp_user = _.findWhere(users, { _id: record.User }).Title;
+														//record.User.Title = _.findWhere(users, { _id: record.User });
+														//console.log(`record.User === `, record.User);
+														temp_user = (temp_user == 'undefined') ? 'empty user' : temp_user;
+													}catch(e){
+														temp_user = 'no user found';
 													}
 
 													content = content.concat(deviceTitle, ',', property.Title, ',', building.Title,
@@ -315,7 +315,7 @@
 														',', device.SerialNumber,
 														',', record.InspectionDate,
 														',', frequencies[record.Frequency],
-														',', record.User.Title,
+														',', temp_user,
 														',', status, ',', record.Reason.replace(/,/g,';'), ',', record.Note.replace(/,/g,';'),
 														',', record.Photos.length > 0 ? record.Photos[0].URL : '', ',', '\n');
 												});
