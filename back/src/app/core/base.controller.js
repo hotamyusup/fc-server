@@ -6,6 +6,8 @@ const moment = require('moment');
 const Boom = require('boom');
 const {parseAsync} = require('json2csv');
 
+const mongoose = require('mongoose');
+
 const logger = require('./logger');
 const BaseDBExportService = require("./base.db-export.service");
 
@@ -183,10 +185,10 @@ class BaseController {
     get exportCSV() {
         return {
             handler: async (request, reply) => {
+                const action = 'exportCSV';
+
                 try {
                     const {hash, from, sort, limit, skip, filename} = request.query;
-                    const action = 'exportCSV';
-
                     logger.info(`sessionId: ${hash} ${this.controllerName}.${action} start`);
 
                     const conditions = {};
@@ -198,7 +200,7 @@ class BaseController {
 
                     ['DeviceID', 'FloorID', 'BuildingID', 'PropertyID'].forEach(key => {
                         if (request.query[key]) {
-                            conditions[key] = request.query[key];
+                            conditions[key] = mongoose.Types.ObjectId(request.query[key]);
                         }
                     });
 
@@ -210,7 +212,8 @@ class BaseController {
                         .header('content-disposition', `attachment; filename=${filename || defaultFilename}`);
 
                 } catch (e) {
-                    console.log('e === ', e);
+                    logger.error(`sessionId: ${hash} ${this.controllerName}.${action} start`);
+                    reply(Boom.forbidden('error in CSV export', e))
                 }
             }
         }
