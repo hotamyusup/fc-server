@@ -61,6 +61,19 @@ class DocumentController extends BaseController {
         }
     }
 
+    get getFormattedGreystar() {
+        return {
+            auth: false,
+            handler: async (request, reply) => {
+                const hash = request.query.hash || '';
+                const action = 'getFormattedGreystar';
+                logger.info(`sessionId: ${hash} ${this.controllerName}.${action} start`);
+
+                this.getFormatted.handler(request, reply)
+            }
+        }
+    }
+
     get getFormatted() {
         return {
             handler: (request, reply) => {
