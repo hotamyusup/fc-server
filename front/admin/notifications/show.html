@@ -137,7 +137,7 @@
                             <div class="modal-body">
                                 <p data-bind="text: $root.notificationModal.notificationEvent.data.body"></p>
 
-                                <div data-bind="foreach: $root.getNotificationUrls($root.notificationModal.notificationEvent.data)">
+                                <div data-bind="foreach: $root.getNotificationUrls($root.notificationModal.notificationEvent.data, $root.notificationModal.notificationEvent.name)">
                                     <small>
                                         <a href="javascript:;;" data-bind="text: $data.text, attr: {href: $data.link}" style="margin-right: 10px;" target="_blank"></a>
                                     </small>
@@ -180,7 +180,7 @@
                                                     </a>
                                                 </h4>
                                                 <div data-bind="text: $data.notificationEvent.data.body"></div>
-                                                <div data-bind="foreach: $root.getNotificationUrls($data.notificationEvent.data)">
+                                                <div data-bind="foreach: $root.getNotificationUrls($data.notificationEvent.data, $data.notificationEvent.name)">
                                                     <small>
                                                         <a href="javascript:;;" data-bind="text: $data.text, attr: {href: $data.link}" style="margin-right: 10px;" target="_blank"></a>
                                                     </small>
@@ -238,8 +238,15 @@
 
             const Model = {
                 ACL: Auth.ACL(),
-                getNotificationUrls(notification){
+                getNotificationUrls(notification, notificationName){
                     const urls = [];
+                    if (notificationName === 'new:bounced:mail:success') {
+                        urls.push({
+                            text: 'SendGrid Bounces',
+                            link: `https://app.sendgrid.com/suppressions/bounces`
+                        })
+                    }
+
                     if (notification.PropertyID) {
                         urls.push({
                             text: 'Property',

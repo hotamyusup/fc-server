@@ -96,6 +96,10 @@ var local = {
     google: {
         apiKey: 'AIzaSyB2qLbJ9eYe6p0UK9sPy3CeWzmpynez4Fg' // console.cloud.google.com API key
     },
+    sendgrid: {
+        apiKey: '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',
+        from: 'noreply_firecloud@fireprotected.com'
+    },
     firebase: {
         databaseURL: firebase.databaseURL,
         serviceAccount: firebase.serviceAccount

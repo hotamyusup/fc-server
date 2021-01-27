@@ -157,6 +157,13 @@
                                 <div class="header-block pull-right">
                                     <a class="btn btn-primary btn-sm"
                                        style="margin-left: 10px;"
+                                       data-bind="click: $root.toggleBouncedFilter"
+                                       href="javascript:;;">
+                                        <span data-bind="if: !$root.filterBounced()">Filter Bounced</span>
+                                        <span data-bind="if: $root.filterBounced()">Show All Documents</span>
+                                    </a>
+                                    <a class="btn btn-primary btn-sm"
+                                       style="margin-left: 10px;"
                                        href="javascript:;;"
                                        target="_blank"
                                        data-bind="attr: {href:'/documents/fire-safety/templatesZip?hash=' + User._id + '&PropertyID='+Property()._id}">
@@ -230,7 +237,7 @@
                                     </div>
                                 </li>
                                 <!-- ko foreach: Documents -->
-								<li class="item" data-bind="style: {opacity: ($data.Status == -1) ? 0.6 : 1}">
+								<li class="item" data-bind="if: !$root.filterBounced() || $data.bounced, style: {opacity: ($data.Status == -1) ? 0.6 : 1}">
 									<div class="item-row" data-bind="style: {'background-color': ($parent.selectedDocuments().indexOf($data._id) >= 0) ? '#E6E6E6' : undefined}">
                                         <div class="item-col fixed item-col-check">
                                             <label class="item-check">
@@ -260,8 +267,9 @@
 											<h4 class="item-title no-wrap" data-bind="text: $data.notified_at && moment($data.notified_at).format('L')"></h4>
 										</div>
 										<div class="item-col no-overflow">
-											<h4 class="item-title no-wrap" data-bind="if: $data.Status === 1">Scheduled</h4>
-											<h4 class="item-title no-wrap" data-bind="if: $data.Status === 0">Deactivated</h4>
+                                            <h4 class="item-title no-wrap" data-bind="if: $data.bounced">Bounced</h4>
+											<h4 class="item-title no-wrap" data-bind="if: !$data.bounced && $data.Status === 1">Scheduled</h4>
+											<h4 class="item-title no-wrap" data-bind="if: !$data.bounced && $data.Status === 0">Deactivated</h4>
 										</div>
 										<div class="item-col text-right">
 
@@ -315,6 +323,7 @@
             ACL:ACL,
 
 			User: User,
+            filterBounced: ko.observable(false),
 
 			id2floor: ko.observable(null),
 			id2building: ko.observable(null),
@@ -334,6 +343,10 @@
 			notifyDocument(document) {
                 API.notifyDocument(document._id, getDocumentsForCurrentProperty)
 			},
+            toggleBouncedFilter() {
+                this.filterBounced(!this.filterBounced());
+                this.Documents([...this.Documents()]);
+            },
             applyActionToSelectedDocuments() {
                 const action = this.selectedAction();
                 const selectedIds = this.selectedDocuments();

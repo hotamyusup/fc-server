@@ -4,6 +4,7 @@ const Promise = require('bluebird');
 const path = require('path');
 const _ = require('lodash');
 
+const config = require('../../../../../config/config');
 const logger = require('../../../../core/logger');
 
 const PDFMakeService = require('../../common/service/pdfmake.service');
@@ -51,7 +52,7 @@ module.exports = async function documentToMailMessage(document) {
     const property = document.property ? document.property : await PropertyDAO.get(document.PropertyID);
     const propertyManagerEmail = property.Contacts && property.Contacts[0].Email;
 
-    const from = 'noreply_firecloud@fireprotected.com';
+    const from = config.sendgrid.from;
 
     const DocumentID = `${document._id}`;
 
