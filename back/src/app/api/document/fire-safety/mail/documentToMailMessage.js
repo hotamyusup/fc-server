@@ -51,7 +51,7 @@ module.exports = async function documentToMailMessage(document) {
     const property = document.property ? document.property : await PropertyDAO.get(document.PropertyID);
     const propertyManagerEmail = property.Contacts && property.Contacts[0].Email;
 
-    const from = 'noreply_firecloud@fireprotected.com';
+    const from = config.sendgrid.from;
 
     const DocumentID = `${document._id}`;
 

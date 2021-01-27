@@ -1,5 +1,6 @@
 'use strict';
 
+const mongoose = require('mongoose');
 const Promise = require('bluebird');
 const _ = require('lodash');
 const Boom = require('boom');
@@ -12,11 +13,14 @@ const MailService = require('../../../../core/mail.service');
 const BaseController = require("../../../../../app/core/base.controller");
 const PropertyDAO = require("../../../property/property/dao/property.dao");
 
+const SendGridService = require('../../common/service/sendgrid.service');
+
 const UploadDocumentDAO = require('../../upload/dao/upload.document.dao');
 const documentToMailMessage = require('../../fire-safety/mail/documentToMailMessage');
 
 const PDFMakeService = require('../service/pdfmake.service');
 const DocumentDAO = require("../dao/document.dao.instance");
+const BouncedMailDAO = require("../dao/bounced-mail.dao.instance");
 
 class DocumentController extends BaseController {
     constructor() {
@@ -41,10 +45,19 @@ class DocumentController extends BaseController {
                     reply,
                     (async () => {
 
+
+
+                        const bouncedDocumentIdsSet = await getBouncedDocumentsIdsForProperty(PropertyID);
+
                         const docModels = await this.DAO.forProperty(PropertyID);
                         const docs = _.map(docModels, doc => {
                             doc = doc.toJSON();
                             delete doc['definition'];
+
+                            if (bouncedDocumentIdsSet[doc._id]) {
+                                doc.bounced = true;
+                            }
+
                             return doc;
                         });
 
@@ -229,6 +242,63 @@ async function notifyOnEmail(document) {
         );
     }
 
+    SendGridService.fetchNewBouncesFromSendGridDebounced();
+
     document.notified_at = new Date();
     return document.save().then(d => ({_id: d._id}));
+}
+
+/**
+ *
+ * @param PropertyID
+ * @returns {Promise<{_id: true}>}
+ */
+async function getBouncedDocumentsIdsForProperty(PropertyID) {
+    const bouncedDocumentsIds = await DocumentDAO.aggregate([
+        {
+            $match: {
+                PropertyID: mongoose.Types.ObjectId(PropertyID),
+                'signer.email': {$exists: true}
+            }
+        },
+        {
+            $lookup: {
+                from: "bouncedmails",
+                localField: "signer.email",
+                foreignField: "email",
+                as: "Bounce"
+            }
+        },
+        // {
+        //     $unwind: {
+        //         path: "$Bounce",
+        //         preserveNullAndEmptyArrays: true
+        //     }
+        // },
+        // {
+        //     $match: {
+        //         Bounce: {$exists: true}
+        //     }
+        // },
+        {
+            $match: {
+                Bounce: {
+                    $exists: true,
+                    $not: {$size: 0}
+                }
+            }
+        },
+        {
+            $project: {
+                _id: '$_id'
+            }
+        },
+    ]);
+
+    const bouncedDocumentsIdsSet = {};
+    for (const {_id} of bouncedDocumentsIds) {
+        bouncedDocumentsIdsSet[_id] = true;
+    }
+
+    return bouncedDocumentsIdsSet;
 }

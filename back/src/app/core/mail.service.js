@@ -12,7 +12,7 @@ const getMailConfig = () => config.NODE_ENV === 'production'
         port: 2525,
         auth: {
             user: 'apikey',
-            pass: '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'
+            pass: config.sendgrid.apiKey
         },
     }
     : {
@@ -46,13 +46,13 @@ const sendMailPromisified = function (transporter, message) {
 class MailService {
     send(to, subject, html, attachments) {
         const name = 'FireCloud';
-        const from = 'noreply_firecloud@fireprotected.com';
+        const from = config.sendgrid.from;
         const message = {from, to, subject, html, attachments};
         return sendMailPromisified(smtpTransport, message);
     }
 
     sendMessage(message) {
-        message.from = message.from || 'noreply_firecloud@fireprotected.com';
+        message.from = message.from || config.sendgrid.from;
         return sendMailPromisified(smtpTransport, message);
     }
 
