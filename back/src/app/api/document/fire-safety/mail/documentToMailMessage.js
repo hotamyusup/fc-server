@@ -4,6 +4,7 @@ const Promise = require('bluebird');
 const path = require('path');
 const _ = require('lodash');
 
+const config = require('../../../../../config/config');
 const logger = require('../../../../core/logger');
 
 const PDFMakeService = require('../../common/service/pdfmake.service');
