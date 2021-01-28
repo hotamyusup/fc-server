@@ -16,10 +16,16 @@ module.exports = async function documentToMailMessage(document) {
     const signer = document.signer || {};
     const title = `${document.title}${signer.name ? ` - ${signer.name}` : ''}`;
 
+    const property = document.property ? document.property : await PropertyDAO.get(document.PropertyID);
+    const propertyManagerEmail = property.Contacts && property.Contacts[0] && property.Contacts[0].Email;
+    const propertyManagerPhone = property.Contacts && property.Contacts[0] && property.Contacts[0].Phone;
+
     const attachments = [{
         filename: `${title}.pdf`,
         content: pdfDoc
     }];
+
+    let html;
 
     if (document.type === 'fire-safety-disclosure') {
         const language = document.options && document.options.language || 'ENGLISH';
@@ -47,10 +53,13 @@ module.exports = async function documentToMailMessage(document) {
         }));
 
         attachments.push(...filesToAttach);
-    }
 
-    const property = document.property ? document.property : await PropertyDAO.get(document.PropertyID);
-    const propertyManagerEmail = property.Contacts && property.Contacts[0].Email;
+        const attachmentToLiHtml = ({filename}) => `<li>${filename}</li>`
+        const attachmentsListHtml = _.map(attachments, attachmentToLiHtml).join('\n');
+
+        html = buildFireSafetyDisclosureHtml(title, attachmentsListHtml, propertyManagerPhone, propertyManagerEmail);
+
+    }
 
     const from = config.sendgrid.from;
 
@@ -58,8 +67,8 @@ module.exports = async function documentToMailMessage(document) {
 
     const to = [signer.email];
     if (propertyManagerEmail) {
-       //removing prop manager according to FC team request Dec2019
-       // to.push(propertyManagerEmail);
+        //removing prop manager according to FC team request Dec2019
+        // to.push(propertyManagerEmail);
     }
 
     const message = {
@@ -67,9 +76,54 @@ module.exports = async function documentToMailMessage(document) {
         from,
         to,
         subject: title,
+        html: html,
         title,
         attachments
     };
 
     return message;
 };
+
+function buildFireSafetyDisclosureHtml(title, attachmentsListHtml, propertyPhoneNumber, propertyManagerEmail) {
+    const contacts = [];
+    if (propertyPhoneNumber) {
+        contacts.push(`<a href="tel:${propertyPhoneNumber}">at ${propertyPhoneNumber}</a>`);
+    }
+
+    if (propertyManagerEmail) {
+        contacts.push(`<a href="mailto:${propertyManagerEmail}">at ${propertyManagerEmail}</a>`);
+    }
+
+    return `
+        <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+            "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+            
+        <html xmlns="http://www.w3.org/1999/xhtml" style="height: 100%;">
+        
+            <head>
+                <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+                <title>${title}</title>
+                <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+            </head>
+            
+            <body style="margin: 0; background-color: #EEEEEE;  min-height: 100%;">
+                <table border="0" cellpadding="0" cellspacing="20" width="100%">
+                    <tr>
+                        <td align="center">
+                            <div align="left" style="color: #153643; font-family: Arial, sans-serif; font-size: 1.2em; background-color: #FFFFFF; display: inline-block; padding: 20px; border-radius: 8px;">
+                                <div style="font-size: 1.4em; font-weight: 400;">Dear Valued Resident,</div>
+                                <div>In compliance with SFFC 409, we are providing the following attachments:</div>
+                                <ul>
+                                    ${attachmentsListHtml}
+                                </ul>
+                                <div>
+                                    If you have any questions, please reach out to the Leasing Office ${contacts.join(' or ')}.
+                                </div>
+                            </div>
+                        </td>
+                    </tr>
+                </table>
+            </body>
+        </html>
+    `
+}
