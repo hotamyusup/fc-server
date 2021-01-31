@@ -446,7 +446,7 @@ Igor, Kalashnikov, zo0m.cfgmail.com, main building 11, 11th floor, unit121
 				var signer = document.signer;
 				if (signer) {
 					if (signer.email) {
-						if (!emailRegExp.test(signer.email)) {
+						if (!emailRegExp.test(`${signer.email}`.toLowerCase())) {
 							errors.push('email is not valid');
 						}
 						//due to change request, we are emailing the same "catch-all" mailbox
