@@ -127,13 +127,23 @@
 		<article class="content dashboard-page">
 			<section class="section" id="documents" data-bind="if: Documents()">
 				<div class="row">
-					<div class="col-xl-12">
+                    <div class="col-xl-12">
+                        <div class="pull-right">
+                            <select data-bind="value: selectedFilter"
+                                    class="underlined required">
+                                <option selected value="ShowAll">Show All</option>
+                                <option value="ShowScheduled">Show Scheduled</option>
+                                <option value="ShowBounced">Show Bounced</option>
+                                <option value="ShowDeleted">Show Deleted</option>
+                            </select>
+                        </div>
                         <div class="title-block">
                             <h3 class="title">
                                 <span>Documents:</span>
                                 <span data-bind="text: Property().Title"></span>
                             </h3>
                         </div>
+
                     </div>
 					<div class="col-xl-12">
 						<div class="card items" data-exclude="xs,sm,lg">
@@ -155,13 +165,6 @@
                                     </a>
                                 </div>
                                 <div class="header-block pull-right">
-                                    <a class="btn btn-primary btn-sm"
-                                       style="margin-left: 10px;"
-                                       data-bind="click: $root.toggleBouncedFilter"
-                                       href="javascript:;;">
-                                        <span data-bind="if: !$root.filterBounced()">Filter Bounced</span>
-                                        <span data-bind="if: $root.filterBounced()">Show All Documents</span>
-                                    </a>
                                     <a class="btn btn-primary btn-sm"
                                        style="margin-left: 10px;"
                                        href="javascript:;;"
@@ -237,7 +240,7 @@
                                     </div>
                                 </li>
                                 <!-- ko foreach: Documents -->
-								<li class="item" data-bind="if: !$root.filterBounced() || $data.bounced, style: {opacity: ($data.Status == -1) ? 0.6 : 1}">
+								<li class="item" data-bind="if: $root.filterDocument($data), style: {opacity: ($data.Status == -1) ? 0.6 : 1}">
 									<div class="item-row" data-bind="style: {'background-color': ($parent.selectedDocuments().indexOf($data._id) >= 0) ? '#E6E6E6' : undefined}">
                                         <div class="item-col fixed item-col-check">
                                             <label class="item-check">
@@ -323,7 +326,6 @@
             ACL:ACL,
 
 			User: User,
-            filterBounced: ko.observable(false),
 
 			id2floor: ko.observable(null),
 			id2building: ko.observable(null),
@@ -332,6 +334,7 @@
 			Documents: ko.observable(null),
 
             selectedAction: ko.observable(null),
+            selectedFilter: ko.observable('ShowAll'),
 			selectedDocuments: ko.observable([]),
             selectedAllDocuments: ko.observable(false),
 			activateDocument(document) {
@@ -343,9 +346,24 @@
 			notifyDocument(document) {
                 API.notifyDocument(document._id, getDocumentsForCurrentProperty)
 			},
-            toggleBouncedFilter() {
-                this.filterBounced(!this.filterBounced());
-                this.Documents([...this.Documents()]);
+            filterDocument(document) {
+                console.log(`filterDocument()`, document);
+                console.log(`filterDocument()`, this.selectedFilter());
+                const currentFilter = this.selectedFilter();
+
+                const isDeletedStatus = document.Status === -1;
+
+                switch (currentFilter) {
+                    case 'ShowScheduled':
+                        return !document.bounced && !isDeletedStatus;
+                    case 'ShowBounced':
+                        return !!document.bounced;
+                    case 'ShowDeleted':
+                        return isDeletedStatus;
+                    case 'ShowAll':
+                    default:
+                        return !isDeletedStatus;
+                }
             },
             applyActionToSelectedDocuments() {
                 const action = this.selectedAction();
