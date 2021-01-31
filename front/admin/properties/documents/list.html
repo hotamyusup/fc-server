@@ -357,7 +357,7 @@
                     case 'ShowScheduled':
                         return !document.bounced && !isDeletedStatus;
                     case 'ShowBounced':
-                        return !!document.bounced;
+                        return !!document.bounced && !isDeletedStatus;
                     case 'ShowDeleted':
                         return isDeletedStatus;
                     case 'ShowAll':
@@ -392,7 +392,11 @@
         Model.selectedAllDocuments.subscribe(isAllSelected => {
             const selection = [];
             if (isAllSelected) {
-                _.forEach(Model.Documents(), document => document.Status > -1 && selection.push(document._id));
+                _.forEach(Model.Documents(), document => {
+                    if (Model.filterDocument(document)) {
+                        selection.push(document._id)
+                    }
+                });
             }
             Model.selectedDocuments(selection);
         });
