@@ -61,7 +61,7 @@ module.exports = async function documentToMailMessage(document) {
 
     }
 
-    const from = config.sendgrid.from;
+    const from = `${property.Title} <${config.sendgrid.from}>`;
 
     const DocumentID = `${document._id}`;
 
