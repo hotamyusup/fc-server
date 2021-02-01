@@ -352,10 +352,11 @@
                 const currentFilter = this.selectedFilter();
 
                 const isDeletedStatus = document.Status === -1;
+                const isDeactivatedStatus = document.Status === 0;
 
                 switch (currentFilter) {
                     case 'ShowScheduled':
-                        return !document.bounced && !isDeletedStatus;
+                        return !document.bounced && !isDeletedStatus && !isDeactivatedStatus;
                     case 'ShowBounced':
                         return !!document.bounced && !isDeletedStatus;
                     case 'ShowDeleted':
