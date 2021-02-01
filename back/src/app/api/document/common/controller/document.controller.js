@@ -44,9 +44,6 @@ class DocumentController extends BaseController {
                     request,
                     reply,
                     (async () => {
-
-
-
                         const bouncedDocumentIdsSet = await getBouncedDocumentsIdsForProperty(PropertyID);
 
                         const docModels = await this.DAO.forProperty(PropertyID);
