@@ -133,6 +133,7 @@
                                     class="underlined required">
                                 <option selected value="ShowAll">Show All</option>
                                 <option value="ShowScheduled">Show Scheduled</option>
+                                <option value="ShowDeactivated">Show Deactivated</option>
                                 <option value="ShowBounced">Show Bounced</option>
                                 <option value="ShowDeleted">Show Deleted</option>
                             </select>
@@ -349,15 +350,17 @@
                 API.notifyDocument(document._id, getDocumentsForCurrentProperty)
 			},
             filterDocument(document) {
-                console.log(`filterDocument()`, document);
-                console.log(`filterDocument()`, this.selectedFilter());
                 const currentFilter = this.selectedFilter();
 
+                const isScheduledStatus = document.Status === 1;
+                const isDeactivatedStatus = document.Status === 0;
                 const isDeletedStatus = document.Status === -1;
 
                 switch (currentFilter) {
                     case 'ShowScheduled':
-                        return !document.bounced && !isDeletedStatus;
+                        return !document.bounced && isScheduledStatus;
+                    case 'ShowDeactivated':
+                        return !document.bounced && isDeactivatedStatus;
                     case 'ShowBounced':
                         return !!document.bounced && !isDeletedStatus;
                     case 'ShowDeleted':
