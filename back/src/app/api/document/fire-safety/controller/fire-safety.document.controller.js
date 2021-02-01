@@ -126,16 +126,15 @@ class FireSafetyDocumentController extends BaseController {
                 }
 
                 Promise
-                    .map(documents, ({FloorID, signer, language}) => {
-                        return this.createDocument(FloorID, signer, language)
+                    .map(documents, async ({FloorID, signer, language}) => {
+                        const model = await this.createDocument(FloorID, signer, language);
+                        const modelJSON = model.toJSON();
+                        delete modelJSON['definition'];
+                        return modelJSON;
                     }, {concurrency: 10})
                     .then((models) => {
                         logger.info(`sessionId: ${hash} ${this.controllerName}.${action} success`);
-                        return reply(models.map(model => {
-                            const modelJSON = model.toJSON();
-                            delete modelJSON['definition'];
-                            return modelJSON;
-                        }));
+                        return reply(models);
                     })
                     .catch(err => {
                         logger.error(`sessionId: ${hash} ${this.controllerName}.${action} error ${err}`);

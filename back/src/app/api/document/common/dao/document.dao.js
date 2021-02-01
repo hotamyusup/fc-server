@@ -11,8 +11,8 @@ class DocumentDAO extends BaseDAO {
         super(model);
     }
 
-    forProperty(PropertyID) {
-        return this.model.find({PropertyID});
+    forProperty(PropertyID, fields = {definition : 0}) {
+        return this.model.find({PropertyID}, fields);
     }
 
     getDocumentsBeforeNotifiedAt(prevNotifiedAt, limit = 10) {
