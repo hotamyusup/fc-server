@@ -155,7 +155,7 @@ class FireSafetyDocumentController extends BaseController {
                 Promise
                     .map(documents, ({FloorID, signer, language}) => {
                         return this.createDocument(FloorID, signer, language)
-                    })
+                    }, {concurrency: 10})
                     .then((models) => {
                         logger.info(`sessionId: ${hash} ${this.controllerName}.${action} success`);
                         return reply(models.map(model => {

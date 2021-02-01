@@ -141,7 +141,7 @@ class DocumentController extends BaseController {
 
                 return this.handle(action, request, reply,
                     Promise
-                        .map(entitiesJSON, entityJSON => this.DAO.get(entityJSON._id).then(notifyOnEmail))
+                        .map(entitiesJSON, entityJSON => this.DAO.get(entityJSON._id).then(notifyOnEmail), {concurrency: 10})
                         .catch(error => {
                             logger.error(`sessionId: ${hash} ${this.controllerName}.${action} error: ${error}`);
                             throw error;

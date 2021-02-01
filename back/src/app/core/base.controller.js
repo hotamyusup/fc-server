@@ -142,7 +142,7 @@ class BaseController {
 
                 this.handle(action, request, reply,
                     Promise
-                        .map(entitiesJSON, entityJSON => this.DAO.upsert(entityJSON))
+                        .map(entitiesJSON, entityJSON => this.DAO.upsert(entityJSON), {concurrency: 30})
                         .catch(error => {
                             logger.error(`sessionId: ${hash} ${this.controllerName}.${action} error: ${error}`);
                             throw error;
