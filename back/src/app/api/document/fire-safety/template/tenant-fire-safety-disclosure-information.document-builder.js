@@ -135,16 +135,21 @@ class TenantFireSafetyDisclosureDocumentBuilder {
             const alarmPanelsCount = devicesSortedByType.filter(device => getStyleFromDevice(device).type === 'alarmpanel').length;
             let id2alarmPanelsBuildingFloors = {};
             if (alarmPanelsCount === 0) {
-                const buildingAlarmPanels = await DeviceDAO.all({
+                let buildingAlarmPanels = await DeviceDAO.all({
                     BuildingID: building._id,
+                    Status: {$ne: -1},
                     DeviceType: {$in: ["56fa327ddfe0b7562268266e"]}
                 });
 
                 const buildingAlarmPanelsFloors = await FloorDAO.all({
                     _id: {$in: _.keys(_.groupBy(buildingAlarmPanels, 'FloorID'))},
+                    Status: {$ne: -1}
                 });
 
                 id2alarmPanelsBuildingFloors = _.keyBy(buildingAlarmPanelsFloors, '_id');
+
+                buildingAlarmPanels = _.filter(buildingAlarmPanels, alarmPanelDevice => id2alarmPanelsBuildingFloors[alarmPanelDevice.FloorID]);
+
                 devicesSortedByType.push(...buildingAlarmPanels);
             }
 
