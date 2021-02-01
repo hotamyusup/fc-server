@@ -240,7 +240,8 @@
                                     </div>
                                 </li>
                                 <!-- ko foreach: Documents -->
-								<li class="item" data-bind="if: $root.filterDocument($data), style: {opacity: ($data.Status == -1) ? 0.6 : 1}">
+                                <!-- ko if: $root.filterDocument($data) -->
+								<li class="item" data-bind="style: {opacity: ($data.Status == -1) ? 0.6 : 1}">
 									<div class="item-row" data-bind="style: {'background-color': ($parent.selectedDocuments().indexOf($data._id) >= 0) ? '#E6E6E6' : undefined}">
                                         <div class="item-col fixed item-col-check">
                                             <label class="item-check">
@@ -289,6 +290,7 @@
 										</div>
 									</div>
 								</li>
+                                <!-- /ko -->
                                 <!-- /ko -->
 							</ul>
 						</div>
