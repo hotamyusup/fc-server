@@ -221,6 +221,11 @@ $(function () {
                 callback(data);
 			});
 		},
+		updateDevice: function (id, device, callback) {
+            API.post("/devices/" + id, device, function (data) {
+				callback && callback(data);
+			});
+		},
         buildings: function (queryParams = {}, callback) {
             const url = `/buildings?${Object.keys(queryParams).map(key => `${key}=${queryParams[key]}`)}`;
             API.get(url, callback);

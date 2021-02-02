@@ -214,6 +214,22 @@
 												</div>-->
 											</div>
 										</li>
+										<!-- ko if: (Device.DeviceType === '56fa2d50dfe0b75622682654') -->
+										<li class="item">
+											<div class="item-row">
+												<div class="item-col item-col-title no-overflow">
+													<h4 class="item-title no-wrap">Is Emergency Exit?</h4>
+												</div>
+												<div class="item-col item-col-title no-overflow">
+
+													<select data-bind="value: Device.IsEmergencyExit" class="form-control underlined required">
+														<option value="0">No</option>
+														<option value="1">Yes</option>
+													</select>
+												</div>
+											</div>
+										</li>
+										<!-- /ko -->
 										<li class="item">
 											<div class="item-row">
 												<div class="item-col item-col-title no-overflow">
@@ -287,18 +303,22 @@
 												</div>
 											</div>
 										</li>
-                                        <!-- ko if: (Device.DeviceType === '56fa2d50dfe0b75622682654') -->
-                                        <li class="item">
-                                            <div class="item-row">
-                                                <div class="item-col item-col-title no-overflow">
-                                                    <h4 class="item-title no-wrap">Is Emergency Exit?</h4>
-                                                </div>
-                                                <div class="item-col item-col-title no-overflow">
-                                                    <h4 class="item-title no-wrap" data-bind="text: Device.IsEmergencyExit ? 'yes' : 'no'" ></h4>
-                                                </div>
-                                            </div>
-                                        </li>
-                                        <!-- /ko -->
+										<li class="item">
+											<div class="item-row">
+												<div class="item-col item-col-title no-overflow text-left">
+													<div>
+														<!-- ko if: isSaving -->
+														<button disabled class="btn btn-info" type="button">Processing</button>
+														<!-- /ko -->
+														<!-- ko ifnot: isSaving -->
+														<button data-bind="click: saveDevice" class="btn btn-primary" type="button">Save Changes</button>
+														<!-- /ko -->
+													</div>
+												</div>
+												<div class="item-col item-col-title no-overflow text-right">
+												</div>
+											</div>
+										</li>
 									</ul>
 								</div>
 							</div>
@@ -331,7 +351,21 @@
 			var PropertyID = QueryString("p");
 			var BuildingID = QueryString("b");
 			var FloorID = QueryString("f");
-			var Model = {ACL: Auth.ACL()};
+			var Model = {
+				ACL: Auth.ACL(),
+				isSaving: ko.observable(false),
+				saveDevice() {
+					Model.isSaving(true);
+
+					const {_id, DeviceType, IsEmergencyExit} = Model.Device;
+					const changeSet = {_id};
+					if (DeviceType ==="56fa2d50dfe0b75622682654") {
+						changeSet.IsEmergencyExit = IsEmergencyExit;
+					}
+
+					API.updateDevice(_id, changeSet, _ => Model.isSaving(false));
+				}
+			};
 			API.property(PropertyID, function (data) {
 				Model.Property = data;
 				Model.Building = _.findWhere(data.Buildings,{_id:BuildingID});
