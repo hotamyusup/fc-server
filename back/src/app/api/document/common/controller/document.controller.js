@@ -14,6 +14,7 @@ const BaseController = require("../../../../../app/core/base.controller");
 const PropertyDAO = require("../../../property/property/dao/property.dao");
 
 const SendGridService = require('../../common/service/sendgrid.service');
+const TenantFireSafetyDisclosureDocumentBuilder = require("../../fire-safety/template/tenant-fire-safety-disclosure-information.document-builder");
 
 const UploadDocumentDAO = require('../../upload/dao/upload.document.dao');
 const documentToMailMessage = require('../../fire-safety/mail/documentToMailMessage');
@@ -91,6 +92,49 @@ class DocumentController extends BaseController {
             }
         }
     }
+
+    get rebuild() {
+        return {
+            handler: async (request, reply) => {
+                const hash = request.query.hash || '';
+                const action = 'rebuild';
+                const documentIds = request.payload[this.batchEntitiesKey];
+
+                logger.info(`sessionId: ${hash} ${this.controllerName}.${action} start, documentIds.length = ${documentIds && documentIds.length}`);
+
+                return this.handle(action, request, reply, (async ()=> {
+                    const documents = await this.DAO.all({_id: {$in: _.map(documentIds, mongoose.Types.ObjectId)}}, undefined, {_id : 1, FloorID: 1, signer: 1, options: 1});
+
+                    const tenantsDataList = _.map(documents, ({_id, FloorID, signer, options}) => ({
+                        _id,
+                        FloorID,
+                        signer,
+                        language: options && options.language || undefined
+                    }));
+
+                    // // old version for comparison
+                    // let index = 0;
+                    // const updatedDocumentsIds = await Promise.map(tenantsDataList, async ({_id, FloorID, signer}) => {
+                    //     console.log(`process ${++index}/${tenantsDataList.length} --> ${_id}`);
+                    //     const definition = await TenantFireSafetyDisclosureDocumentBuilder.build(FloorID, signer);
+                    //     await this.DAO.update({_id, definition});
+                    //     return _id;
+                    // }, {concurrency: 10});
+
+                    const updatedDocumentsIds = await TenantFireSafetyDisclosureDocumentBuilder.buildBatch(tenantsDataList, async (definition, tenantData, cachedData) => {
+                        const {_id} = tenantData;
+                        await this.DAO.update({_id, definition});
+                        return _id;
+                    });
+
+                    logger.info(`sessionId: ${hash} ${this.controllerName}.${action} success, updated ${updatedDocumentsIds.length} documents`);
+
+                    return updatedDocumentsIds;
+                })());
+            }
+        }
+    }
+
 
     get activate() {
         return {

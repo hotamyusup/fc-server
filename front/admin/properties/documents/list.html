@@ -152,6 +152,7 @@
                                 <div class="header-block">
                                     <select data-bind="value: selectedAction" class="underlined required">
                                         <option disabled selected value>Select Action</option>
+                                        <option value="Rebuild">Rebuild</option>
                                         <option value="Activate">Activate</option>
                                         <option value="Deactivate">Deactivate</option>
                                         <option value="SendNow">Send Now</option>
@@ -375,7 +376,10 @@
                 const selectedIds = this.selectedDocuments();
                 const documents = _.map(selectedIds, docId => Model.id2document()[docId]);
                 if (documents.length) {
-                    if (action === 'Activate') {
+                    if (action === 'Rebuild') {
+                        API.rebuildDocuments(_.map(documents, ({_id}) => _id), getDocumentsForCurrentProperty);
+                        this.selectedAction(null);
+                    } else if (action === 'Activate') {
                         API.documentsBatch(_.map(documents, ({_id}) => ({_id, Status: 1})), getDocumentsForCurrentProperty);
                         this.selectedAction(null);
                     } else if (action === 'Deactivate') {

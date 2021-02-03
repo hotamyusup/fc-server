@@ -34,7 +34,7 @@ class FireSafetyDocumentController extends BaseController {
     get getDocument() {
         return {
             handler: async (request, reply) => {
-                const hash = request.query.hash || '';
+                const {hash, oldVersion} = request.query;
                 const action = 'getDocument';
                 logger.info(`sessionId: ${hash} ${this.controllerName}.${action} start ${JSON.stringify(request.params)}`);
 
@@ -45,9 +45,31 @@ class FireSafetyDocumentController extends BaseController {
                     return reply(Boom.badImplementation("FloorID must be defined"));
                 }
 
-                const docDefinition = await TenantFireSafetyDisclosureDocumentBuilder.build(FloorID);
+                try {
+                    if (oldVersion) {
+                        const docDefinition = await TenantFireSafetyDisclosureDocumentBuilder.build(FloorID);
+                        return this.handle(action, request, reply, PDFMakeService.createPDFDocument(docDefinition));
 
-                return this.handle(action, request, reply, PDFMakeService.createPDFDocument(docDefinition));
+                    } else {
+                        let created = false;
+
+                        await TenantFireSafetyDisclosureDocumentBuilder.buildBatch([{FloorID}], async docDefinition => {
+                            created = true;
+                            const document = await PDFMakeService.createPDFDocument(docDefinition);
+                            this.handle(action, request, reply, document);
+                        });
+
+                        if (!created) {
+                            return reply(Boom.badImplementation("Cant create PDF document"));
+                        }
+                    }
+
+
+                } catch (error) {
+                    logger.error(`sessionId: ${hash} ${this.controllerName}.${action} error = ${error}`);
+                    return reply(Boom.badImplementation(`${this.controllerName}.${action} error = ${error}`));
+                }
+
             }
         };
     }
@@ -70,6 +92,33 @@ class FireSafetyDocumentController extends BaseController {
         };
 
         return this.DAO.create(newDocument)
+    }
+
+    async createDocumentsBatch(tenantDataList) {
+        const createdDocumentsIds = await TenantFireSafetyDisclosureDocumentBuilder.buildBatch(tenantDataList, async (definition, tenantData, cachedData) => {
+            const {signer, language, FloorID} = tenantData;
+            const {floor: {PropertyID, BuildingID}} = cachedData;
+
+            const newDocument = {
+                type: 'fire-safety-disclosure',
+                Status: 1,
+                title: 'RESIDENT FIRE SAFETY DISCLOSURE INFORMATION',
+                options: {language},
+                definition,
+                signer,
+                created_at: new Date(),
+                updated_at: new Date(),
+                PropertyID,
+                BuildingID,
+                FloorID,
+            };
+
+            const createdDocument = await this.DAO.create(newDocument);
+
+            return createdDocument._id;
+        });
+
+        return createdDocumentsIds;
     }
 
     get generateDocument() {
@@ -101,7 +150,6 @@ class FireSafetyDocumentController extends BaseController {
                         }
                         return reply(Boom.forbidden(err)); // HTTP 403
                     });
-
             }
         };
     }
@@ -109,42 +157,65 @@ class FireSafetyDocumentController extends BaseController {
     get generateDocuments() {
         return {
             handler: async (request, reply) => {
-                const hash = request.query.hash || '';
+                const {hash, oldVersion} = request.query;
                 const action = 'generateDocuments';
                 logger.info(`sessionId: ${hash} ${this.controllerName}.${action} start ${JSON.stringify(request.params)}`);
 
                 const {documents} = request.payload;
+                try {
+                    if (!documents || !documents.length) {
+                        logger.error(`sessionId: ${hash} ${this.controllerName}.${action} {documents[]} must be defined`);
+                        return reply(Boom.badImplementation("{documents[]} must be defined"));
+                    }
 
-                if (!documents || !documents.length) {
-                    logger.error(`sessionId: ${hash} ${this.controllerName}.${action} {documents[]} must be defined`);
-                    return reply(Boom.badImplementation("{documents[]} must be defined"));
+                    if (_.filter(documents, document => !document.FloorID).length) {
+                        logger.error(`sessionId: ${hash} ${this.controllerName}.${action} FloorID must be defined in all documents`);
+                        return reply(Boom.badImplementation("FloorID must be defined in all documents"));
+                    }
+
+                    if (!oldVersion) {
+                        const tenantsDataList = _.map(documents, ({FloorID, signer, language}) => ({
+                            FloorID,
+                            signer,
+                            language
+                        }));
+                        const createdDocumentsIds = await this.createDocumentsBatch(tenantsDataList);
+
+                        logger.info(`sessionId: ${hash} ${this.controllerName}.${action} success, created ${createdDocumentsIds.length} documents`);
+
+                        return reply(createdDocumentsIds);
+
+                    } else {
+                        return this.handle(action, request, reply, Promise
+                            .map(
+                                documents,
+                                async ({FloorID, signer, language}) => {
+                                    const model = await this.createDocument(FloorID, signer, language);
+                                    const modelJSON = model.toJSON();
+                                    delete modelJSON['definition'];
+                                    return modelJSON;
+                                },
+                                {concurrency: 10}
+                            )
+                            .catch(err => {
+                                logger.error(`sessionId: ${hash} ${this.controllerName}.${action} error ${err}`);
+
+                                if (11000 === err.code || 11001 === err.code) {
+                                    return reply(Boom.forbidden('please provide another id, it already exist'));
+                                }
+                                return reply(Boom.forbidden(err)); // HTTP 403
+                            })
+                        );
+                    }
+
+                } catch (err) {
+                    logger.error(`sessionId: ${hash} ${this.controllerName}.${action} error ${err}`);
+
+                    if (11000 === err.code || 11001 === err.code) {
+                        return reply(Boom.forbidden('please provide another id, it already exist'));
+                    }
+                    return reply(Boom.forbidden(err)); // HTTP 403
                 }
-
-                if (_.filter(documents, document => !document.FloorID).length) {
-                    logger.error(`sessionId: ${hash} ${this.controllerName}.${action} FloorID must be defined in all documents`);
-                    return reply(Boom.badImplementation("FloorID must be defined in all documents"));
-                }
-
-                Promise
-                    .map(documents, async ({FloorID, signer, language}) => {
-                        const model = await this.createDocument(FloorID, signer, language);
-                        const modelJSON = model.toJSON();
-                        delete modelJSON['definition'];
-                        return modelJSON;
-                    }, {concurrency: 10})
-                    .then((models) => {
-                        logger.info(`sessionId: ${hash} ${this.controllerName}.${action} success`);
-                        return reply(models);
-                    })
-                    .catch(err => {
-                        logger.error(`sessionId: ${hash} ${this.controllerName}.${action} error ${err}`);
-
-                        if (11000 === err.code || 11001 === err.code) {
-                            return reply(Boom.forbidden('please provide another id, it already exist'));
-                        }
-                        return reply(Boom.forbidden(err)); // HTTP 403
-                    });
-
             }
         };
     }
@@ -229,7 +300,7 @@ class FireSafetyDocumentController extends BaseController {
                             })
                         }
 
-                    }, {concurrency : 2});
+                    }, {concurrency: 2});
 
 
                     const commonDirPath = `${propertyDirPath}/common`;
