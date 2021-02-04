@@ -220,12 +220,14 @@ class TenantFireSafetyDisclosureDocumentBuilder {
                 async tenantData => {
                     createdDefinitionsCounter++;
                     const FloorID = mongoose.Types.ObjectId(tenantData.FloorID);
+
                     const floor = id2floor[FloorID];
-                    if (!floor) {
-                        return;
-                    }
                     const building = id2building[floor.BuildingID];
                     const property = id2property[floor.PropertyID];
+
+                    if (!floor || !building || !property) {
+                        return;
+                    }
 
                     const {signer} = tenantData;
 
