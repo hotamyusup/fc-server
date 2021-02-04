@@ -121,6 +121,32 @@ class FireSafetyDocumentController extends BaseController {
         return createdDocumentsIds;
     }
 
+    get generateDocumentsGreystar() {
+        return {
+            auth: false,
+            handler: async (request, reply) => {
+                const hash = request.query.hash || '';
+                const action = 'generateDocumentsGreystar';
+                logger.info(`sessionId: ${hash} ${this.controllerName}.${action} start ${JSON.stringify(request.params)}`);
+
+                this.generateDocuments.handler(request, reply)
+            }
+        }
+    }
+
+    get generateDocumentGreystar() {
+        return {
+            auth: false,
+            handler: async (request, reply) => {
+                const hash = request.query.hash || '';
+                const action = 'generateDocumentGreystar';
+                logger.info(`sessionId: ${hash} ${this.controllerName}.${action} start ${JSON.stringify(request.params)}`);
+
+                this.generateDocument.handler(request, reply)
+            }
+        }
+    }
+
     get generateDocument() {
         return {
             handler: async (request, reply) => {
