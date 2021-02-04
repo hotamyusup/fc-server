@@ -373,8 +373,7 @@ Igor, Kalashnikov, zo0m.cfgmail.com, main building 11, 11th floor, unit121
 						API.generateDocuments(parsedDocuments, (data = []) => {
 							rootModel.isScheduling(false);
 							const generatedDocumentsCount = data.length || 0;
-							alert(`Documents${generatedDocumentsCount > 0 ? ` (${generatedDocumentsCount}) `: ' '}scheduled`);
-							console.log('scheduled documents: ', data);
+							alert(`Documents scheduled (${generatedDocumentsCount})`);
 						});
 					} else {
 						alert('No documents to schedule.');

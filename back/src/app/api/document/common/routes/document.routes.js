@@ -6,6 +6,7 @@ const DOCUMENT_ROUTES = [
     {method: 'GET', path: '/greystar/disclosure409/{DocumentID}.{format}', config: DocumentController.getFormattedGreystar},
 
     {method: 'POST', path: '/documents/batch', config: DocumentController.batch},
+    {method: 'POST', path: '/documents/rebuild', config: DocumentController.rebuild},
     {method: 'POST', path: '/documents/notify-batch', config: DocumentController.notifyOnEmailBatch},
     {method: 'POST', path: '/documents/{DocumentID}/sign', config: DocumentController.sign},
     {method: 'GET', path: '/documents/{DocumentID}/activate', config: DocumentController.activate},
