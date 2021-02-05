@@ -403,6 +403,9 @@ $(function () {
 		activateDocument: function (documentID, callback) {
 			API.get("/documents/" + documentID + "/activate", callback);
 		},
+		rebuildDocuments: function (documentID, callback) {
+			API.get("/documents/" + documentID + "/rebuild", callback);
+		},
 		deactivateDocument: function (documentID, callback) {
 			API.get("/documents/" + documentID + "/deactivate", callback);
 		},
