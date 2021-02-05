@@ -400,6 +400,14 @@ $(function () {
 					callback(data);
 				});
 		},
+		rebuildDocuments: function (documentIds, callback) {
+			API.post(
+				"/documents/rebuild",
+				{documents: documentIds},
+				function (data) {
+					callback(data);
+				});
+		},
 		activateDocument: function (documentID, callback) {
 			API.get("/documents/" + documentID + "/activate", callback);
 		},
