@@ -253,9 +253,10 @@ class FireSafetyDocumentController extends BaseController {
                 server: 1000 * 60 * 60
             },
             handler: async (request, reply) => {
+                const {hash, PropertyID} = request.query;
+                const action = 'templatesZip';
+
                 try {
-                    const {hash, PropertyID} = request.query;
-                    const action = 'templatesZip';
                     logger.info(`sessionId: ${hash} ${this.controllerName}.${action} start ${JSON.stringify(request.payload)} ${JSON.stringify(request.params)}`);
 
                     const property = await PropertyDAO.get(PropertyID);
