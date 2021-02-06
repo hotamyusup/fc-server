@@ -33,7 +33,7 @@ class BaseDAO {
     async prepareUpdateObject(dataObject) {
         // delete dataObject._id;
         // delete dataObject.created_at;
-        // delete dataObject.__v;
+        delete dataObject.__v;
 
         // hack for devices with corrupted InstallationDate
         if (dataObject.InstallationDate === 'Invalid date') {
