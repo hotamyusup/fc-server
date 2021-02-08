@@ -175,7 +175,14 @@ class DocumentController extends BaseController {
                             throw error;
                         })
                 );
-            }
+            },
+            payload: {
+                maxBytes: 100 * 1024 * 1024,
+                timeout: 3 * 60 * 60 * 1000,
+            },
+            timeout: {
+                socket: 3 * 60 * 60 * 1000 + 1000,
+            },
         }
     }
 
