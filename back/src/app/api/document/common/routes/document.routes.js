@@ -7,6 +7,7 @@ const DOCUMENT_ROUTES = [
     {method: 'POST', path: '/documents/rebuild', config: DocumentController.rebuild},
     {method: 'POST', path: '/documents/notify-batch', config: DocumentController.notifyOnEmailBatch},
     {method: 'POST', path: '/documents/{DocumentID}/sign', config: DocumentController.sign},
+    {method: 'POST', path: '/documents/documentsZip', config: DocumentController.documentsZip},
     {method: 'GET', path: '/documents/{DocumentID}/activate', config: DocumentController.activate},
     {method: 'GET', path: '/documents/{DocumentID}/deactivate', config: DocumentController.deactivate},
     {method: 'GET', path: '/documents/{DocumentID}/notify', config: DocumentController.notifyOnEmail},

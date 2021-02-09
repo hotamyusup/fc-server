@@ -408,11 +408,11 @@ $(function () {
 					callback(data);
 				});
 		},
+		exportDocuments: function (documentIds, propertyID, callback) {
+			this.postDownloadFile(`/documents/documentsZip?PropertyID=${propertyID}&hash=${User._id}`, {documentIds}, callback);
+		},
 		activateDocument: function (documentID, callback) {
 			API.get("/documents/" + documentID + "/activate", callback);
-		},
-		rebuildDocuments: function (documents, callback) {
-			API.post("/documents/rebuild", {documents}, callback);
 		},
 		deactivateDocument: function (documentID, callback) {
 			API.get("/documents/" + documentID + "/deactivate", callback);
@@ -525,6 +525,34 @@ $(function () {
                     Callback(data);
                 }
             });
+        },
+		postDownloadFile(urlToSend, data, onload) {
+			var req = new XMLHttpRequest();
+
+			req.open("POST", urlToSend, true);
+			req.responseType = "blob";
+			req.setRequestHeader("Content-Type", "application/json");
+
+			req.onload = function (event) {
+				var blob = req.response;
+				var fileName = "Exported Documents.zip";
+				if (req.getResponseHeader("content-disposition")) {
+					var contentDisposition = req.getResponseHeader("content-disposition");
+					fileName = contentDisposition.substring(contentDisposition.indexOf("=") + 1);
+					fileName = decodeURIComponent(fileName);
+				}
+
+				var link = document.createElement('a');
+				link.href = window.URL.createObjectURL(blob);
+				link.download = fileName;
+				link.click();
+
+				onload && onload(event);
+			}
+
+			req.send(data ? JSON.stringify(data) : undefined);
+
+			return req;
         }
 	}
 });

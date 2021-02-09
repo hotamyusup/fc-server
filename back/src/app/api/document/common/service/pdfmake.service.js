@@ -26,7 +26,8 @@ class PDFMakeService {
 				pdfDoc.pipe(fs.createWriteStream(toFilePath));
 			}
             pdfDoc.end();
-            resolve(pdfDoc);
+            pdfDoc.on('end', ()=> resolve(pdfDoc));
+            pdfDoc.on('error', reject);
         });
     }
 }
