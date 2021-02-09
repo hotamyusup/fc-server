@@ -5,7 +5,13 @@ const Promise = require('bluebird');
 const _ = require('lodash');
 const Boom = require('boom');
 const moment = require('moment');
+const archiver = require('archiver');
 const FileReader = require('filereader');
+const path = require('path');
+const fs = require('fs');
+const rimraf = require("rimraf");
+const mkdirp = require('mkdirp');
+const uuid = require('node-uuid');
 
 const logger = require('../../../../core/logger');
 const MailService = require('../../../../core/mail.service');
@@ -21,7 +27,12 @@ const documentToMailMessage = require('../../fire-safety/mail/documentToMailMess
 
 const PDFMakeService = require('../service/pdfmake.service');
 const DocumentDAO = require("../dao/document.dao.instance");
-const BouncedMailDAO = require("../dao/bounced-mail.dao.instance");
+
+const BuildingDAO = require("../../../../api/property/building/dao/building.dao");
+const FloorDAO = require("../../../../api/property/floor/dao/floor.dao");
+
+const FILES_DIR_PATH = path.normalize(__dirname + '/../files');
+const TMP_FILE_DIR_PATH = `${FILES_DIR_PATH}/tmp`;
 
 class DocumentController extends BaseController {
     constructor() {
@@ -148,6 +159,92 @@ class DocumentController extends BaseController {
         }
     }
 
+    get documentsZip() {
+        return {
+            payload: {
+                maxBytes: 100 * 1024 * 1024,
+                timeout: 1000 * 60 * 60,
+            },
+            timeout: {
+                socket: 1000 * 60 * 61,
+                server: 1000 * 60 * 60
+            },
+            handler: async (request, reply) => {
+                const {hash, PropertyID} = request.query;
+                const {documentIds} = request.payload;
+                const action = 'documentsZip';
+
+                try {
+                    logger.info(`sessionId: ${hash} ${this.controllerName}.${action} start`);
+
+                    const sessionDirName = `${action}-session-${uuid.v4()}`;
+                    const sessionDirPath = `${TMP_FILE_DIR_PATH}/${sessionDirName}`;
+
+                    await createDir(sessionDirPath);
+
+                    const property = await PropertyDAO.get(PropertyID);
+                    const buildings = await BuildingDAO.forProperty(PropertyID);
+                    const floors = await FloorDAO.forProperty(PropertyID);
+
+                    const id2building = _.keyBy(buildings, '_id');
+                    const id2floor = _.keyBy(floors, '_id');
+
+                    const propertyDirName = `${property.Title} - ${moment().format('YYYY-MM-DD')}`.replace(/[^a-z0-9 -]/gi, '_').trim();
+                    const propertyDirPath = `${sessionDirPath}/${propertyDirName}`;
+                    const floorsDirPath = `${propertyDirPath}`; //floors`;
+                    await createDir(floorsDirPath);
+
+                    for (const documentId of documentIds) {
+                        const document = await DocumentDAO.get(documentId);
+                        const {FloorID, signer, definition} = document;
+                        const floor  = id2floor[FloorID];
+                        const building = id2building[floor.BuildingID];
+
+                        let unit = signer && signer.unit && `${signer.unit}`.trim();
+
+                        const floorFileName = `${building.Title} - ${floor.Title}`.replace(/[^a-z0-9 -]/gi, '_').trim();
+                        const floorUnitsDirPath = `${floorsDirPath}/${floorFileName}`;
+                        await createDir(floorUnitsDirPath);
+
+                        const unitTitle = unit ? `- Unit ${unit}` : '';
+                        const filename = `${building.Title} - ${floor.Title} ${unitTitle}`.replace(/[^a-z0-9 -]/gi, '_').trim();
+                        const filePath = `${floorUnitsDirPath}/${filename}.pdf`;
+
+                        const pdfDocument = await PDFMakeService.createPDFDocument(definition, filePath);
+                    }
+
+                    const archive = archiver('zip');
+                    const sessionDirZipPath = `${sessionDirPath}/${propertyDirName}.zip`;
+
+                    const output = fs.createWriteStream(sessionDirZipPath); //path to create .zip file
+                    output.on('close', () => {
+                        logger.info(`sessionId: ${hash} ${this.controllerName}.${action} archive complete: ${archive.pointer()} total bytes`);
+                        reply
+                            .file(sessionDirZipPath, {mode: 'attachment', filename: `${propertyDirName}.zip`})
+                            .once('finish', () => {
+                                rimraf(sessionDirPath, () => {
+                                    logger.info(`sessionId: ${hash} ${this.controllerName}.${action} rm -rf ${sessionDirPath} done`);
+                                });
+                            });
+                    });
+
+                    archive.on('error', (err) => {
+                        logger.error(`sessionId: ${hash} ${this.controllerName}.${action} archive error: ${err.message}`);
+                        logger.error(err);
+                        reply(Boom.forbidden(err))
+                    });
+
+                    archive.pipe(output);
+                    archive.directory(propertyDirPath, propertyDirName);
+                    archive.finalize();
+
+                } catch (e) {
+                    logger.error(`sessionId: ${hash} ${this.controllerName}.${action} error === ${e}`);
+                    logger.error(e);
+                }
+            }
+        }
+    }
 
     get activate() {
         return {
@@ -188,7 +285,14 @@ class DocumentController extends BaseController {
                             throw error;
                         })
                 );
-            }
+            },
+            payload: {
+                maxBytes: 100 * 1024 * 1024,
+                timeout: 3 * 60 * 60 * 1000,
+            },
+            timeout: {
+                socket: 3 * 60 * 60 * 1000 + 1000,
+            },
         }
     }
 
@@ -355,4 +459,16 @@ async function getBouncedDocumentsIdsForProperty(PropertyID) {
     }
 
     return bouncedDocumentsIdsSet;
+
+async function createDir(path) {
+    return new Promise((resolve, reject) => {
+        mkdirp(path, (err) => {
+            if (err) {
+                reject(err);
+            } else {
+                resolve();
+            }
+        });
+
+    })
 }
