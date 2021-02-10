@@ -368,8 +368,9 @@
                     case 'ShowDeleted':
                         return isDeletedStatus;
                     case 'ShowAll':
-                    default:
                         return !isDeletedStatus;
+                    default:
+                        return !document.bounced && isScheduledStatus;
                 }
             },
             applyActionToSelectedDocuments() {

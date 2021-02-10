@@ -16,6 +16,10 @@ class BaseDAO {
         return this.model.schema.path(field)
     }
 
+    fieldExists(field) {
+        return !!this.fieldDefinition(field)
+    }
+
     all(conditions, options, fields) {
         conditions = conditions || {};
         return this.model.find(conditions, fields, options);
