@@ -156,6 +156,7 @@
                                         <option value="Activate">Activate</option>
                                         <option value="Deactivate">Deactivate</option>
                                         <option value="ExportSelected">Export</option>
+                                        <option value="ExportSelectedCSV">Export CSV</option>
                                         <option value="SendNow">Send Now</option>
                                         <option value="Delete">Delete</option>
                                     </select>
@@ -397,6 +398,8 @@
                         API.documentsNotifyBatch(documents, getDocumentsForCurrentProperty)
                     } else if (action === 'ExportSelected') {
                         API.exportDocuments(_.map(documents, ({_id}) => _id), PropertyID);
+                    } else if (action === 'ExportSelectedCSV') {
+                        API.exportDocumentsCSV(_.map(documents, ({_id}) => _id), PropertyID);
                     }
                 }
             },

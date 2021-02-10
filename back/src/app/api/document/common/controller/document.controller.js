@@ -4,7 +4,7 @@ const mongoose = require('mongoose');
 const Promise = require('bluebird');
 const _ = require('lodash');
 const Boom = require('boom');
-const moment = require('moment');
+const moment = require('moment-timezone');
 const archiver = require('archiver');
 const FileReader = require('filereader');
 const path = require('path');
@@ -12,6 +12,7 @@ const fs = require('fs');
 const rimraf = require("rimraf");
 const mkdirp = require('mkdirp');
 const uuid = require('node-uuid');
+const {parseAsync} = require('json2csv');
 
 const logger = require('../../../../core/logger');
 const MailService = require('../../../../core/mail.service');
@@ -159,6 +160,107 @@ class DocumentController extends BaseController {
         }
     }
 
+    get documentsCSV() {
+        return {
+            payload: {
+                maxBytes: 100 * 1024 * 1024,
+                timeout: 1000 * 60 * 60,
+            },
+            timeout: {
+                socket: 1000 * 60 * 61,
+                server: 1000 * 60 * 60
+            },
+            handler: async (request, reply) => {
+                const {hash, PropertyID} = request.query;
+                const {documentIds} = request.payload;
+                const action = 'documentsCSV';
+
+                try {
+                    logger.info(`sessionId: ${hash} ${this.controllerName}.${action} start`);
+
+                    const property = await PropertyDAO.get(PropertyID);
+
+                    const findDocumentsByIdQuery = {_id: {$in: _.map(documentIds, mongoose.Types.ObjectId)}};
+                    const documents = await this.DAO.all(findDocumentsByIdQuery, null, {definition: 0});
+                    const bouncedDocumentIdsSet = await getBouncedDocumentsByIds(documentIds);
+
+                    const floorIds = {};
+                    _.forEach(documents, ({FloorID}) => floorIds[FloorID] = FloorID);
+                    const floors = await FloorDAO.all({_id: {$in: _.map(_.keys(floorIds), mongoose.Types.ObjectId)}});
+                    const id2floor = _.keyBy(floors, '_id');
+
+                    const buildingIds = {};
+                    _.forEach(floors, ({BuildingID}) => buildingIds[BuildingID] = BuildingID);
+                    const buildings = await BuildingDAO.all({_id: {$in: _.map(_.keys(buildingIds), mongoose.Types.ObjectId)}});
+                    const id2building = _.keyBy(buildings, '_id');
+
+                    const csv = await parseAsync(documents, {
+                        fields: [
+                            {
+                                label: 'Resident email',
+                                value: 'signer.email',
+                            },
+                            {
+                                label: 'Resident name',
+                                value: 'signer.name',
+                            },
+                            {
+                                label: 'Building',
+                                value: document => {
+                                    const floor = id2floor[document.FloorID];
+                                    const building = floor && id2building[floor.BuildingID];
+                                    return building && building.Title || '';
+                                },
+                            },
+                            {
+                                label: 'Floor',
+                                value: document => id2floor[document.FloorID] && id2floor[document.FloorID].Title || '',
+                            },
+                            {
+                                label: 'Last time notified_at',
+                                value: document => {
+                                    if (document.notified_at) {
+                                        const dateTimeInLA = moment(document.notified_at).tz("America/Los_Angeles");
+                                        return dateTimeInLA.format('LLL')
+                                    }
+                                },
+                            },
+                            {
+                                label: 'Language',
+                                value: 'options.language',
+                            },
+                            {
+                                label: 'Status',
+                                value: document => {
+                                    if (bouncedDocumentIdsSet[document._id]) {
+                                        return 'Bounced'
+                                    } else if (document.Status === 1) {
+                                        return 'Scheduled'
+                                    } else if (document.Status === 0) {
+                                        return 'Deactivated'
+                                    } else if (document.Status === -1) {
+                                        return 'Deleted'
+                                    }
+                                },
+                            }
+                        ]
+                    });
+
+                    const filename = `${property.Title} - ${moment().format('YYYY-MM-DD')}`.replace(/[^a-z0-9 -]/gi, '_').trim() + '.csv';
+
+                    return reply(csv)
+                        .header('Content-Type', 'application/octet-stream')
+                        .header('content-disposition', `attachment; filename=${filename}`);
+
+                } catch (e) {
+                    logger.error(`sessionId: ${hash} ${this.controllerName}.${action} error === ${e}`);
+                    logger.error(e);
+                    reply(Boom.badImplementation(e));
+                }
+            }
+        }
+    }
+
     get documentsZip() {
         return {
             payload: {
@@ -197,7 +299,7 @@ class DocumentController extends BaseController {
                     for (const documentId of documentIds) {
                         const document = await DocumentDAO.get(documentId);
                         const {FloorID, signer, definition} = document;
-                        const floor  = id2floor[FloorID];
+                        const floor = id2floor[FloorID];
                         const building = id2building[floor.BuildingID];
 
                         let unit = signer && signer.unit && `${signer.unit}`.trim();
@@ -241,6 +343,7 @@ class DocumentController extends BaseController {
                 } catch (e) {
                     logger.error(`sessionId: ${hash} ${this.controllerName}.${action} error === ${e}`);
                     logger.error(e);
+                    reply(Boom.badImplementation(e));
                 }
             }
         }
@@ -412,10 +515,18 @@ async function notifyOnEmail(document) {
  * @returns {Promise<{_id: true}>}
  */
 async function getBouncedDocumentsIdsForProperty(PropertyID) {
+    return getBouncedDocumentsIds({PropertyID: mongoose.Types.ObjectId(PropertyID)});
+}
+
+async function getBouncedDocumentsByIds(documentIds) {
+    return getBouncedDocumentsIds({_id: {$in: _.map(documentIds, mongoose.Types.ObjectId)}});
+}
+
+async function getBouncedDocumentsIds(match) {
     const bouncedDocumentsIds = await DocumentDAO.aggregate([
         {
             $match: {
-                PropertyID: mongoose.Types.ObjectId(PropertyID),
+                ...match,
                 'signer.email': {$exists: true}
             }
         },
