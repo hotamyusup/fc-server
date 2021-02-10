@@ -21,13 +21,23 @@ class PDFMakeService {
 
     createPDFDocument(docDefinition, toFilePath) {
         return new Promise((resolve, reject) => {
-            const pdfDoc = this.printer.createPdfKitDocument(docDefinition);
-            if (toFilePath) {
-				pdfDoc.pipe(fs.createWriteStream(toFilePath));
-			}
-            pdfDoc.end();
-            pdfDoc.on('end', ()=> resolve(pdfDoc));
-            pdfDoc.on('error', reject);
+            try {
+                const pdfDoc = this.printer.createPdfKitDocument(docDefinition);
+
+                if (toFilePath) {
+                    pdfDoc.pipe(fs.createWriteStream(toFilePath));
+                    pdfDoc.on('end', ()=> resolve(pdfDoc));
+                }
+
+                pdfDoc.end();
+                pdfDoc.on('error', reject);
+
+                if (!toFilePath) {
+                    resolve(pdfDoc);
+                }
+            } catch (e) {
+                reject(e);
+            }
         });
     }
 }
