@@ -446,6 +446,7 @@ async function getBouncedDocumentsIdsForProperty(PropertyID) {
     }
 
     return bouncedDocumentsIdsSet;
+}
 
 async function createDir(path) {
     return new Promise((resolve, reject) => {
