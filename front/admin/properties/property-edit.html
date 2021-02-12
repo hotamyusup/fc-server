@@ -292,15 +292,29 @@
                                                                 </div>
                                                             </div>
                                                             <div class="form-group">
-                                                                <input type="text" class="form-control required underlined" data-bind="value: Title">
-                                                                <input type="tel" class="form-control required underlined" data-bind="value: Phone">
-                                                                <input type="email" class="form-control required underlined" data-bind="value: Email">
+                                                                <input type="text" class="form-control required underlined" data-bind="value: Title" placeholder="Title">
+                                                                <input type="tel" class="form-control required underlined" data-bind="value: Phone" placeholder="Phone">
+                                                                <input type="email" class="form-control required underlined" data-bind="value: Email" placeholder="Email">
                                                             </div>
                                                         </div>
                                                 </div>
 
                                                 <a class="btn btn-primary pull-left" data-bind="click: $root.addContact" href="#">Add Contact</a>
                                             </div>
+                                        </div>
+                                    </div>
+                                </li>
+                                <li class="item">
+                                    <div class="item-row">
+                                        <div class="item-col item-col-title no-overflow">
+                                            <h4 class="item-title no-wrap">409 Contact Manager</h4>
+                                        </div>
+                                        <div class="item-col item-col-title no-overflow">
+                                                <div class="form-group">
+                                                    <input type="text" class="form-control required underlined" data-bind="value: Property.Document409ManagerContact.Title" placeholder="Title, default: Leasing Office">
+                                                    <input type="tel" class="form-control required underlined" data-bind="value: Property.Document409ManagerContact.Phone" placeholder="Phone">
+                                                    <input type="email" class="form-control required underlined" data-bind="value: Property.Document409ManagerContact.Email" placeholder="Email">
+                                                </div>
                                         </div>
                                     </div>
                                 </li>
@@ -407,7 +421,7 @@
                 Model.Property = Model.Property;
             },
             saveProperty() {
-                const {_id, Contacts, PropertyManager, Title, Organization} = Model.Property;
+                const {_id, Contacts, PropertyManager, Title, Organization, Document409ManagerContact} = Model.Property;
 
                 const nonValidContacts = _.filter(Contacts,
                     contact => _.keys(contact).filter(key => _.isEmpty(`${contact[key]||''}`.trim())).length > 0
@@ -415,7 +429,7 @@
 
                 if (nonValidContacts.length) {
                     return alert('All Contacts fields are required');
-                };
+                }
 
                 const changeSet = {
                     _id,
@@ -423,7 +437,18 @@
                     Organization,
                     PropertyManager,
                     Contacts,
+                    Document409ManagerContact
                 };
+
+                if (Document409ManagerContact) {
+                    Document409ManagerContact.Phone = `${Document409ManagerContact.Phone || ''}`.trim()
+                    Document409ManagerContact.Email = `${Document409ManagerContact.Email || ''}`.trim()
+                    const {Phone, Email} = Document409ManagerContact;
+
+                    if (Phone || Email && !(Phone && Email)) {
+                        return alert('Phone and Email fields for 409 Contact Manager are required');
+                    }
+                }
 
                 API.updateProperty(_id, changeSet, _ => Site.redirect(`/properties/property.html?i=${_id}`))
             },
@@ -441,6 +466,7 @@
 
 
         API.property(ID, function (property) {
+            property.Document409ManagerContact = property.Document409ManagerContact || {};
             Model.Property = property;
             var i = 0;
 

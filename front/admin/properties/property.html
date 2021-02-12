@@ -275,6 +275,18 @@
 									<li class="item">
 										<div class="item-row">
 											<div class="item-col item-col-title no-overflow">
+												<h4 class="item-title no-wrap">409 Contact Manager</h4>
+											</div>
+											<div class="item-col item-col-title no-overflow" style="flex-direction: column;" data-bind="if: Property.Document409ManagerContact && Property.Document409ManagerContact.Phone">
+												<div style="padding: 8px;">
+													<span class="item-title no-wrap" data-bind="text:Property.Document409ManagerContact.Title"></span> &emsp;(<span class="item-title no-wrap" data-bind="text:Property.Document409ManagerContact.Phone"></span>) &emsp;<span class="item-title no-wrap" data-bind="text:Property.Document409ManagerContact.Email"></span>
+												</div>
+											</div>
+										</div>
+									</li>
+									<li class="item">
+										<div class="item-row">
+											<div class="item-col item-col-title no-overflow">
 												<h4 class="item-title no-wrap">Map</h4>
 											</div>
 											<div class="item-col item-col-title no-overflow">

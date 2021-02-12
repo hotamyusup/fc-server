@@ -22,6 +22,7 @@ const PropertySchema = new Schema({
     Organization: {type: Schema.Types.ObjectId, ref: 'Organization'},
     Client: {type: String},
     PropertyManager: {type: Schema.Types.ObjectId, ref: 'User'},
+    Document409ManagerContact: ContactSchema,
     QRCode: {type: String},
     Map: {type: String}, // @deprecated
     MapImage: {type: MapImageSchema},

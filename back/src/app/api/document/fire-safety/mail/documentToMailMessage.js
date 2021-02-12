@@ -17,8 +17,27 @@ module.exports = async function documentToMailMessage(document) {
     const title = `${document.title}${signer.name ? ` - ${signer.name}` : ''}`;
 
     const property = document.property ? document.property : await PropertyDAO.get(document.PropertyID);
-    const propertyManagerEmail = property.Contacts && property.Contacts[0] && property.Contacts[0].Email;
-    const propertyManagerPhone = property.Contacts && property.Contacts[0] && property.Contacts[0].Phone;
+
+    let propertyManagerTitle = 'Leasing Office';
+    let propertyManagerEmail;
+    let propertyManagerPhone;
+
+    const document409ManagerContact = property.Document409ManagerContact;
+    if (document409ManagerContact
+        && document409ManagerContact.Email
+        && document409ManagerContact.Email.trim().length
+        && document409ManagerContact.Phone
+        && document409ManagerContact.Phone.trim().length
+    ) {
+        propertyManagerEmail = document409ManagerContact.Email;
+        propertyManagerPhone = document409ManagerContact.Phone;
+        if (document409ManagerContact.Title) {
+            propertyManagerTitle = document409ManagerContact.Title
+        }
+    } else {
+        propertyManagerEmail = property.Contacts && property.Contacts[0] && property.Contacts[0].Email;
+        propertyManagerPhone = property.Contacts && property.Contacts[0] && property.Contacts[0].Phone;
+    }
 
     const attachments = [{
         filename: `${title}.pdf`,
@@ -26,7 +45,6 @@ module.exports = async function documentToMailMessage(document) {
     }];
 
     let html;
-
     if (document.type === 'fire-safety-disclosure') {
         const language = document.options && document.options.language || 'ENGLISH';
         const language2fireSafetyDocumentTitle = {
@@ -57,7 +75,7 @@ module.exports = async function documentToMailMessage(document) {
         const attachmentToLiHtml = ({filename}) => `<li>${filename}</li>`
         const attachmentsListHtml = _.map(attachments, attachmentToLiHtml).join('\n');
 
-        html = buildFireSafetyDisclosureHtml(title, attachmentsListHtml, propertyManagerPhone, propertyManagerEmail);
+        html = buildFireSafetyDisclosureHtml(title, attachmentsListHtml, propertyManagerTitle, propertyManagerPhone, propertyManagerEmail);
 
     }
 
@@ -84,7 +102,7 @@ module.exports = async function documentToMailMessage(document) {
     return message;
 };
 
-function buildFireSafetyDisclosureHtml(title, attachmentsListHtml, propertyPhoneNumber, propertyManagerEmail) {
+function buildFireSafetyDisclosureHtml(title, attachmentsListHtml, propertyManagerTitle, propertyPhoneNumber, propertyManagerEmail) {
     const contacts = [];
     if (propertyPhoneNumber) {
         contacts.push(`<a href="tel:${propertyPhoneNumber}">at ${propertyPhoneNumber}</a>`);
@@ -117,7 +135,7 @@ function buildFireSafetyDisclosureHtml(title, attachmentsListHtml, propertyPhone
                                     ${attachmentsListHtml}
                                 </ul>
                                 <div>
-                                    If you have any questions, please reach out to the Leasing Office ${contacts.join(' or ')}.
+                                    If you have any questions, please reach out to the ${propertyManagerTitle} ${contacts.join(' or ')}.
                                 </div>
                             </div>
                         </td>
