@@ -162,7 +162,7 @@ class BaseDBExportService {
                 {
                     $match: {
                         [`${fieldName}.Status`]: {
-                            $not: {$in: [-1, 2]}
+                            $not: {$in: [-1]}
                         }
                     }
                 },
