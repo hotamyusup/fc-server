@@ -15,6 +15,9 @@ const InspectionSchema = new Schema({
     Note: {type: String},
     InspectionDate: {type: Date},
     Status: {type: Number},
+    StaticPSI: {type: Number}, // device type : RISERS 56fa30a9dfe0b7562268265f
+    ResidualPSI: {type: Number}, // device type : RISERS 56fa30a9dfe0b7562268265f
+    ReturnToStaticPSI: {type: Number}, // device type : RISERS 56fa30a9dfe0b7562268265f
     User: {type: Schema.Types.ObjectId, ref: 'User'},
     Photos: [PhotoSchema],
     created_at: {type: Date, default: Date.now},
