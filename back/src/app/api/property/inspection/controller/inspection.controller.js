@@ -8,10 +8,11 @@ const logger = require("../../../../core/logger");
 
 const DailyEventsDispatcherService = require('../../../../core/daily-events-dispatcher.service')
 const InspectionDAO = require("../dao/inspection.dao");
+const InspectionDbExportService = require("../service/inspection.db-export.service");
 
 class InspectionController extends PropertyChildrenBaseController {
     constructor() {
-        super(InspectionDAO);
+        super(InspectionDAO, InspectionDbExportService);
         this.controllerName = 'InspectionController';
         this.requestIDKey = 'InspectionID';
         this.batchEntitiesKey = 'inspections';

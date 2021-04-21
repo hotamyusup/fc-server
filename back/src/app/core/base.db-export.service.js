@@ -22,6 +22,10 @@ class BaseDBExportService {
         console.log('session === ', session);
         console.log('$match === ', $match);
 
+        if (!$match.Status) {
+            $match.Status = {$ne: -1};
+        }
+
         const timerName = `BaseDBExportService:${session.id}`;
         console.time(timerName);
 
@@ -154,6 +158,13 @@ class BaseDBExportService {
                 },
                 {
                     $unwind: fieldRef
+                },
+                {
+                    $match: {
+                        [`${fieldName}.Status`]: {
+                            $not: {$in: [-1]}
+                        }
+                    }
                 },
                 {
                     $addFields: {

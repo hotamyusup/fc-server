@@ -236,7 +236,7 @@
 											if (floor.Status <= 0) return;
 											//content = content.concat(property.Title, ',', building.Title, ',', floor.Title, '\n');
 											content = content.concat('device', ',', 'property', ',', 'building', ',', 'floor',
-														',','location', ',', 'installation date',
+														',','location', ',', 'installation date', ',', 'current device status', ',',
 														',','notes',
 														',','equipment type', ',','model no', ',', 'serial no',
 														',','inspection date',
@@ -272,6 +272,13 @@
 													}).Title;
 												}
 
+												let currentDeviceStatus = 'Pending';
+												if (device.Status === 2) {
+                                                    currentDeviceStatus = 'Pending';
+                                                } else if (device.Records && device.Records.length) {
+                                                    currentDeviceStatus = 'Active';
+                                                }
+
 												//this gets records only
 												let status;
 												_.each(device.Records, (record) => {
@@ -306,7 +313,7 @@
 
 													content = content.concat(deviceTitle, ',', property.Title, ',', building.Title,
 														',', floor.Title.replace(/,/g,';'),
-														',', device.DeviceLocation, ',', device.InstallationDate,
+														',', device.DeviceLocation, ',', device.InstallationDate, ',', currentDeviceStatus,
 														',', device.Notes,
 														',', deviceEquipmentType, ',', device.ModelNumber.replace(/,/g,';'),
 														',', device.SerialNumber,
