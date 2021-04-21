@@ -188,6 +188,38 @@
 												</div>
 											</div>
 										</li>
+										<!-- ko if: (Device.DeviceType === '56fa30a9dfe0b7562268265f') -->
+										<li class="item" style="display: none" data-bind="visible: true">
+											<div class="item-row">
+												<div class="item-col item-col-title no-overflow">
+													<h4 class="item-title no-wrap">Static PSI</h4>
+												</div>
+												<div class="item-col item-col-title no-overflow">
+													<h4 class="item-title no-wrap" data-bind="text: Record.StaticPSI"></h4>
+												</div>
+											</div>
+										</li>
+										<li class="item" style="display: none" data-bind="visible: true">
+											<div class="item-row">
+												<div class="item-col item-col-title no-overflow">
+													<h4 class="item-title no-wrap">Residual PSI</h4>
+												</div>
+												<div class="item-col item-col-title no-overflow">
+													<h4 class="item-title no-wrap" data-bind="text: Record.ResidualPSI"></h4>
+												</div>
+											</div>
+										</li>
+										<li class="item" style="display: none" data-bind="visible: true">
+											<div class="item-row">
+												<div class="item-col item-col-title no-overflow">
+													<h4 class="item-title no-wrap">Return to Static PSI</h4>
+												</div>
+												<div class="item-col item-col-title no-overflow">
+													<h4 class="item-title no-wrap" data-bind="text: Record.ReturnToStaticPSI"></h4>
+												</div>
+											</div>
+										</li>
+										<!-- /ko -->
 										<li class="item">
 											<div class="item-row">
                                                 <div class="item-col">
