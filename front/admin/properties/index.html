@@ -236,7 +236,7 @@
 											if (floor.Status <= 0) return;
 											//content = content.concat(property.Title, ',', building.Title, ',', floor.Title, '\n');
 											content = content.concat('device', ',', 'property', ',', 'building', ',', 'floor',
-														',','location', ',', 'installation date', ',', 'current device status', ',',
+														',','location', ',', 'installation date', ',', 'current device status', 
 														',','notes',
 														',','equipment type', ',','model no', ',', 'serial no',
 														',','inspection date',
@@ -333,7 +333,7 @@
 													device.DeviceLocation = (device.DeviceLocation.length > 0) ? device.DeviceLocation.replace(/,/g,';') : '-';
 													content = content.concat(deviceTitle, ',', property.Title, ',', building.Title,
 														',', floor.Title.replace(/,/g,';'),
-														',', device.DeviceLocation, ',', device.InstallationDate,
+														',', device.DeviceLocation, ',', device.InstallationDate, ',', currentDeviceStatus,
 														',', device.Notes,
 														',', deviceEquipmentType, ',', device.ModelNumber.replace(/,/g,';'),
 														 ',', device.SerialNumber, ',','\n'
