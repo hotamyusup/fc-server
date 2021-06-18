@@ -7,6 +7,7 @@ const gm = require('gm').subClass({imageMagick: true});
 const logger = require('../../../core/logger');
 const BaseController = require('../../../core/base.controller');
 const MailService = require('../../../core/mail.service');
+const FloorDAO = require("../../property/floor/dao/floor.dao");
 
 const IMG_PUBLIC_DIR = path.normalize(__dirname + '/../../image/public/img');
 
@@ -38,10 +39,21 @@ class ServiceController extends BaseController {
         const controller = this;
         return {
             auth: false,
-            handler: (request, reply) => {
+            handler: async (request, reply) => {
                 let Target;
                 if (request.payload.Map) {
-                    let Map = request.payload.Map.replace('http://35.194.63.160/img', IMG_PUBLIC_DIR);
+                    let Map = request.payload.Map;
+                    if ((request.payload.PosX != null)
+                        && (request.payload.PosY != null)
+                        && (request.payload.Device.FloorID)) {
+                        const floorID = request.payload.Device.FloorID;
+                        const floor = await FloorDAO.get(floorID);
+                        if (floor.Map && floor.Map.Image) {
+                            Map = floor.Map.Image;
+                        }
+                    }
+
+                    Map = Map.replace('http://35.194.63.160/img', IMG_PUBLIC_DIR);
                     Map = Map.replace('http://firecloud3.fireprotected.com/img', IMG_PUBLIC_DIR);
                     Map = Map.replace('http://firecloud3.fireprotected.com:80/img', IMG_PUBLIC_DIR);
                     //var Target = Map.replace("./img/","./temp/"+(Math.random() * (9999 - 1111) + 1111)+"-";
