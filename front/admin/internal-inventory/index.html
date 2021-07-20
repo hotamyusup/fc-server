@@ -1,0 +1,629 @@
+<!doctype html>
+<html class="no-js" lang="en" xmlns:v-bind="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="x-ua-compatible" content="ie=edge">
+    <title>Fire Cloud Admin</title>
+    <meta name="description" content="">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="apple-touch-icon" href="apple-touch-icon.png">
+    <link rel="stylesheet" href="/admin/css/vendor.css">
+    <link rel="stylesheet" href="/admin/css/app.css">
+    <script>
+        var themeSettings = (localStorage.getItem('themeSettings')) ? JSON.parse(localStorage.getItem('themeSettings')) :
+            {};
+        var themeName = themeSettings.themeName || 'red';
+        if (themeName) {
+            document.write('<link rel="stylesheet" id="theme-style" href="/admin/css/app-' + themeName + '.css">');
+        } else {
+            document.write('<link rel="stylesheet" id="theme-style" href="/admin/css/app.css">');
+        }
+    </script>
+
+    <!--PRODUCTION VUE-->
+    <script src="https://cdn.jsdelivr.net/npm/vue"></script>
+
+    <!--DEVELOPMENT VUE-->
+    <!--<script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>-->
+    <style>
+        .checkbox-label {
+            margin-bottom: 0;
+            margin-left: 8px;
+        }
+
+        .item-row.selected {
+            background-color: #FF6161 !important;
+            color: white;
+        }
+
+        .item-row.selected a {
+            color: white;
+        }
+    </style>
+</head>
+<body>
+<div class="main-wrapper">
+    <div class="app" id="app">
+        <header class="header">
+            <div class="header-block header-block-collapse d-lg-none d-xl-none">
+                <button class="collapse-btn" id="sidebar-collapse-btn">
+                    <i class="fa fa-bars"></i>
+                </button>
+            </div>
+            <div class="header-block header-block-search"></div>
+            <div class="header-block header-block-buttons"></div>
+            <div class="header-block header-block-nav">
+                <ul class="nav-profile">
+                    <li id="notificationNavItem" data-bind="if: ACL.user.notificationSupported"
+                        class="notifications new">
+                        <a href="" data-toggle="dropdown" aria-expanded="false">
+                            <i class="fa" data-bind="css: ACL.user.notificationIcon"></i>
+                            <sup data-bind="style: {opacity: ACL.user.notificationsStats.notReadCount ? 1 : 0}">
+                                <span class="counter"
+                                      data-bind="text: ACL.user.notificationsStats.notReadCount"></span>
+                            </sup>
+                        </a>
+                        <div class="dropdown-menu notifications-dropdown-menu" x-placement="bottom-start"
+                             style="position: absolute; will-change: transform; top: 0px; left: 0px; transform: translate3d(-116px, 25px, 0px);">
+                            <ul class="notifications-container"
+                                data-bind="foreach: ACL.user.notificationsStats.notifications">
+                                <li data-bind="style: {opacity: read ? 0.6 : 1}">
+                                    <a href="javascript:;;"
+                                       data-bind="attr: {id:_id, href:'/admin/notifications/show.html?id='+_id}"
+                                       class="notification-item">
+                                        <div class="body-col">
+                                            <p>
+                                                <span data-bind="text: $data.notificationEvent.data.title"
+                                                      class="accent"/>
+                                            </p>
+                                            <p data-bind="text: $data.notificationEvent.data.body"/>
+                                        </div>
+                                    </a>
+                                </li>
+                            </ul>
+                            <footer>
+                                <ul>
+                                    <li>
+                                        <a href="/admin/notifications/show.html"> View All </a>
+                                    </li>
+                                </ul>
+                            </footer>
+                        </div>
+                    </li>
+                </ul>
+            </div>
+        </header>
+
+        <aside class="sidebar">
+            <div class="sidebar-container">
+                <div class="sidebar-header">
+                    <div class="brand">Fire Cloud Admin</div>
+                </div>
+                <nav class="menu">
+                    <ul class="sidebar-menu metismenu" id="sidebar-menu">
+                        <li>
+                            <a href="/admin/properties">
+                                <i class="fa fa-th-large"></i> Properties
+                            </a>
+                        </li>
+                        <li data-bind="visible: ACL.isAdmin" style="display: none;">
+                            <a href="/admin/users">
+                                <i class="fa fa-users"></i> Users
+                            </a>
+                        </li>
+                        <li data-bind="visible: ACL.isAdmin" style="display: none;">
+                            <a href="/admin/organizations">
+                                <i class="fa fa-dot-circle-o"></i> Organizations
+                            </a>
+                        </li>
+                        <li data-bind="visible: ACL.isAdminOrEmployee" style="display: none;">
+                            <a href="/admin/equipments">
+                                <i class="fa fa-lightbulb-o"></i> Equipments
+                            </a>
+                        </li>
+                        <li data-bind="visible: ACL.isAdminOrEmployee" style="display: none;">
+                            <a href="/admin/constructiontypes">
+                                <i class="fa fa-building-o"></i> Construction Types
+                            </a>
+                        </li>
+                        <li data-bind="visible: ACL.isAdminOrEmployee" style="display: none;">
+                            <a href="/admin/occupancytypes">
+                                <i class="fa fa-home"></i> Occupancy Types
+                            </a>
+                        </li>
+
+                        <li data-bind="visible: ACL.isAdminOrEmployee" style="display: none;">
+                            <a href="/admin/bulkeditor">
+                                <i class="fa fa-table"></i> Bulk Editor
+                            </a>
+                        </li>
+                        <li data-bind="visible: ACL.isAdminOrEmployee" style="display: none;" class="active">
+                            <a href="/admin/internal-inventory">
+                                <i class="fa fa-list-alt"></i> Internal Inventory
+                            </a>
+                        </li>
+                        <li>
+                            <a href="/admin/logout.html">
+                                <i class="fa fa-lock"></i> Log out
+                            </a>
+                        </li>
+                    </ul>
+                </nav>
+            </div>
+        </aside>
+        <div class="sidebar-overlay" id="sidebar-overlay"></div>
+        <div class="sidebar-mobile-menu-handle" id="sidebar-mobile-menu-handle"></div>
+        <div class="mobile-menu-handle"></div>
+        <article class="content dashboard-page">
+            <section class="section" id="internal-inventory-list" style="display: none;" :style="{display: true}">
+                <div class="row">
+
+                    <div class="col-xl-12">
+                        <div class="pull-right">
+                            <select v-model="selectedShowFilter"
+                                    class="underlined required"
+                                    @change="fetchInventory()">
+                                >
+                                <option value="ShowAll">Show All</option>
+                                <option value="ShowActive">Show Active</option>
+                                <option value="ShowNotReserved">Show Available</option>
+                                <option value="ShowReserved">Show Reserved</option>
+                                <option value="ShowOldReserved">Show Old Reservations</option>
+                                <option value="ShowDeleted">Show Deleted</option>
+                            </select>
+                        </div>
+                        <div class="title-block">
+                            <h3 class="title">
+                                <span>Internal Inventory:</span>
+                                <span>{{message}}</span>
+                            </h3>
+                        </div>
+                    </div>
+                    <div class="col-xl-12">
+                        <div class="card items" data-exclude="xs,sm,lg">
+                            <div class="card-header bordered">
+                                <div class="header-block">
+                                    <select v-if="selectedDevices.count > 0"
+                                            v-model="selectedAction"
+                                            class="underlined required">
+                                        <option disabled selected value>Select Action</option>
+                                        <option value="Reserve">Reserve</option>
+                                        <option value="Activate">Activate</option>
+                                        <option value="Delete">Delete</option>
+                                    </select>
+
+                                    <span v-if="(selectedDevices.count > 0) && (selectedAction === 'Reserve')"
+                                          style="margin-left: 8px">
+                                        <i class="fa fa-users"></i>
+                                    </span>
+
+                                    <select v-if="(selectedDevices.count > 0) && (selectedAction === 'Reserve')"
+                                            v-model="reservedToUser"
+                                            class="underlined required">
+                                        <option value=""></option>
+                                        <option v-for="user in users"
+                                                :value="user._id">{{user.Title}}
+                                        </option>
+                                    </select>
+
+                                    <a v-if="selectedDevices.count > 0"
+                                       class="btn btn-primary btn-sm"
+                                       style="margin-left: 10px;"
+                                       @click="applyActionToSelected(selectedAction)"
+                                       href="#">
+                                        Apply action to selected {{selectedDevices.count}}
+                                    </a>
+                                </div>
+                                <div class="header-block pull-right">
+                                    <!--                                    <a v-if="selectedDevices.count > 0" class="btn btn-danger-outline btn-sm" href="#"-->
+                                    <!--                                       @click="deleteSelectedDevices()">Delete Selected {{selectedDevices.count}}</a>-->
+
+                                    <a class="btn btn-primary btn-sm" href="create.html">Create</a>
+                                </div>
+                            </div>
+
+                            <ul class="item-list striped">
+                                <li class="item">
+                                    <div class="item-row">
+                                        <div class="item-col fixed item-col-check">
+                                            <label class="item-check" id="select-all-items">
+                                                <input id="checkbox_all"
+                                                       type="checkbox"
+                                                       v-model="isSelectAll"
+                                                       @change="selectAll(isSelectAll)">
+                                            </label>
+                                        </div>
+
+                                        <div v-for="field in INVENTORY_FIELDS"
+                                             class="item-col item-col-title no-overflow">
+                                            <select v-if="field === 'EquipmentTypeID'"
+                                                    v-model="fieldFilters[field]"
+                                                    style="display: inline; width: 100%;"
+                                                    @change="fieldChanged(field, $event.target.value)">
+                                                <option value=""></option>
+                                                <option v-for="equipment in equipments"
+                                                        :value="equipment._id">{{equipment.Title}}
+                                                </option>
+                                            </select>
+                                            <select v-else-if="field === 'DeviceTypeID'"
+                                                    v-model="fieldFilters[field]"
+                                                    style="display: inline; width: 100%;"
+                                                    @change="fieldChanged(field, $event.target.value)">
+                                                <option value=""></option>
+                                                <option v-for="deviceType in equipmentDevices"
+                                                        v-if="!fieldFilters['EquipmentTypeID'] || deviceType.EquipmentTypeID == fieldFilters['EquipmentTypeID']"
+                                                        :value="deviceType._id">{{deviceType.Title}}
+                                                </option>
+                                            </select>
+                                            <select v-else-if="field === 'PropertyID'"
+                                                    v-model="fieldFilters[field]"
+                                                    style="display: inline; width: 100%;"
+                                                    @change="fieldChanged(field, $event.target.value)">
+                                                <option value=""></option>
+                                                <option v-for="property in properties"
+                                                        :value="property._id">{{property.Title}}
+                                                </option>
+                                            </select>
+                                        </div>
+                                        <div class="item-col item-col-title no-overflow">
+                                        </div>
+                                        <div class="item-col text-right">
+                                        </div>
+                                    </div>
+                                </li>
+
+                                <li class="item"
+                                    v-for="device in inventory"
+                                    :value="device"
+                                    v-bind:style="[device.Status === -1 ? {opacity: 0.6} : {}]">
+
+                                    <div class="item-row" :class="{selected: selectedDevices[device._id]}">
+                                        <div class="item-col fixed item-col-check">
+                                            <input :id="`checkbox_${device._id}`"
+                                                   type="checkbox"
+                                                   @change="changeSelected(device._id)"
+                                                   v-model="selectedDevices[device._id]">
+                                        </div>
+                                        <div v-for="field in INVENTORY_FIELDS"
+                                             class="item-col item-col-title no-overflow">
+                                            <span v-if="field === 'EquipmentTypeID'">
+                                                {{equipment2id[device[field]] && equipment2id[device[field]].Title}}
+                                            </span>
+                                            <span class="item-title no-wrap" v-else-if="field === 'DeviceTypeID'">
+                                                 {{deviceType2id[device[field]] && deviceType2id[device[field]].Title}}
+                                            </span>
+                                            <span v-else-if="field === 'PropertyID'">
+                                                 {{id2property[device[field]] && id2property[device[field]].Title}}
+                                            </span>
+                                        </div>
+                                        <div class="item-col item-col-title no-overflow">
+                                            <span v-if="device.ReservedToID">
+                                                Reserved to <i class="fa fa-users"
+                                                               :title="`Reserved to ${id2user[device.ReservedToID] && id2user[device.ReservedToID].Title}`"></i>
+                                            </span>
+                                        </div>
+                                        <div class="item-col text-right">
+                                            <a :href="`/admin/internal-inventory/view.html?i=${device._id}`">
+                                                Details
+                                            </a>
+                                            <a style="margin-left: 8px;"
+                                               :href="`/admin/internal-inventory/edit.html?i=${device._id}`">
+                                                <i class="fa fa-pencil"></i>
+                                            </a>
+                                        </div>
+                                    </div>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+        </article>
+        <footer class="footer"></footer>
+    </div>
+</div>
+<!-- Reference block for JS -->
+<div class="ref" id="ref">
+    <div class="color-primary"></div>
+    <div class="chart">
+        <div class="color-primary"></div>
+        <div class="color-secondary"></div>
+    </div>
+</div>
+<script src="https://www.gstatic.com/firebasejs/7.14.5/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/7.14.5/firebase-messaging.js"></script>
+
+<script src="/admin/js/config-front.js"></script>
+<script src="/admin/js/vendor.js"></script>
+<script src="/admin/js/app.js"></script>
+<script src="/admin/js/custom.js"></script>
+<script src="/admin/js/fcm-init.js"></script>
+<script type="text/javascript">
+    $(function () {
+        if (Site.init(['Admin'])) {
+            ko.applyBindings({ACL: Auth.ACL()});
+
+            async function postEntities(apiUrl, body) {
+                const query = {hash: User._id};
+                const queryString = Object.keys(query).map(key => `${key}=${query[key]}`).join('&')
+                const url = `${Config.APIURL}/${apiUrl}?${queryString}`;
+
+                return new Promise((resolve, reject) => {
+                    $.ajax({
+                        url,
+                        type: "POST",
+                        data: JSON.stringify(body),
+                        dataType: "json",
+                        mimeType: "application/json",
+                        contentType: "application/json",
+                        success: resolve
+                    });
+                });
+            }
+
+            async function getEntities(apiUrl, query = {}) {
+                query.hash = User._id;
+                const queryString = Object.keys(query)
+                    .map(key => `${key}=${typeof query[key] === 'object'
+                        ? encodeURIComponent(JSON.stringify(query[key]))
+                        : query[key]}`)
+                    .join('&');
+
+                const url = `${Config.APIURL}/${apiUrl}?${queryString}`;
+                return new Promise((resolve, reject) => {
+                    $.get(url, function (data) {
+                        resolve(data);
+                    });
+                });
+            }
+
+            function getMomentFormat(rawMomentValue) {
+                if (rawMomentValue.length === 4) {
+                    return 'YYYY';
+                } else if (rawMomentValue[10] === 'T') {
+                    return 'YYYY-MM-DDTHH:mm';
+                } else {
+                    return 'YYYY-MM-DD HH:mm';
+                }
+            }
+
+            const INVENTORY_FIELDS = [
+                'DeviceTypeID',
+                'EquipmentTypeID',
+                'PropertyID',
+            ];
+
+            (async function run() {
+
+                let equipments = await getEntities('equipments');
+                const equipment2id = {};
+                const deviceType2id = {};
+                let equipmentDevices = [];
+                _.forEach(equipments, equipment => {
+                    equipment2id[equipment._id] = equipment;
+                    _.forEach(equipment.Devices, deviceType => {
+                        deviceType.EquipmentTypeID = equipment._id;
+                        deviceType2id[deviceType._id] = deviceType;
+                        equipmentDevices.push(deviceType);
+                    })
+                });
+
+                equipments = _.sortBy(equipments, 'Title');
+                equipmentDevices = _.sortBy(equipmentDevices, 'Title');
+
+                const vueSelectData = {
+                    id2selected: {},
+                    selectedDevices: {count: 0},
+                    changeSelected(deviceId) {
+                        if (deviceId) {
+                            if (this.selectedDevices[deviceId]) {
+                                this.id2selected[deviceId] = this.id2inventory[deviceId];
+                            } else {
+                                delete this.id2selected[deviceId];
+                            }
+                        }
+                        this.$set(this.selectedDevices, 'count', _.keys(this.selectedDevices).filter(id => id !== 'count' && !!this.selectedDevices[id]).length)
+                    },
+                    isSelectAll: false,
+                    selectAll(isSelectAll) {
+                        if (isSelectAll) {
+                            _.forEach(this.inventory, device => {
+                                this.$set(this.selectedDevices, device._id, true);
+                                this.id2selected[device._id] = device;
+                            });
+                        } else {
+                            _.keys(this.selectedDevices).forEach(deviceId => {
+                                this.$set(this.selectedDevices, deviceId, false);
+                                delete this.id2selected[deviceId];
+                            });
+                        }
+
+                        this.changeSelected();
+                    },
+                    async applyActionToSelected(action) {
+                        if (action === 'Delete') {
+                            await this.deleteSelectedDevices();
+                        } else if (action === 'Activate') {
+                            await this.activateSelectedDevices();
+                        } else if (action === 'Reserve') {
+                            await this.reserveSelectedDevices();
+                        }
+
+                        this.selectedAction = '';
+                    },
+                    async updateSelectedDevices(mapperFunction) {
+                        let devices;
+                        try {
+                            devices = _
+                                .keys(this.selectedDevices)
+                                .map(deviceId => {
+                                    const device = this.id2selected[deviceId] || this.id2inventory[deviceId];
+                                    return mapperFunction(device);
+                                })
+                                .filter(device => !!device);
+
+                            const result = await postEntities('inventory/batch', {inventory: devices});
+                            this.selectedDevices = {count: 0};
+                            this.isSelectAll = false;
+                            this.fetchInventory();
+
+                            return result;
+                        } catch (e) {
+                            alert(`Can't update devices:${devices && devices.length} error: ${e}`);
+                        }
+                    },
+                    async activateSelectedDevices() {
+                        if (!confirm('Are you sure you want to activate selected?')) {
+                            return
+                        }
+
+                        const result = await this.updateSelectedDevices(device => {
+                            if (device) {
+                                device.Status = 1;
+                            }
+                            return device;
+                        });
+                    },
+                    async deleteSelectedDevices() {
+                        if (!confirm('Are you sure you want to delete selected?')) {
+                            return
+                        }
+                        const result = await this.updateSelectedDevices(device => {
+                            if (device) {
+                                device.Status = -1;
+                            }
+                            return device;
+                        });
+                    },
+                    async reserveSelectedDevices() {
+                        if (!this.reservedToUser) {
+                            alert(`Please, select user to reserve`);
+                        }
+
+                        if (!confirm('Are you sure you want to reserve selected?')) {
+                            return
+                        }
+                        const result = await this.updateSelectedDevices(device => {
+                            if (device) {
+                                device.ReservedToID = this.reservedToUser;
+                                device.ReservedAt = new Date();
+                            }
+                            return device;
+                        });
+
+                        this.reservedToUser = null;
+                    }
+                };
+
+                const vueFiltersData = {
+                    fieldFilters: {
+                        Status: 1
+                    },
+                    fieldChanged: async function (field, value) {
+                        if (field === 'EquipmentTypeID') {
+                            this.$set(this.fieldFilters, 'DeviceTypeID', null)
+                        }
+
+                        this.fetchInventory();
+                    },
+                    fetchInventory: function () {
+                        fetchInventoryDebounced();
+                    },
+                };
+
+                const app = new Vue({
+                    el: '#internal-inventory-list',
+                    data: {
+                        message: `Loading`,
+                        moment,
+                        selectedShowFilter: 'ShowActive',
+                        selectedAction: '',
+                        reservedToUser: null,
+                        fetchLimit: 100,
+                        fetchSkip: 0,
+                        fetchSortField: 'updated_at',
+                        fetchSortOrder: -1,
+                        INVENTORY_FIELDS,
+                        equipments,
+                        equipment2id,
+                        deviceType2id,
+                        equipmentDevices,
+                        properties: [],
+                        id2property: {},
+                        users: [],
+                        id2user: {},
+                        inventory: [],
+                        ...vueSelectData,
+                        ...vueFiltersData,
+                    }
+                });
+
+                let fetchInventoryDebounced = _.debounce(async function () {
+                    const filter = {};
+
+                    if (app.selectedShowFilter === 'ShowAll') {
+
+                    } else if (app.selectedShowFilter === 'ShowActive') {
+                        filter.Status = 1;
+                    } else if (app.selectedShowFilter === 'ShowNotReserved') {
+                        filter.Status = 1;
+                        filter.ReservedToID = {$eq: null};
+                    } else if (app.selectedShowFilter === 'ShowReserved') {
+                        filter.Status = 1;
+                        filter.ReservedToID = {$ne: null};
+                    } else if (app.selectedShowFilter === 'ShowOldReserved') {
+                        filter.Status = -1;
+                        filter.ReservedToID = {$ne: null};
+                    } else if (app.selectedShowFilter === 'ShowDeleted') {
+                        filter.Status = -1;
+                    }
+
+                    for (const field in app.fieldFilters) {
+                        const value = app.fieldFilters[field];
+
+                        if (value == null || value == '') {
+                            delete filter[field];
+                        } else if ((field === 'EquipmentTypeID')
+                            || (field === 'DeviceTypeID')
+                            || (field === 'PropertyID')) {
+                            filter[field] = value;
+                        } else if (!_.isNumber(value)) {
+                            const firstSymbol = value[0];
+                            const lastSymbol = value[value.length - 1];
+                            if ((firstSymbol === "'" && lastSymbol === "'") || (firstSymbol === '"' && lastSymbol === '"')) {
+                                filter[field] = value.slice(1, -1);
+                            } else {
+                                filter[field] = {$regex: value};
+                            }
+                        }
+                    }
+
+                    const limit = app.fetchLimit;
+                    const skip = app.fetchSkip;
+                    const sort = {[app.fetchSortField]: app.fetchSortOrder};
+
+                    const inventory = await getEntities('inventory', {filter, limit, skip, sort});
+                    const id2inventory = _.indexBy(inventory, '_id');
+
+                    app.message = `${inventory.length}`;
+                    app.inventory = inventory;
+                    app.id2inventory = id2inventory;
+
+                }, 800);
+
+                fetchInventoryDebounced();
+
+                app.properties = await API.properties();
+                app.id2property = _.indexBy(app.properties, '_id');
+
+                app.users = await API.users();
+                app.users = _.sortBy(app.users, 'Title');
+                app.id2user = _.indexBy(app.users, '_id');
+            })();
+        }
+    });
+
+</script>
+</body>
+</html>
