@@ -188,6 +188,7 @@
                                             class="underlined required">
                                         <option disabled selected value>Select Action</option>
                                         <option value="Reserve">Reserve</option>
+                                        <option value="ClearReservation">Clear Reservation</option>
                                         <option value="Activate">Activate</option>
                                         <option value="Delete">Delete</option>
                                     </select>
@@ -448,6 +449,8 @@
                             await this.activateSelectedDevices();
                         } else if (action === 'Reserve') {
                             await this.reserveSelectedDevices();
+                        } else if (action === 'ClearReservation') {
+                            await this.clearReservationSelectedDevices();
                         }
 
                         this.selectedAction = '';
@@ -474,7 +477,7 @@
                         }
                     },
                     async activateSelectedDevices() {
-                        if (!confirm('Are you sure you want to activate selected?')) {
+                        if (!confirm('Are you sure you want to activate selected inventory?')) {
                             return
                         }
 
@@ -486,7 +489,7 @@
                         });
                     },
                     async deleteSelectedDevices() {
-                        if (!confirm('Are you sure you want to delete selected?')) {
+                        if (!confirm('Are you sure you want to delete selected inventory?')) {
                             return
                         }
                         const result = await this.updateSelectedDevices(device => {
@@ -501,13 +504,29 @@
                             alert(`Please, select user to reserve`);
                         }
 
-                        if (!confirm('Are you sure you want to reserve selected?')) {
+                        if (!confirm('Are you sure you want to reserve selected inventory?')) {
                             return
                         }
+
                         const result = await this.updateSelectedDevices(device => {
                             if (device) {
                                 device.ReservedToID = this.reservedToUser;
                                 device.ReservedAt = new Date();
+                            }
+                            return device;
+                        });
+
+                        this.reservedToUser = null;
+                    },
+                    async clearReservationSelectedDevices() {
+                        if (!confirm('Are you sure you want to clear reservation on selected inventory?')) {
+                            return
+                        }
+
+                        const result = await this.updateSelectedDevices(device => {
+                            if (device) {
+                                device.ReservedToID = null;
+                                device.ReservedAt = null;
                             }
                             return device;
                         });
@@ -542,7 +561,7 @@
                         reservedToUser: null,
                         fetchLimit: 100,
                         fetchSkip: 0,
-                        fetchSortField: 'updated_at',
+                        fetchSortField: 'created_at',
                         fetchSortOrder: -1,
                         INVENTORY_FIELDS,
                         equipments,
