@@ -408,10 +408,10 @@ $(function () {
 					callback(data);
 				});
 		},
-		exportDocuments: function (documentIds, propertyID, callback) {
+		exportPropertyDocuments: function (documentIds, propertyID, callback) {
 			this.postDownloadFile(`/documents/documentsZip?PropertyID=${propertyID}&hash=${User._id}`, {documentIds}, callback);
 		},
-		exportDocumentsCSV: function (documentIds, propertyID, callback) {
+		exportPropertyDocumentsCSV: function (documentIds, propertyID, callback) {
 			this.postDownloadFile(`/documents/documentsCSV?PropertyID=${propertyID}&hash=${User._id}`, {documentIds}, callback);
 		},
 		activateDocument: function (documentID, callback) {

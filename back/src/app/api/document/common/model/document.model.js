@@ -14,6 +14,7 @@ const DocumentSchema = new Schema({
     created_at: {type: Date, default: Date.now},
     updated_at: {type: Date},
     notified_at: {type: Date},
+    handDelivered: {type: Boolean},
     PropertyID: {type: Schema.Types.ObjectId, ref: 'Property'},
     BuildingID: {type: Schema.Types.ObjectId, ref: 'Building'},
     FloorID: {type: Schema.Types.ObjectId, ref: 'Floor'},

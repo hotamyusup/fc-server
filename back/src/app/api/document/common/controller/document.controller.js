@@ -44,6 +44,93 @@ class DocumentController extends BaseController {
         this.batchEntitiesKey = 'documents';
     }
 
+
+    get getOrganizationDocumentsStatus() {
+        return {
+            handler: (request, reply) => {
+                const hash = request.query.hash || '';
+                const user = request.auth && request.auth.credentials;
+                const OrganizationID = user.Organization;
+                const action = 'getOrganizationDocumentsStatus';
+                logger.info(`sessionId: ${hash} ${this.controllerName}.${action} start OrganizationID = ${OrganizationID}`);
+
+                const status = {
+                    waitingForDelivered: 0,
+                    handDelivered: 0,
+                    scheduled: 0,
+                    notified: 0,
+                    bounced: 0,
+                };
+
+                return this.handle(
+                    action,
+                    request,
+                    reply,
+                    this.DAO.forOrganization(OrganizationID, {
+                        "signer.email" : { $in : [null, '']}
+                    })
+                );
+            }
+        }
+    }
+
+    get getHandDeliveryForOrganization() {
+        return {
+            handler: (request, reply) => {
+                const hash = request.query.hash || '';
+                const user = request.auth && request.auth.credentials;
+                let OrganizationID = user.Organization;
+                const action = 'getHandDeliveryForOrganization';
+                if (user.Type === 'Admin') {
+                    if (request.query.OrganizationID) {
+                        OrganizationID = request.query.OrganizationID;
+                    }
+                }
+
+                logger.info(`sessionId: ${hash} ${this.controllerName}.${action} start OrganizationID = ${OrganizationID}`);
+
+                const {from, sort, limit, skip} = request.query;
+
+                const options = {
+                    sort: sort ? JSON.parse(decodeURIComponent(sort)) : undefined,
+                    limit: limit ? parseInt(limit) : undefined,
+                    skip: skip ? parseInt(skip) : undefined
+                };
+
+                const conditions = {
+                    "signer.email" : { $in : [null, '']}
+                };
+                if (from) {
+                    conditions.updated_at = {
+                        $gt: moment(from).toDate()
+                    }
+                }
+
+                const prepare = find => find
+                    .populate('PropertyID', {Title: 1})
+                    .populate('BuildingID', {Title: 1})
+                    .populate('FloorID', {Title: 1});
+
+                return this.handle(
+                    action,
+                    request,
+                    reply,
+                    this.DAO
+                        .forOrganization(OrganizationID, conditions, options, undefined, prepare)
+                        .then(documents => documents.map(document => ({
+                            ...document.toJSON(),
+                            Property: document.PropertyID,
+                            PropertyID: document.PropertyID._id,
+                            Building: document.BuildingID,
+                            BuildingID: document.BuildingID._id,
+                            Floor: document.FloorID,
+                            FloorID: document.FloorID._id,
+                        })))
+                );
+            }
+        }
+    }
+
     get getForProperty() {
         return {
             handler: (request, reply) => {
@@ -105,13 +192,19 @@ class DocumentController extends BaseController {
                 logger.info(`sessionId: ${hash} ${this.controllerName}.${action} start ${JSON.stringify(request.params)}`);
 
                 const {format} = request.params;
-                let handler;
+                const {noDefinition} = request.query;
 
                 return this.handle(action, request, reply, this.DAO.get(request.params[this.requestIDKey]).then(document => {
                     if (format && format.toLowerCase() === 'pdf') {
                         return PDFMakeService.createPDFDocument(document.definition);
                     } else {
-                        return document;
+                        const jsonDocument = document.toJSON();
+
+                        if (noDefinition) {
+                            delete jsonDocument['definition'];
+                        }
+
+                        return jsonDocument;
                     }
                 }));
             }
@@ -161,6 +254,197 @@ class DocumentController extends BaseController {
     }
 
     get documentsCSV() {
+        return {
+            payload: {
+                maxBytes: 100 * 1024 * 1024,
+                timeout: 1000 * 60 * 60,
+            },
+            timeout: {
+                socket: 1000 * 60 * 61,
+                server: 1000 * 60 * 60
+            },
+            handler: async (request, reply) => {
+                const {hash} = request.query;
+                const {documentIds} = request.payload;
+                const action = 'documentsCSV';
+
+                try {
+                    logger.info(`sessionId: ${hash} ${this.controllerName}.${action} start`);
+
+                    const findDocumentsByIdQuery = {_id: {$in: _.map(documentIds, mongoose.Types.ObjectId)}};
+                    const documents = await this.DAO.all(findDocumentsByIdQuery, null, {definition: 0})
+                        .populate('PropertyID', {Title: 1})
+                        .populate('BuildingID', {Title: 1})
+                        .populate('FloorID', {Title: 1});
+
+                    const bouncedDocumentIdsSet = await getBouncedDocumentsByIds(documentIds);
+
+                    const csv = await parseAsync(documents, {
+                        fields: [
+                            {
+                                label: 'Resident email',
+                                value: 'signer.email',
+                            },
+                            {
+                                label: 'Resident name',
+                                value: 'signer.name',
+                            },
+                            {
+                                label: 'Property',
+                                value: document => document.PropertyID && document.PropertyID.Title || '',
+                            },
+                            {
+                                label: 'Building',
+                                value: document => document.BuildingID && document.BuildingID.Title || '',
+                            },
+                            {
+                                label: 'Floor',
+                                value: document => document.FloorID && document.FloorID.Title || '',
+                            },
+                            {
+                                label: 'Last time notified_at',
+                                value: document => {
+                                    if (document.notified_at) {
+                                        const dateTimeInLA = moment(document.notified_at).tz("America/Los_Angeles");
+                                        return dateTimeInLA.format('LLL')
+                                    }
+                                },
+                            },
+                            {
+                                label: 'Language',
+                                value: 'options.language',
+                            },
+                            {
+                                label: 'Status',
+                                value: document => {
+                                    if (bouncedDocumentIdsSet[document._id]) {
+                                        return 'Bounced'
+                                    } else if (document.Status === 1) {
+                                        return 'Scheduled'
+                                    } else if (document.Status === 0) {
+                                        return 'Deactivated'
+                                    } else if (document.Status === -1) {
+                                        return 'Deleted'
+                                    }
+                                },
+                            }
+                        ]
+                    });
+
+                    const filename = `Exported documents - ${moment().format('YYYY-MM-DD')}`.replace(/[^a-z0-9 -]/gi, '_').trim() + '.csv';
+
+                    return reply(csv)
+                        .header('Content-Type', 'application/octet-stream')
+                        .header('content-disposition', `attachment; filename=${filename}`);
+
+                } catch (e) {
+                    logger.error(`sessionId: ${hash} ${this.controllerName}.${action} error === ${e}`);
+                    logger.error(e);
+                    reply(Boom.badImplementation(e));
+                }
+            }
+        }
+    }
+
+    get documentsZip() {
+        return {
+            payload: {
+                maxBytes: 100 * 1024 * 1024,
+                timeout: 1000 * 60 * 60,
+            },
+            timeout: {
+                socket: 1000 * 60 * 61,
+                server: 1000 * 60 * 60
+            },
+            handler: async (request, reply) => {
+                const {hash} = request.query;
+                const {documentIds} = request.payload;
+                const action = 'documentsZip';
+
+                try {
+                    logger.info(`sessionId: ${hash} ${this.controllerName}.${action} start`);
+
+                    const sessionDirName = `${action}-session-${uuid.v4()}`;
+                    const sessionDirPath = `${TMP_FILE_DIR_PATH}/${sessionDirName}`;
+
+                    await createDir(sessionDirPath);
+
+                    const exportFilesDirName = `Documents Export - ${moment().format('YYYY-MM-DD')}`.replace(/[^a-z0-9 -]/gi, '_').trim();
+                    const exportFilesDirPath = `${sessionDirPath}/${exportFilesDirName}`;
+
+                    await createDir(exportFilesDirPath);
+
+                    const id2propertyDirName = {};
+
+                    for (const documentId of documentIds) {
+                        const document = await DocumentDAO.get(documentId)
+                            .populate('PropertyID', {Title: 1})
+                            .populate('BuildingID', {Title: 1})
+                            .populate('FloorID', {Title: 1});
+
+                        const property = document.PropertyID;
+                        const building = document.BuildingID;
+                        const floor = document.FloorID;
+
+                        let propertyDirName = id2propertyDirName[property._id];
+                        if (!propertyDirName) {
+                            propertyDirName = `${property.Title}`.replace(/[^a-z0-9 -]/gi, '_').trim();
+                            id2propertyDirName[property._id] = propertyDirName
+                            const propertyDirPath = `${exportFilesDirPath}/${propertyDirName}`;
+                            await createDir(propertyDirPath);
+                        }
+
+                        const floorsDirPath = `${exportFilesDirPath}/${propertyDirName}`;
+
+                        const {signer, definition} = document;
+                        let unit = signer && signer.unit && `${signer.unit}`.trim();
+
+                        const floorFileName = `${building.Title} - ${floor.Title}`.replace(/[^a-z0-9 -]/gi, '_').trim();
+                        const floorUnitsDirPath = `${floorsDirPath}/${floorFileName}`;
+                        await createDir(floorUnitsDirPath);
+
+                        const unitTitle = unit ? `- Unit ${unit}` : '';
+                        const filename = `${building.Title} - ${floor.Title} ${unitTitle}`.replace(/[^a-z0-9 -]/gi, '_').trim();
+                        const filePath = `${floorUnitsDirPath}/${filename}.pdf`;
+
+                        const pdfDocument = await PDFMakeService.createPDFDocument(definition, filePath);
+                    }
+
+                    const archive = archiver('zip');
+                    const sessionDirZipPath = `${sessionDirPath}/${exportFilesDirName}.zip`;
+
+                    const output = fs.createWriteStream(sessionDirZipPath); //path to create .zip file
+                    output.on('close', () => {
+                        logger.info(`sessionId: ${hash} ${this.controllerName}.${action} archive complete: ${archive.pointer()} total bytes`);
+                        reply
+                            .file(sessionDirZipPath, {mode: 'attachment', filename: `${exportFilesDirName}.zip`})
+                            .once('finish', () => {
+                                rimraf(sessionDirPath, () => {
+                                    logger.info(`sessionId: ${hash} ${this.controllerName}.${action} rm -rf ${sessionDirPath} done`);
+                                });
+                            });
+                    });
+
+                    archive.on('error', (err) => {
+                        logger.error(`sessionId: ${hash} ${this.controllerName}.${action} archive error: ${err.message}`);
+                        logger.error(err);
+                        reply(Boom.forbidden(err))
+                    });
+
+                    archive.pipe(output);
+                    archive.directory(exportFilesDirPath, exportFilesDirName);
+                    archive.finalize();
+
+                } catch (e) {
+                    logger.error(`sessionId: ${hash} ${this.controllerName}.${action} error === ${e}`);
+                    logger.error(e);
+                    reply(Boom.badImplementation(e));
+                }
+            }
+        }
+    }
+
+    get propertyDocumentsCSV() {
         return {
             payload: {
                 maxBytes: 100 * 1024 * 1024,
@@ -261,7 +545,7 @@ class DocumentController extends BaseController {
         }
     }
 
-    get documentsZip() {
+    get propertyDocumentsZip() {
         return {
             payload: {
                 maxBytes: 100 * 1024 * 1024,
@@ -312,7 +596,7 @@ class DocumentController extends BaseController {
                         const filename = `${building.Title} - ${floor.Title} ${unitTitle}`.replace(/[^a-z0-9 -]/gi, '_').trim();
                         const filePath = `${floorUnitsDirPath}/${filename}.pdf`;
 
-                        const pdfDocument = await PDFMakeService.createPDFDocument(definition, filePath);
+                        await PDFMakeService.createPDFDocument(definition, filePath);
                     }
 
                     const archive = archiver('zip');

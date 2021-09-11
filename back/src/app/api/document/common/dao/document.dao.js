@@ -11,8 +11,14 @@ class DocumentDAO extends BaseDAO {
         super(model);
     }
 
-    forProperty(PropertyID, fields = {definition : 0}) {
+    forProperty(PropertyID, fields = {definition: 0}) {
         return this.model.find({PropertyID}, fields);
+    }
+
+    async forOrganization(organizationID, documentConditions = {}, options = {}, fields = {definition: 0}, prepare) {
+        const propertiesIds = await PropertyDAO.getPropertiesIdsForOrganization(organizationID);
+        const find = this.model.find({PropertyID: {$in: propertiesIds}, ...documentConditions}, fields, options);
+        return prepare ? prepare(find) : find;
     }
 
     getDocumentsBeforeNotifiedAt(prevNotifiedAt, limit = 10) {
