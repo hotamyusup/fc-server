@@ -68,7 +68,7 @@ class PropertyController extends PropertyChildrenBaseController {
                     const properties = await PropertyDAO.getPropertiesForPropertyManager(user._id);
                     const managedProperties = [...properties.map(property => property._id)];
                     if (managedProperties.length) {
-                        conditions.PropertyID = {$in: managedProperties};
+                        conditions._id = { $in: managedProperties };
                     }
                 }
 
