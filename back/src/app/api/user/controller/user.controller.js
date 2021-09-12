@@ -1,7 +1,11 @@
 'use strict';
 
+const moment = require("moment");
+const _ = require('lodash');
+
 const RedirectOnCreateController = require("../../../core/redirect-on-create.controller");
 const logger = require("../../../core/logger");
+const PropertyDAO = require("../../property/property/dao/property.dao");
 
 const UserDAO = require("../dao/user.dao");
 
@@ -15,9 +19,70 @@ class UserController extends RedirectOnCreateController {
         this.redirectUrl = '/user/';
     }
 
+    get all() {
+        return {
+            handler: async (request, reply) => {
+                const {hash} = request.query;
+                const action = 'all';
+                logger.info(`sessionId: ${hash} ${this.controllerName}.${action} start`);
+
+                const {from, sort, limit, skip} = request.query;
+
+                const options = {
+                    sort: sort ? JSON.parse(decodeURIComponent(sort)) : undefined,
+                    limit: limit ? parseInt(limit) : undefined,
+                    skip: skip ? parseInt(skip) : undefined
+                };
+
+                const conditions = {};
+                if (from) {
+                    conditions.updated_at = {
+                        $gt: moment(from).toDate()
+                    }
+                }
+
+                const properties = await PropertyDAO.all({PropertyManager: {$ne: null}});
+                const propertyManager2Properties = _.groupBy(properties, 'PropertyManager');
+
+                const users = await this.DAO.all(conditions, options);
+                const usersJSON = [];
+                for (const user of users) {
+                    const userJSON = user.toJSON();
+                    const userProperties = propertyManager2Properties[user._id];
+                    if (userProperties) {
+                        userJSON.Properties = userJSON.Properties || [];
+                        userJSON.Properties.push(...userProperties.map(property => property._id));
+                    }
+
+                    usersJSON.push(userJSON);
+                }
+
+                return this.handle('all', request, reply, usersJSON);
+            }
+        };
+    }
+
+    get get() {
+        return {
+            handler: async (request, reply) => {
+                const user = await this.DAO.get(request.params[this.requestIDKey]);
+                const userJSON = user.toJSON();
+                const properties = await PropertyDAO.getPropertiesForPropertyManager(user._id);
+                userJSON.Properties = [...properties.map(property => property._id)];
+
+                return this.handle('get', request, reply, userJSON);
+            }
+        };
+    }
+
     get list() {
         return {
-            handler: (request, reply) => this.handle('list', request, reply, UserDAO.getOrganizationUsers(request.params.OrganizationID))
+            handler: (request, reply) => this.handle(
+                'list',
+                request,
+                reply,
+                UserDAO.getOrganizationUsers(request.params.OrganizationID)
+            )
         };
     }
 

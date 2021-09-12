@@ -76,7 +76,7 @@ class DocumentController extends BaseController {
 
     get getHandDeliveryForOrganization() {
         return {
-            handler: (request, reply) => {
+            handler: async (request, reply) => {
                 const hash = request.query.hash || '';
                 const user = request.auth && request.auth.credentials;
                 let OrganizationID = user.Organization;
@@ -106,10 +106,18 @@ class DocumentController extends BaseController {
                     }
                 }
 
+                if (user.Type === 'Customer') {
+                    const properties = await PropertyDAO.getPropertiesForPropertyManager(user._id);
+                    const managedProperties = [...properties.map(property => property._id)];
+                    if (managedProperties.length) {
+                        conditions.PropertyID = {$in: managedProperties};
+                    }
+                }
+
                 const prepare = find => find
                     .populate('PropertyID', {Title: 1})
-                    .populate('BuildingID', {Title: 1})
-                    .populate('FloorID', {Title: 1});
+                    .populate('BuildingID', {Title: 1, PropertyID: 1})
+                    .populate('FloorID', {Title: 1, PropertyID: 1, BuildingID: 1});
 
                 return this.handle(
                     action,

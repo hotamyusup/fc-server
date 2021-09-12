@@ -84,27 +84,27 @@
                                 <i class="fa fa-th-large"></i> Properties
                             </a>
                         </li>
-                        <li>
+                        <li data-bind="visible: ACL.isAdmin" style="display: none;">
                             <a href="/admin/users">
                                 <i class="fa fa-users"></i> Users
                             </a>
                         </li>
-                        <li>
+                        <li data-bind="visible: ACL.isAdmin" style="display: none;">
                             <a href="/admin/organizations">
                                 <i class="fa fa-dot-circle-o"></i> Organizations
                             </a>
                         </li>
-                        <li>
+                        <li data-bind="visible: ACL.isAdminOrEmployee" style="display: none;">
                             <a href="/admin/equipments">
                                 <i class="fa fa-lightbulb-o"></i> Equipments
                             </a>
                         </li>
-                        <li>
+                        <li data-bind="visible: ACL.isAdminOrEmployee" style="display: none;">
                             <a href="/admin/constructiontypes">
                                 <i class="fa fa-building-o"></i> Construction Types
                             </a>
                         </li>
-                        <li>
+                        <li data-bind="visible: ACL.isAdminOrEmployee" style="display: none;">
                             <a href="/admin/occupancytypes">
                                 <i class="fa fa-home"></i> Occupancy Types
                             </a>
@@ -135,22 +135,24 @@
                 <div class="row">
                     <div class="col-xl-12">
                         <div class="pull-right" style="display: flex;">
-                            <label>Filter:
-                                <select data-bind="value: selectedFilter" class="underlined required">
-                                    <option selected value="ShowAll">No Filter</option>
-                                    <option value="ShowScheduled">Scheduled</option>
-                                    <option value="ShowDeactivated">Deactivated</option>
-                                    <option value="ShowBounced">Bounced</option>
-                                    <option value="ShowDeleted">Deleted</option>
-                                    <option value="ShowHandDelivery">Hand Delivery</option>
-                                </select>
-                                <span><span data-bind="text: totalFilteredCount()"></span> found</span>
-                            </label>
+                            <span><span data-bind="text: totalFilteredCount()"></span> found&nbsp;</span>
+                            <select data-bind="value: selectedFilter" class="underlined required">
+                                <option selected value="ShowAll">No Filter</option>
+                                <option value="ShowScheduled">Scheduled</option>
+                                <option value="ShowDeactivated">Deactivated</option>
+                                <option value="ShowBounced">Bounced</option>
+                                <option value="ShowDeleted">Deleted</option>
+                                <option value="ShowHandDelivery">Hand Delivery</option>
+                            </select>
                         </div>
                         <div class="title-block">
                             <h3 class="title">
                                 <span>Documents:</span>
-                                <span data-bind="text: Property().Title"></span>
+                                <a data-bind="
+                                        text: Property().Title,
+                                        attr: {href: '../property.html?i='+Property()._id}
+                                    "
+                                   href="#"></a>
                             </h3>
                         </div>
                     </div>
@@ -166,6 +168,7 @@
                                         <option value="ExportSelected">Export</option>
                                         <option value="ExportSelectedCSV">Export CSV</option>
                                         <option value="SendNow">Send Now</option>
+                                        <option value="Delivered">Mark as Delivered</option>
                                         <option value="Delete">Delete</option>
                                     </select>
 
@@ -193,12 +196,6 @@
                                 <li class="item item-list-header">
                                     <div class="item-row">
                                         <div class="item-col fixed item-col-check">
-                                            <label class="item-check" id="select-all-items">
-                                                <input type="checkbox"
-                                                       class="checkbox"
-                                                       data-bind="checked: $root.selectedAllDocuments">
-                                                <span></span>
-                                            </label>
                                         </div>
                                         <div class="item-col item-col-header fixed">
                                             <div style="width: 14px;">
@@ -248,10 +245,51 @@
                                         </div>
                                     </div>
                                 </li>
+                                <li class="item item-list-header">
+                                    <div class="item-row">
+                                        <div class="item-col fixed item-col-check">
+                                            <label class="item-check" id="select-all-items">
+                                                <input type="checkbox"
+                                                       class="checkbox"
+                                                       data-bind="checked: $root.selectedAllDocuments">
+                                                <span></span>
+                                            </label>
+                                        </div>
+                                        <div class="item-col item-col-header fixed">
+                                        </div>
+                                        <div class="item-col item-col-header">
+                                        </div>
+                                        <div class="item-col item-col-header">
+                                            <input type="text" placeholder="search by name" data-bind="textInput: $root.residentNameSearch" class="form-control underlined required">
+                                        </div>
+                                        <div class="item-col item-col-header">
+                                            <select data-bind="options: $root.Buildings(), optionsText: 'Title', value: $root.filteredBuildingID, optionsValue: '_id', optionsCaption: 'Select building', event:{ change: $root.buildingFiltered}"
+                                                    class="form-control underlined">
+                                            </select>
+                                        </div>
+                                        <div class="item-col item-col-header">
+                                            <select data-bind="options: $root.getFloorsByBuildings(), optionsText: 'Title', value: $root.filteredFloorID, optionsValue: '_id', optionsCaption: 'Select floor'"
+                                                    class="form-control underlined">
+                                            </select>
+                                        </div>
+                                        <div class="item-col item-col-header">
+                                        </div>
+                                        <div class="item-col item-col-header">
+                                        </div>
+                                        <div class="item-col item-col-header">
+                                        </div>
+                                        <div class="item-col item-col-header">
+                                        </div>
+                                        <div class="item-col item-col-header">
+                                        </div>
+                                        <div class="item-col fixed item-col-check">
+                                        </div>
+                                    </div>
+                                </li>
                                 <!-- ko foreach: getFilteredDocuments() -->
                                 <li class="item" data-bind="style: {opacity: ($data.Status == -1) ? 0.6 : 1}">
                                     <div class="item-row"
-                                         data-bind="style: {'background-color': ($parent.selectedDocuments().indexOf($data._id) >= 0) ? '#E6E6E6' : undefined}">
+                                         data-bind="style: {'background-color': ($parent.selectedDocuments().indexOf($data._id) >= 0) ? '#E6E6E6' : undefined, opacity: $root.isDeactivated($data) ? 0.8 : 1}">
                                         <div class="item-col fixed item-col-check">
                                             <label class="item-check" data-bind="attr: {title: '#'+($index() + 1)}">
                                                 <input type="checkbox"
@@ -341,6 +379,7 @@
                         </nav>
                         <!-- /ko -->
 
+                        <!-- ko if: totalFilteredCount() > 20 -->
                         <div class="text-center">
                             <label style="margin-left: 10px;">Limit:
                                 <select data-bind="value: itemsPerPage" class="underlined required">
@@ -353,6 +392,7 @@
                                 </select>
                             </label>
                         </div>
+                        <!-- /ko -->
 
                         <!-- /ko -->
                     </div>
@@ -394,8 +434,13 @@
             id2building: ko.observable(null),
             id2document: ko.observable(null),
             Property: ko.observable(null),
+            Buildings: ko.observable(null),
+            Floors: ko.observable(null),
             Documents: ko.observable(null),
 
+            residentNameSearch: ko.observable(null),
+            filteredBuildingID: ko.observable(null),
+            filteredFloorID: ko.observable(null),
             selectedAction: ko.observable(null),
             selectedFilter: ko.observable('ShowAll'),
             itemsPerPage: ko.observable(20),
@@ -405,6 +450,13 @@
             filteredDocuments: ko.observable([]),
             selectedDocuments: ko.observable([]),
             selectedAllDocuments: ko.observable(false),
+            getFloorsByBuildings() {
+                let floorsByBuilding = this.Floors();
+                if (this.filteredBuildingID()) {
+                    floorsByBuilding = _.filter(this.Floors(), floor => floor.BuildingID === this.filteredBuildingID())
+                }
+                return floorsByBuilding;
+            },
             activateDocument(document) {
                 API.activateDocument(document._id, getDocumentsForCurrentProperty)
             },
@@ -420,7 +472,35 @@
                     handDelivered: true
                 }, getDocumentsForCurrentProperty)
             },
+            isDeactivated(document) {
+                const isDeactivatedStatus = document.Status === 0;
+                return !document.bounced && isDeactivatedStatus
+            },
             filterDocument(document) {
+                const buildingId = this.filteredBuildingID();
+
+                if (buildingId) {
+                    if (document.BuildingID !== buildingId) {
+                        return false;
+                    }
+                }
+
+                const floorId = this.filteredFloorID();
+
+                if (floorId) {
+                    if (document.FloorID !== floorId) {
+                        return false;
+                    }
+                }
+
+                if (this.residentNameSearch() && this.residentNameSearch().trim().length) {
+                    const name = document.signer && document.signer.name;
+                    const searchRegExp = new RegExp(this.residentNameSearch(), "i");
+                    if (name && name.search(searchRegExp) == -1) {
+                        return false;
+                    }
+                }
+
                 const currentFilter = this.selectedFilter();
 
                 const isScheduledStatus = document.Status === 1;
@@ -448,6 +528,9 @@
                 Model.pageNum(pageNum);
                 Model.selectedDocuments([]);
                 $(window).scrollTop(0);
+            },
+            buildingFiltered() {
+                this.filteredFloorID(null);
             },
             getFilteredDocuments() {
                 console.log(`getFilteredDocuments()`);
@@ -524,6 +607,13 @@
                             })), getDocumentsForCurrentProperty);
                             this.selectedAction(null);
                         }
+                    } else if (action === 'Delivered') {
+                        API.documentsBatch(_.map(documents, ({_id}) => ({
+                            _id,
+                            notified_at: moment().format(),
+                            handDelivered: true,
+                        })), getDocumentsForCurrentProperty);
+                        this.selectedAction(null);
                     } else if (action === 'SendNow') {
                         API.documentsNotifyBatch(documents, getDocumentsForCurrentProperty)
                     } else if (action === 'ExportSelected') {
@@ -565,13 +655,17 @@
             Model.Property(property);
             Model.id2building({});
             Model.id2floor({});
+            Model.Buildings([]);
+            Model.Floors([]);
 
             _.forEach(property.Buildings, function (building) {
                 if (building) {
                     Model.id2building()[building._id] = building;
+                    Model.Buildings().push(building);
                     _.forEach(building.Floors, function (floor) {
                         if (floor) {
                             Model.id2floor()[floor._id] = floor;
+                            Model.Floors().push(floor);
                         }
                     });
                 }

@@ -2,6 +2,7 @@
 
 const mongoose = require('mongoose');
 const Promise = require('bluebird');
+const _ = require('lodash');
 
 const GeocoderService = require("../../../geocoder/service/geocoder.service");
 const logger = require("../../../../core/logger");
@@ -12,6 +13,10 @@ const PropertyChildrenBaseDAO = require("../../common/property.children.base.dao
 class PropertyDAO extends PropertyChildrenBaseDAO {
     constructor() {
         super(PropertyModel);
+    }
+
+    async getPropertiesForPropertyManager(userId) {
+        return this.model.find({PropertyManager: userId});
     }
 
     async getPropertiesForOrganization(organizationID) {
