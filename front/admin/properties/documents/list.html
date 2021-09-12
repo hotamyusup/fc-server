@@ -533,7 +533,7 @@
                 this.filteredFloorID(null);
             },
             getFilteredDocuments() {
-                console.log(`getFilteredDocuments()`);
+
                 const itemsPerPage = parseInt(this.itemsPerPage());
                 const filteredDocuments = [];
                 let filteredCounter = 0;
@@ -633,10 +633,9 @@
             Model.selectedDocuments(selection);
         });
 
-        function getDocumentsForCurrentProperty(update = false) {
+        function getDocumentsForCurrentProperty() {
             Model.id2document({});
             Model.selectedDocuments([]);
-            // if (update) {
             API.documents(PropertyID, function (documents) {
                 if (!ACL.isAdmin) {
                     documents = _.filter(documents, d => d.Status > -1);
@@ -644,9 +643,6 @@
                 Model.Documents(documents);
                 Model.id2document(_.indexBy(documents, '_id'))
             });
-            // } else {
-            //     Model.Documents(Model.Documents());
-            // }
         }
 
         ko.applyBindings(Model);
@@ -673,7 +669,6 @@
             getDocumentsForCurrentProperty();
         });
 
-        console.log(`Model = `, Model);
     });
 
 </script>

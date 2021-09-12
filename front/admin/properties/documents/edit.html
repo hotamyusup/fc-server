@@ -376,6 +376,13 @@
                                                         type="button">Activate
                                                 </button>
                                                 <!-- /ko -->
+
+                                                <!-- ko if: Document.signer && Document.signer.email -->
+                                                <button data-bind="click: $root.notifyDocument"
+                                                        class="btn btn-secondary"
+                                                        type="button">Send Now
+                                                </button>
+                                                <!-- /ko -->
                                             </div>
                                         </div>
                                         <div class="item-col item-col-title no-overflow text-right">
@@ -510,13 +517,11 @@
 
         function fetchDocument() {
             API.document(ID, function (document) {
-                console.log(`document = `, document);
                 document.options = document.options || {};
                 document.signer = document.signer || {};
                 if (document.Status != null) {
                     document.Status = parseInt(document.Status);
                 }
-                console.log(`document.Status = `, document.Status);
 
                 Model.Document = document;
                 API.property(document.PropertyID, function (property) {
