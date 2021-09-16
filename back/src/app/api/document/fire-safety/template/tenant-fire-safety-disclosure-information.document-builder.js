@@ -222,6 +222,10 @@ class TenantFireSafetyDisclosureDocumentBuilder {
                     const FloorID = mongoose.Types.ObjectId(tenantData.FloorID);
 
                     const floor = id2floor[FloorID];
+                    if (!floor) {
+                        logger.warn(`TenantFireSafetyDisclosureDocumentBuilder.buildBatch({}) floor with ${FloorID} not found, may be it was removed`);
+                        return;
+                    }
                     const building = id2building[floor.BuildingID];
                     const property = id2property[floor.PropertyID];
 

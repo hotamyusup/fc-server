@@ -130,16 +130,38 @@
             <section class="section" id="documents" data-bind="if: Documents()">
                 <div class="row">
                     <div class="col-xl-12">
-                        <div class="pull-right" style="display: flex;">
-                            <span style="margin-left: 8px;"><span data-bind="text: totalFilteredCount()"></span> found&nbsp;</span>
-                            <select data-bind="value: selectedFilter" class="underlined required">
-                                <option value="ShowAll">No Filter</option>
-<!--                                <option selected value="ShowScheduled">Show Scheduled</option>-->
-<!--                                <option value="ShowDeactivated">Show Deactivated</option>-->
-<!--                                <option value="ShowBounced">Show Bounced</option>-->
-                                <option value="ShowDeleted">Show Deleted</option>
-<!--                                <option value="ShowHandDelivery">Show Hand Delivery</option>-->
-                            </select>
+                        <div class="pull-right" style="display: flex; align-items: center;">
+                            <label>
+                                <select data-bind="value: selectedFilter" class="underlined required">
+                                    <option value="ShowAll">No Filter</option>
+                                    <option value="ShowPending">Show Pending</option>
+                                    <option value="ShowDelivered">Show Delivered</option>
+                                    <option value="ShowDeleted">Show Deleted</option>
+                                </select>
+                                <span style="margin-left: 8px;"><span data-bind="text: totalFilteredCount()"></span> found&nbsp;</span>
+                            </label>
+
+                            <label style="margin-left: 10px;">Limit:
+                                <select data-bind="value: itemsPerPage" class="underlined required">
+                                    <option selected value="20">20</option>
+                                    <option value="50">50</option>
+                                    <option value="100">100</option>
+                                    <option value="200">200</option>
+                                    <option value="500">500</option>
+                                    <option value="-1">No Limit</option>
+                                </select>
+                            </label>
+
+                            <!-- ko if: pagesCount() > 1 -->
+                            <ul class="pagination" data-bind="foreach: new Array(pagesCount())"
+                                style="margin-bottom: .5rem; margin-left: .5rem;">
+                                <li class="page-item" data-bind="css: {active: ($root.pageNum() === ($index()+1))}">
+                                    <a class="page-link"
+                                       data-bind='text: $index()+1, click: $root.goToPage.bind(this, $index()+1)'
+                                       href=""></a>
+                                </li>
+                            </ul>
+                            <!-- /ko -->
                         </div>
                         <div class="title-block">
                             <h3 class="title" style="display: inline;">
@@ -410,7 +432,6 @@
             organizations: ko.observable(null),
             getDocumentsForCurrentOrganization,
 
-
             id2floor: ko.observable(null),
             id2building: ko.observable(null),
             id2property: ko.observable(null),
@@ -520,8 +541,12 @@
                         return !isDeletedStatus;
                     case 'ShowHandDelivery':
                         return !(document && document.signer && document.signer.email);
+                    case 'ShowPending':
+                        return !isDeletedStatus && !document.handDelivered;
+                    case 'ShowDelivered':
+                        return document.handDelivered;
                     default:
-                        return !document.bounced && isScheduledStatus;
+                        return !isDeletedStatus && !document.bounced && isScheduledStatus;
                 }
             },
             goToPage(pageNum) {
@@ -577,7 +602,6 @@
                     return this.getFilteredDocuments();
                 }
 
-                // this.pageNum(1);
                 Model.selectedDocuments([]);
                 this.filteredDocuments(filteredDocuments);
 
