@@ -130,7 +130,7 @@
             <section class="section" id="documents" data-bind="if: Documents()">
                 <div class="row">
                     <div class="col-xl-12">
-                        <div class="pull-right" style="display: flex; align-items: center;">
+                        <div class="pull-right" style="display: flex; align-items: center; min-height: 46px;">
                             <label>
                                 <select data-bind="value: selectedFilter" class="underlined required">
                                     <option value="ShowAll">No Filter</option>
@@ -544,7 +544,7 @@
                     case 'ShowPending':
                         return !isDeletedStatus && !document.handDelivered;
                     case 'ShowDelivered':
-                        return document.handDelivered;
+                        return !isDeletedStatus && document.handDelivered;
                     default:
                         return !isDeletedStatus && !document.bounced && isScheduledStatus;
                 }
