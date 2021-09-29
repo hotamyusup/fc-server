@@ -206,24 +206,37 @@ $(function () {
 			});
 		},
 		properties: function (callback) {
-			API.get("/properties", function (data) {
-				callback(data);
+			return new Promise((resolve, reject) => {
+				API.get("/properties", function (data) {
+					callback && callback(data);
+					resolve(data);
+				})
 			});
 		},
 		property: function (id, callback, level) {
-		    const queryParamsString = level ? `?level=${level}` : '';
-			API.get(`/properties/${id}${queryParamsString}`, function (data) {
-				callback(data);
+			const queryParamsString = level ? `?level=${level}` : '';
+
+			return new Promise((resolve, reject) => {
+				API.get(`/properties/${id}${queryParamsString}`, function (data) {
+					callback && callback(data);
+					resolve(data);
+				})
 			});
 		},
         updateProperty: function (id, property, callback) {
-            API.post("/properties/" + id, property, function (data) {
-                callback(data);
+			return new Promise((resolve, reject) => {
+				API.post("/properties/" + id, property, function (data) {
+					callback && callback(data);
+					resolve(data);
+				})
 			});
 		},
 		updateDevice: function (id, device, callback) {
-            API.post("/devices/" + id, device, function (data) {
-				callback && callback(data);
+			return new Promise((resolve, reject) => {
+				API.post("/devices/" + id, device, function (data) {
+					callback && callback(data);
+					resolve(data);
+				})
 			});
 		},
         buildings: function (queryParams = {}, callback) {
@@ -262,13 +275,19 @@ $(function () {
 			});
 		},
 		users: function (callback) {
-			API.get("/users", function (data) {
-				callback(data);
+			return new Promise((resolve, reject) => {
+				API.get("/users", function (data) {
+					callback && callback(data);
+					resolve(data);
+				}, reject);
 			});
 		},
 		user: function (id, callback) {
-			API.get("/users/" + id, function (data) {
-				callback(data);
+			return new Promise((resolve, reject) => {
+				API.get("/users/" + id, function (data) {
+					callback && callback(data);
+					resolve(data);
+				}, reject);
 			});
 		},
 		createUser: function (user, callback) {
@@ -363,17 +382,20 @@ $(function () {
             var formData = new FormData();
             formData.append("Photo", imageBlobFile);
 
-            $.ajax({
-                url: Config.APIURL + "/image",
-                type: "POST",
-                data: formData,
-                processData: false,
-                contentType: false,
-                success: function(imageFileName) {
-                    const imageURL = `${Config.APIURL}/img/${imageFileName}`;
-                    callback(imageURL);
-                }
-            });
+            return new Promise(resolve => {
+				$.ajax({
+					url: Config.APIURL + "/image",
+					type: "POST",
+					data: formData,
+					processData: false,
+					contentType: false,
+					success: function(imageFileName) {
+						const imageURL = `${Config.APIURL}/img/${imageFileName}`;
+						callback && callback(imageURL);
+						resolve(imageURL);
+					}
+				});
+			})
 		},
 		createThumbnail: function (imageLink, callback) {
 			API.get("/image/generate-thumbnail/" + imageLink, function (data) {
@@ -430,23 +452,35 @@ $(function () {
 			API.post("/documents/batch", {documents}, callback);
 		},
 		equipments: function (callback) {
-			API.get("/equipments", function (data) {
-				callback(data);
+			return new Promise((resolve, reject)=> {
+				API.get("/equipments", function (data) {
+					callback && callback(data);
+					resolve(data);
+				});
 			});
 		},
 		equipment: function (id, callback) {
-			API.get("/equipments/" + id, function (data) {
-				callback(data);
+			return new Promise((resolve, reject) => {
+				API.get("/equipments/" + id, function (data) {
+					callback && callback(data);
+					resolve(data);
+				}, reject);
 			});
 		},
 		createEquipment: function (equipment, callback) {
-			API.post("/equipments", equipment, function (data) {
-				callback(data);
+			return new Promise((resolve, reject) => {
+				API.post("/equipments", equipment, function (data) {
+					callback && callback(data);
+					resolve(data);
+				}, reject);
 			});
 		},
 		updateEquipment: function (id, equipment, callback) {
-			API.post("/equipments/" + id, equipment, function (data) {
-				callback(data);
+			return new Promise((resolve, reject) => {
+				API.post("/equipments/" + id, equipment, function (data) {
+					callback && callback(data);
+					resolve(data);
+				}, reject);
 			});
 		},
 		createEquipmentDevice: function (equipmentid, device, callback) {
@@ -499,7 +533,39 @@ $(function () {
 				callback(data);
 			});
 		},
-		post: function (URL, Params, Callback) {
+		inventory: function (callback) {
+			return new Promise((resolve, reject)=> {
+				API.get("/inventory", function (data) {
+					callback && callback(data);
+					resolve(data);
+				}, reject);
+			});
+		},
+		inventoryById: function (id, callback) {
+			return new Promise((resolve, reject)=> {
+				API.get("/inventory/" + id, function (data) {
+					callback && callback(data);
+					resolve(data);
+				}, reject);
+			});
+		},
+		createInventory: function (inventory, callback) {
+			return new Promise((resolve, reject)=> {
+				API.post("/inventory", inventory, function (data) {
+					callback && callback(data);
+					resolve(data);
+				}, reject);
+			});
+		},
+		updateInventory: function (id, inventory, callback) {
+			return new Promise((resolve, reject)=> {
+				API.post("/inventory/" + id, inventory, function (data) {
+					callback && callback(data);
+					resolve(data);
+				}, reject);
+			});
+		},
+		post: function (URL, Params, Callback, onError) {
 			// $.post(Config.APIURL + URL + "?hash=" + User._id, Params, function (data) {
 			// 	Callback(data);
 			// });
@@ -511,22 +577,24 @@ $(function () {
 				dataType: "json",
 				mimeType: "application/json",
 				contentType: "application/json",
-				success: Callback
+				success: Callback,
+				error: onError
 			});
 		},
-		get: function (URL, Callback) {
+		get: function (URL, Callback, onError) {
 			$.get(Config.APIURL + URL + (URL.indexOf('?') >= 0 ? '&' : '?') + "hash=" + User._id, function (data) {
 				Callback(data);
-			});
+			}).error(onError);
 		},
-        delete: function (URL, Callback) {
+        delete: function (URL, Callback, onError) {
             var url = Config.APIURL + URL + (URL.indexOf('?') >= 0 ? '&' : '?') + "hash=" + User._id;
             $.ajax({
                 url: url,
                 type: 'DELETE',
                 success: function (data) {
                     Callback(data);
-                }
+                },
+				error: onError
             });
         },
 		postDownloadFile(urlToSend, data, onload) {

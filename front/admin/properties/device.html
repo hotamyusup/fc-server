@@ -112,7 +112,12 @@
                                         <i class="fa fa-table"></i> Bulk Editor
                                     </a>
                                 </li>
-                                <li>
+								<li data-bind="visible: ACL.isAdminOrEmployee" style="display: none;">
+									<a href="/admin/internal-inventory">
+										<i class="fa fa-list-alt"></i> Internal Inventory
+									</a>
+								</li>
+								<li>
                                     <a href="/admin/logout.html">
                                         <i class="fa fa-lock"></i> Log out
                                     </a>

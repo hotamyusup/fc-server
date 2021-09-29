@@ -57,7 +57,7 @@ class BaseController {
                             .header('content-disposition', `attachment; filename=${filename || defaultFilename}`);
                     } else {
                         return reply(csv);
-                    }
+                    }li
                 } else {
                     // promise
                     this.onAction(action, request, result)
@@ -83,7 +83,7 @@ class BaseController {
     get all() {
         return {
             handler: (request, reply) => {
-                const {from, sort, limit, skip} = request.query;
+                const {from, sort, limit, skip, filter} = request.query;
 
                 const options = {
                     sort: sort ? JSON.parse(decodeURIComponent(sort)) : undefined,
@@ -91,12 +91,40 @@ class BaseController {
                     skip: skip ? parseInt(skip) : undefined
                 };
 
-                const conditions = {};
+                const conditions = filter ? JSON.parse(decodeURIComponent(filter)) : {};
                 if (from) {
                     conditions.updated_at = {
                         $gt: moment(from).toDate()
                     }
                 }
+
+                _.pairs(conditions).forEach(([field, value]) => {
+                    if (value != null && value != '') {
+                        if (value.$regex) {
+                            if (_.isNumber(value.$regex)) {
+                                conditions[field] = value.$regex;
+                            } else {
+                                const $regex = new RegExp(value.$regex, "i");
+                                value.$regex = $regex
+                            }
+                        }
+
+                        const fieldDefinition = this.DAO.fieldDefinition(field);
+                        if (fieldDefinition && fieldDefinition.instance === 'Date') {
+                            if (typeof value === 'object') {
+                                ['$gte', '$gt', '$lte', '$lt'].forEach(comparatorField => {
+                                    if (value[comparatorField]) {
+                                        value[comparatorField] = moment(value[comparatorField]).toDate();
+                                    }
+                                })
+                            } else {
+                                conditions[field] = moment(value).toDate();
+                            }
+                        }
+                    } else {
+                        delete conditions[field];
+                    }
+                });
 
                 this.handle('all', request, reply, this.DAO.all(conditions, options));
             }

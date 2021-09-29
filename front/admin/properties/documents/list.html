@@ -107,9 +107,15 @@
 								<i class="fa fa-home"></i> Occupancy Types
 							</a>
 						</li>
+
                         <li data-bind="visible: ACL.isAdminOrEmployee" style="display: none;">
                             <a href="/admin/bulkeditor">
                                 <i class="fa fa-table"></i> Bulk Editor
+                            </a>
+                        </li>
+                        <li data-bind="visible: ACL.isAdminOrEmployee" style="display: none;">
+                            <a href="/admin/internal-inventory">
+                                <i class="fa fa-list-alt"></i> Internal Inventory
                             </a>
                         </li>
 						<li>
@@ -144,7 +150,6 @@
                                 <span data-bind="text: Property().Title"></span>
                             </h3>
                         </div>
-
                     </div>
 					<div class="col-xl-12">
 						<div class="card items" data-exclude="xs,sm,lg">

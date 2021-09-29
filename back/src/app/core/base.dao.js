@@ -29,9 +29,11 @@ class BaseDAO {
         return this.model.findOne({_id: id});
     }
 
-    async create(dataObject) {
-        const newModel = new this.model(dataObject);
-        return newModel.save();
+    async create(dataObject, options) {
+        const newModel = await this.model.create(dataObject);
+        dataObject.updated_at = moment().toISOString();
+
+        return this.model.findOneAndUpdate({_id: newModel._id}, dataObject, {runValidators: true, upsert: true, new: true});
     }
 
     async prepareUpdateObject(dataObject) {
