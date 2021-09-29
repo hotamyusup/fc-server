@@ -127,23 +127,16 @@
         <div class="sidebar-mobile-menu-handle" id="sidebar-mobile-menu-handle"></div>
         <div class="mobile-menu-handle"></div>
         <article class="content dashboard-page">
-
-            <div class="card" data-bind="if: !Documents() || !Property()">
-                <div class="card-block">Loading</div>
-            </div>
-            <section class="section" id="documents" data-bind="if: Documents() && Property()">
+            <section class="section" id="documents" data-bind="if: Documents()">
                 <div class="row">
                     <div class="col-xl-12">
-
                         <div class="pull-right" style="display: flex; align-items: center; min-height: 46px;">
                             <label>
                                 <select data-bind="value: selectedFilter" class="underlined required">
-                                    <option selected value="ShowAll">No Filter</option>
-                                    <option value="ShowScheduled">Scheduled</option>
-                                    <option value="ShowDeactivated">Deactivated</option>
-                                    <option value="ShowBounced">Bounced</option>
-                                    <option value="ShowDeleted">Deleted</option>
-                                    <option value="ShowHandDelivery">Hand Delivery</option>
+                                    <option value="ShowAll">No Filter</option>
+                                    <option value="ShowPending">Show Pending</option>
+                                    <option value="ShowDelivered">Show Delivered</option>
+                                    <option value="ShowDeleted">Show Deleted</option>
                                 </select>
                                 <span style="margin-left: 8px;"><span data-bind="text: totalFilteredCount()"></span> found&nbsp;</span>
                             </label>
@@ -170,16 +163,23 @@
                             </ul>
                             <!-- /ko -->
                         </div>
-
                         <div class="title-block">
-                            <h3 class="title">
-                                <span>Documents:</span>
-                                <a data-bind="
-                                        text: Property().Title,
-                                        attr: {href: '../property.html?i='+Property()._id}
-                                    "
-                                   href="#"></a>
+                            <h3 class="title" style="display: inline;">
+                                <span>Documents Hand Delivery</span>
                             </h3>
+
+                            <!-- ko if: ACL.isAdmin -->
+                            <select style="display: inline;"
+                                    class="action underlined required"
+                                    data-bind="
+                                    options: organizations(),
+                                    value: OrganizationID,
+                                    optionsText: 'Title',
+                                    optionsValue: '_id',
+                                    event:{ change: $root.getDocumentsForCurrentOrganization}
+                            "
+                            ></select>
+                            <!-- /ko -->
                         </div>
                     </div>
                     <div class="col-xl-12">
@@ -188,34 +188,21 @@
                                 <div class="header-block">
                                     <select data-bind="value: selectedAction" class="underlined required">
                                         <option disabled selected value>Select Action</option>
+                                        <option value="Delivered">Mark as Delivered</option>
                                         <option value="Rebuild">Rebuild</option>
-                                        <option value="Activate">Activate</option>
-                                        <option value="Deactivate">Deactivate</option>
+<!--                                        <option value="Activate">Activate</option>-->
+<!--                                        <option value="Deactivate">Deactivate</option>-->
                                         <option value="ExportSelected">Export</option>
                                         <option value="ExportSelectedCSV">Export CSV</option>
-                                        <option value="SendNow">Send Now</option>
-                                        <option value="Delivered">Mark as Delivered</option>
                                         <option value="Delete">Delete</option>
                                     </select>
 
-                                    <a class="btn btn-primary btn-sm"
-                                       data-bind="click: $root.applyActionToSelectedDocuments"
-                                       style="margin-left: 10px;"
-                                       href="javascript:;;">
+                                    <button class="btn btn-primary btn-sm"
+                                            data-bind="click: $root.applyActionToSelectedDocuments, enable: canAction"
+                                            style="margin-left: 10px;"
+                                            href="javascript:;;">
                                         Apply action to selected
-                                    </a>
-                                </div>
-                                <div class="header-block pull-right">
-                                    <a class="btn btn-primary btn-sm"
-                                       style="margin-left: 10px;"
-                                       href="javascript:;;"
-                                       target="_blank"
-                                       data-bind="attr: {href:'/documents/fire-safety/templatesZip?hash=' + User._id + '&PropertyID='+Property()._id}">
-                                        Export Document Templates
-                                    </a>
-
-                                    <a class="btn btn-primary btn-sm" href="javascript:;;"
-                                       data-bind="attr: {href:'create.html?i='+Property()._id}" class="userlink">Add</a>
+                                    </button>
                                 </div>
                             </div>
                             <ul class="item-list striped">
@@ -230,12 +217,12 @@
                                         </div>
                                         <div class="item-col item-col-header">
                                             <div>
-                                                <span>Resident email</span>
+                                                <span>Resident name</span>
                                             </div>
                                         </div>
                                         <div class="item-col item-col-header">
-                                            <div>
-                                                <span>Resident name</span>
+                                            <div class="no-overflow">
+                                                <span>Property</span>
                                             </div>
                                         </div>
                                         <div class="item-col item-col-header">
@@ -255,19 +242,18 @@
                                         </div>
                                         <div class="item-col item-col-header">
                                             <div class="no-overflow">
-                                                <span>Last time notified_at</span>
+                                                <span>Last time delivered at</span>
                                             </div>
                                         </div>
-                                        <div class="item-col item-col-header">
+                                        <div class="item-col item-col-header text-center">
                                             <div class="no-overflow">
-                                                <span>Status</span>
+                                                <span>Delivered</span>
                                             </div>
                                         </div>
-                                        <div class="item-col item-col-header">
-                                        </div>
-                                        <div class="item-col item-col-header">
-                                        </div>
-                                        <div class="item-col fixed item-col-check">
+                                        <div class="item-col fixed">
+                                            <div>
+                                                <span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
+                                            </div>
                                         </div>
                                     </div>
                                 </li>
@@ -284,23 +270,21 @@
                                         <div class="item-col item-col-header fixed">
                                         </div>
                                         <div class="item-col item-col-header">
-                                        </div>
-                                        <div class="item-col item-col-header">
                                             <input type="text" placeholder="search by name" data-bind="textInput: $root.residentNameSearch" class="form-control underlined required">
                                         </div>
                                         <div class="item-col item-col-header">
-                                            <select data-bind="options: $root.Buildings(), optionsText: 'Title', value: $root.filteredBuildingID, optionsValue: '_id', optionsCaption: 'Select building', event:{ change: $root.buildingFiltered}"
-                                                    class="form-control underlined">
+                                            <div class="item-col item-col-header">
+                                                <select data-bind="options: $root.Properties(), optionsText: 'Title', value: $root.filteredPropertyID, optionsValue: '_id', optionsCaption: 'Select property', event:{ change: $root.propertyFiltered }">
+                                                </select>
+                                            </div>
+                                        </div>
+                                        <div class="item-col item-col-header">
+                                            <select data-bind="options: $root.getBuildingsForFilter(), optionsText: 'Title', value: $root.filteredBuildingID, optionsValue: '_id', optionsCaption: 'Select building', event:{ change: $root.buildingFiltered }">
                                             </select>
                                         </div>
                                         <div class="item-col item-col-header">
-                                            <select data-bind="options: $root.getFloorsByBuildings(), optionsText: 'Title', value: $root.filteredFloorID, optionsValue: '_id', optionsCaption: 'Select floor'"
-                                                    class="form-control underlined">
+                                            <select data-bind="options: $root.getFloorsForFilter(), optionsText: 'Title', value: $root.filteredFloorID, optionsValue: '_id', optionsCaption: 'Select floor'">
                                             </select>
-                                        </div>
-                                        <div class="item-col item-col-header">
-                                        </div>
-                                        <div class="item-col item-col-header">
                                         </div>
                                         <div class="item-col item-col-header">
                                         </div>
@@ -315,9 +299,9 @@
                                 <!-- ko foreach: getFilteredDocuments() -->
                                 <li class="item" data-bind="style: {opacity: ($data.Status == -1) ? 0.6 : 1}">
                                     <div class="item-row"
-                                         data-bind="style: {'background-color': ($parent.selectedDocuments().indexOf($data._id) >= 0) ? '#E6E6E6' : undefined, opacity: $root.isDeactivated($data) ? 0.8 : 1}">
+                                         data-bind="style: {'background-color': ($parent.selectedDocuments().indexOf($data._id) >= 0) ? '#E6E6E6' : undefined}">
                                         <div class="item-col fixed item-col-check">
-                                            <label class="item-check" data-bind="attr: {title: '#'+($index() + 1)}">
+                                            <label class="item-check">
                                                 <input type="checkbox"
                                                        data-bind="checked: $parent.selectedDocuments, value: $data._id"
                                                        class="checkbox">
@@ -329,11 +313,17 @@
                                                data-bind="attr: {href:'/documents/'+$data._id + '.pdf?hash=' + User._id}"><i
                                                     class="fa fa-file"></i></a>
                                         </div>
-                                        <div class="item-col no-overflow" title="resident email">
-                                            <h4 class="item-title no-wrap" data-bind="text: $data.signer.email"></h4>
-                                        </div>
                                         <div class="item-col no-overflow" title="resident name">
                                             <h4 class="item-title no-wrap" data-bind="text: $data.signer.name"></h4>
+                                        </div>
+                                        <div class="item-col  no-overflow" title="Property">
+                                            <!-- ko if: $parent.id2property()[PropertyID] -->
+                                            <a href="javascript:;;" data-bind="attr: {href:'list.html?i='+PropertyID}"
+                                               class="userlink">
+                                                <h4 class="item-title no-wrap"
+                                                    data-bind="text: $parent.id2property()[PropertyID].Title"></h4>
+                                            </a>
+                                            <!-- /ko -->
                                         </div>
                                         <div class="item-col  no-overflow" title="Building">
                                             <h4 class="item-title no-wrap"
@@ -351,42 +341,22 @@
                                             <h4 class="item-title no-wrap"
                                                 data-bind="text: $data.notified_at && moment($data.notified_at).format('L')"></h4>
                                         </div>
-                                        <div class="item-col no-overflow">
-                                            <h4 class="item-title no-wrap" data-bind="if: $data.bounced">Bounced</h4>
-                                            <h4 class="item-title no-wrap"
-                                                data-bind="if: !$data.bounced && $data.Status === 1">Scheduled</h4>
-                                            <h4 class="item-title no-wrap"
-                                                data-bind="if: !$data.bounced && $data.Status === 0">Deactivated</h4>
-                                        </div>
-                                        <div class="item-col text-right">
-
-                                            <!-- ko if: $data.Status === 1 -->
-                                            <a class="userlink" data-bind="click: $root.deactivateDocument"
-                                               href="javascript:;;">Deactivate</a>
-                                            <!-- /ko -->
-                                            <!-- ko if: $data.Status !== 1 -->
-                                            <a class="userlink" data-bind="click: $root.activateDocument"
-                                               href="javascript:;;">Activate</a>
-                                            <!-- /ko -->
+                                        <div class="item-col no-overflow text-center">
+                                            <div>
+                                                <label class="item-check">
+                                                    <input type="checkbox"
+                                                           data-bind="checked: $data.handDelivered, value: $data._id, event:{ change: $root.markAsDeliveredDocument}"
+                                                           class="checkbox">
+                                                    <span></span>
+                                                </label>
+                                            </div>
                                         </div>
 
-                                        <div class="item-col no-overflow">
-                                            <!-- ko if: $data.signer && $data.signer.email -->
-                                            <a class="userlink" data-bind="click: $root.notifyDocument"
-                                               href="javascript:;;">Send now</a>
-                                            <!-- /ko -->
-
-                                            <!-- ko if: !($data.signer && $data.signer.email && !$data.handDelivered) -->
-                                            <!-- ko if: !$data.handDelivered -->
-                                            <a class="userlink" data-bind="click: $root.markHandDeliveredDocument"
-                                               href="javascript:;;">Hand Delivered</a>
-                                            <!-- /ko -->
-                                            <!-- /ko -->
-                                        </div>
-                                        <div class="item-col fixed item-col-check">
-                                            <a class="item-title no-wrap" href="javascript:;;"
-                                               data-bind="attr: {href:'edit.html?i=' + $data._id}"><i
-                                                    class="fa fa-edit"></i></a>
+                                        <div class="item-col fixed text-right">
+                                            <a href="javascript:;;"
+                                               data-bind="attr: {href:'edit.html?fromPage=delivery&i=' + $data._id}">
+                                                <i class="fa fa-edit"></i>
+                                            </a>
                                         </div>
                                     </div>
                                 </li>
@@ -394,18 +364,18 @@
                             </ul>
                         </div>
 
-
                         <!-- ko if: pagesCount() > 1 -->
                         <nav class="text-center">
                             <ul class="pagination" data-bind="foreach: new Array(pagesCount())">
                                 <li class="page-item" data-bind="css: {active: ($root.pageNum() === ($index()+1))}">
-                                    <a class="page-link"data-bind='text: $index()+1, click: $root.goToPage.bind(this, $index()+1)'  href=""></a>
+                                    <a class="page-link"
+                                       data-bind='text: $index()+1, click: $root.goToPage.bind(this, $index()+1)'
+                                       href=""></a>
                                 </li>
                             </ul>
                         </nav>
                         <!-- /ko -->
 
-                        <!-- ko if: totalFilteredCount() > 20 -->
                         <div class="text-center">
                             <label style="margin-left: 10px;">Limit:
                                 <select data-bind="value: itemsPerPage" class="underlined required">
@@ -418,9 +388,7 @@
                                 </select>
                             </label>
                         </div>
-                        <!-- /ko -->
 
-                        <!-- /ko -->
                     </div>
                 </div>
             </section>
@@ -447,24 +415,35 @@
 <script type="text/javascript">
     $(function () {
         Site.init();
-        var PropertyID = QueryString("i");
+        // var PropertyID = "637b555639c1451b61dbd899"; //QueryString("i");
+        // var PropertyID = "637b555639c1451b61dbd899"; //QueryString("i");
         const ACL = Auth.ACL();
+        const user = Auth.getCurrentUser();
+        var OrganizationID = user.Organization;
 
         var allChecked = false;
         var Model = {
             ACL: ACL,
 
+            canAction: ko.observable(true),
+
             User: User,
+            OrganizationID: ko.observable(OrganizationID),
+            organizations: ko.observable(null),
+            getDocumentsForCurrentOrganization,
 
             id2floor: ko.observable(null),
             id2building: ko.observable(null),
+            id2property: ko.observable(null),
             id2document: ko.observable(null),
             Property: ko.observable(null),
+            Properties: ko.observable(null),
             Buildings: ko.observable(null),
             Floors: ko.observable(null),
             Documents: ko.observable(null),
 
             residentNameSearch: ko.observable(null),
+            filteredPropertyID: ko.observable(null),
             filteredBuildingID: ko.observable(null),
             filteredFloorID: ko.observable(null),
             selectedAction: ko.observable(null),
@@ -476,33 +455,49 @@
             filteredDocuments: ko.observable([]),
             selectedDocuments: ko.observable([]),
             selectedAllDocuments: ko.observable(false),
-            getFloorsByBuildings() {
+            getBuildingsForFilter() {
+                let buildingsByProperty = this.Buildings();
+                if (this.filteredPropertyID()) {
+                    buildingsByProperty = _.filter(this.Buildings(), building => building.PropertyID === this.filteredPropertyID())
+                }
+                return buildingsByProperty;
+            },
+            getFloorsForFilter() {
                 let floorsByBuilding = this.Floors();
                 if (this.filteredBuildingID()) {
                     floorsByBuilding = _.filter(this.Floors(), floor => floor.BuildingID === this.filteredBuildingID())
+                } else if (this.filteredPropertyID()) {
+                    floorsByBuilding = _.filter(this.Floors(), floor => floor.PropertyID === this.filteredPropertyID())
                 }
                 return floorsByBuilding;
             },
             activateDocument(document) {
-                API.activateDocument(document._id, getDocumentsForCurrentProperty)
+                API.activateDocument(document._id, getDocumentsForCurrentOrganization)
             },
             deactivateDocument(document) {
-                API.deactivateDocument(document._id, getDocumentsForCurrentProperty)
+                API.deactivateDocument(document._id, getDocumentsForCurrentOrganization)
             },
-            notifyDocument(document) {
-                API.notifyDocument(document._id, getDocumentsForCurrentProperty)
-            },
-            markHandDeliveredDocument(document) {
-                API.updateDocument(document._id, {
+            markAsDeliveredDocument(document, event) {
+                const handDelivered = event.target.checked;
+                API.documentsBatch([{
                     _id: document._id,
-                    handDelivered: true
-                }, getDocumentsForCurrentProperty)
+                    notified_at: new Date(),
+                    handDelivered
+                }], getDocumentsForCurrentOrganization)
             },
             isDeactivated(document) {
                 const isDeactivatedStatus = document.Status === 0;
                 return !document.bounced && isDeactivatedStatus
             },
             filterDocument(document) {
+                const propertyId = this.filteredPropertyID();
+
+                if (propertyId) {
+                    if (document.PropertyID !== propertyId) {
+                        return false;
+                    }
+                }
+
                 const buildingId = this.filteredBuildingID();
 
                 if (buildingId) {
@@ -546,8 +541,12 @@
                         return !isDeletedStatus;
                     case 'ShowHandDelivery':
                         return !(document && document.signer && document.signer.email);
+                    case 'ShowPending':
+                        return !isDeletedStatus && !document.handDelivered;
+                    case 'ShowDelivered':
+                        return !isDeletedStatus && document.handDelivered;
                     default:
-                        return !document.bounced && isScheduledStatus;
+                        return !isDeletedStatus && !document.bounced && isScheduledStatus;
                 }
             },
             goToPage(pageNum) {
@@ -555,25 +554,30 @@
                 Model.selectedDocuments([]);
                 $(window).scrollTop(0);
             },
+            propertyFiltered() {
+                this.filteredBuildingID(null);
+                this.filteredFloorID(null);
+            },
             buildingFiltered() {
                 this.filteredFloorID(null);
             },
             getFilteredDocuments() {
-
                 const itemsPerPage = parseInt(this.itemsPerPage());
                 const filteredDocuments = [];
-                let filteredCounter = 0;
 
+                let filteredCounter = 0;
                 for (const document of this.Documents()) {
                     if (itemsPerPage > -1) {
                         if (this.filterDocument(document)) {
                             const pageIndex = this.pageNum() - 1;
-                            const insidePageLimit = (filteredCounter >= pageIndex * itemsPerPage)
-                                && (filteredCounter < (pageIndex * itemsPerPage + itemsPerPage));
+                            const skip = pageIndex * itemsPerPage;
+                            const insidePageLimit = (filteredCounter >= skip)
+                                && (filteredCounter < (skip + itemsPerPage));
 
                             if (insidePageLimit) {
                                 filteredDocuments.push(document);
                             }
+
                             filteredCounter++;
                         }
                     } else {
@@ -598,7 +602,6 @@
                     return this.getFilteredDocuments();
                 }
 
-                // this.pageNum(1);
                 Model.selectedDocuments([]);
                 this.filteredDocuments(filteredDocuments);
 
@@ -609,20 +612,24 @@
                 const selectedIds = this.selectedDocuments();
                 const documents = _.map(selectedIds, docId => Model.id2document()[docId]);
                 if (documents.length) {
+
+                    this.canAction(false);
+                    setTimeout(() => this.canAction(true), 800);
+
                     if (action === 'Rebuild') {
-                        API.rebuildDocuments(_.map(documents, ({_id}) => _id), getDocumentsForCurrentProperty);
+                        API.rebuildDocuments(_.map(documents, ({_id}) => _id), getDocumentsForCurrentOrganization);
                         this.selectedAction(null);
                     } else if (action === 'Activate') {
                         API.documentsBatch(_.map(documents, ({_id}) => ({
                             _id,
                             Status: 1
-                        })), getDocumentsForCurrentProperty);
+                        })), getDocumentsForCurrentOrganization);
                         this.selectedAction(null);
                     } else if (action === 'Deactivate') {
                         API.documentsBatch(_.map(documents, ({_id}) => ({
                             _id,
                             Status: 0
-                        })), getDocumentsForCurrentProperty);
+                        })), getDocumentsForCurrentOrganization);
                         this.selectedAction(null);
                     } else if (action === 'Delete') {
                         const confirmed = confirm(`Do you want to delete ${documents.length} documents?`);
@@ -630,7 +637,7 @@
                             API.documentsBatch(_.map(documents, ({_id}) => ({
                                 _id,
                                 Status: -1
-                            })), getDocumentsForCurrentProperty);
+                            })), getDocumentsForCurrentOrganization);
                             this.selectedAction(null);
                         }
                     } else if (action === 'Delivered') {
@@ -638,14 +645,12 @@
                             _id,
                             notified_at: moment().format(),
                             handDelivered: true,
-                        })), getDocumentsForCurrentProperty);
+                        })), getDocumentsForCurrentOrganization);
                         this.selectedAction(null);
-                    } else if (action === 'SendNow') {
-                        API.documentsNotifyBatch(documents, getDocumentsForCurrentProperty)
                     } else if (action === 'ExportSelected') {
-                        API.exportPropertyDocuments(_.map(documents, ({_id}) => _id), PropertyID);
+                        API.exportDocuments(_.map(documents, ({_id}) => _id));
                     } else if (action === 'ExportSelectedCSV') {
-                        API.exportPropertyDocumentsCSV(_.map(documents, ({_id}) => _id), PropertyID);
+                        API.exportDocumentsCSV(_.map(documents, ({_id}) => _id));
                     }
                 }
             },
@@ -659,42 +664,43 @@
             Model.selectedDocuments(selection);
         });
 
-        function getDocumentsForCurrentProperty() {
+        async function getDocumentsForCurrentOrganization() {
             Model.id2document({});
             Model.selectedDocuments([]);
-            API.documents(PropertyID, function (documents) {
-                if (!ACL.isAdmin) {
-                    documents = _.filter(documents, d => d.Status > -1);
-                }
-                Model.Documents(documents);
-                Model.id2document(_.indexBy(documents, '_id'))
-            });
+
+            const documents = await API.documentsHandDelivery(Model.OrganizationID());
+
+            const id2property = {};
+            const id2building = {};
+            const id2floor = {};
+            const id2document = {};
+
+            for (const document of documents) {
+                id2document[document._id] = document;
+                id2property[document.PropertyID] = document.Property;
+                id2building[document.BuildingID] = document.Building;
+                id2floor[document.FloorID] = document.Floor;
+            }
+
+            Model.id2property(id2property);
+            Model.id2building(id2building);
+            Model.id2floor(id2floor);
+
+            Model.Properties(_.values(id2property));
+            Model.Buildings(_.values(id2building));
+            Model.Floors(_.values(id2floor));
+
+            Model.id2document(id2document);
+            Model.Documents(documents);
+
+            return documents;
         }
 
+        getDocumentsForCurrentOrganization();
+
+        API.organizations(organizations => Model.organizations(organizations));
+
         ko.applyBindings(Model);
-
-        API.property(PropertyID, function (property) {
-            Model.Property(property);
-            Model.id2building({});
-            Model.id2floor({});
-            Model.Buildings([]);
-            Model.Floors([]);
-
-            _.forEach(property.Buildings, function (building) {
-                if (building) {
-                    Model.id2building()[building._id] = building;
-                    Model.Buildings().push(building);
-                    _.forEach(building.Floors, function (floor) {
-                        if (floor) {
-                            Model.id2floor()[floor._id] = floor;
-                            Model.Floors().push(floor);
-                        }
-                    });
-                }
-            });
-            getDocumentsForCurrentProperty();
-        });
-
     });
 
 </script>

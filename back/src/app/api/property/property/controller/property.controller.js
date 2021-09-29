@@ -45,7 +45,7 @@ class PropertyController extends PropertyChildrenBaseController {
         };
 
         return {
-            handler: (request, reply) => {
+            handler: async (request, reply) => {
                 const {from, sort, limit, skip} = request.query;
 
                 const options = {
@@ -64,6 +64,12 @@ class PropertyController extends PropertyChildrenBaseController {
                 const user = request.auth && request.auth.credentials;
                 if (user.Type === 'Customer') {
                     conditions.Organization = user.Organization;
+
+                    const properties = await PropertyDAO.getPropertiesForPropertyManager(user._id);
+                    const managedProperties = [...properties.map(property => property._id)];
+                    if (managedProperties.length) {
+                        conditions._id = { $in: managedProperties };
+                    }
                 }
 
                 this.handle('all', request, reply, getPropertiesWithChildrenBuildings(conditions, options));

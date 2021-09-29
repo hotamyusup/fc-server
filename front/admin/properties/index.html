@@ -137,10 +137,10 @@
 								<div class="card-header bordered">
 									<div class="header-block">
 										<h3 class="title"> Properties </h3>
-
 									</div>
 									<div class="header-block pull-right">
-                                            <a href="#export-modal-window" data-toggle="modal" data-target="#export-modal-window">Export</a>
+                                        <a href="/admin/properties/documents/delivery.html">Documents Delivery</a>
+                                        <a href="#export-modal-window" data-toggle="modal" data-target="#export-modal-window">Export</a>
 									</div>
 								</div>
 								<ul class="item-list striped" data-bind="foreach: properties">
@@ -223,8 +223,8 @@
 					});
 					property.exportCsv = (property) => {
                         API.property(property._id, (property) => {
-				let deviceCount = 0;
-						// Start file download.
+							let deviceCount = 0;
+							// Start file download.
 							API.equipments((equipments) => {
 								API.users((users) => {
 									let content = '';
