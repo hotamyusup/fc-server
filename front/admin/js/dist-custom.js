@@ -213,8 +213,19 @@ $(function () {
 				})
 			});
 		},
-		property: function (id, callback, level) {
-			const queryParamsString = level ? `?level=${level}` : '';
+		property: function (id, callback, level, onlyActive) {
+			const queryParams = [];
+			if (level != null) {
+				queryParams.push(`level=${level}`);
+			}
+			if (onlyActive != null) {
+				queryParams.push(`onlyActive=${onlyActive}`);
+			}
+
+			let queryParamsString = '';
+			if (queryParams.length > 0) {
+				queryParamsString = `?${queryParams.join('&')}`;
+			}
 
 			return new Promise((resolve, reject) => {
 				API.get(`/properties/${id}${queryParamsString}`, function (data) {
@@ -240,7 +251,7 @@ $(function () {
 			});
 		},
         buildings: function (queryParams = {}, callback) {
-            const url = `/buildings?${Object.keys(queryParams).map(key => `${key}=${queryParams[key]}`)}`;
+            const url = `/buildings?${stringifyQueryParams(queryParams)}`;
             API.get(url, callback);
         },
 		building: function (id, callback) {
@@ -253,7 +264,7 @@ $(function () {
             API.get("/buildings/" + id + "/copy", callback);
         },
         floors: function (queryParams = {}, callback) {
-            const url = `/floors?${Object.keys(queryParams).map(key => `${key}=${queryParams[key]}`)}`;
+            const url = `/floors?${stringifyQueryParams(queryParams)}`;
             API.get(url, callback);
         },
         floor: function (id, callback) {
@@ -407,12 +418,23 @@ $(function () {
 				callback(data);
 			});
 		},
+		document: function (documentID, callback, queryParams) {
+			const url = "/documents/" + documentID + '?' + stringifyQueryParams(queryParams);
+			return API.get(url, callback);
+		},
 		documents: function (propertyID, callback) {
 			API.get(
 				"/documents?PropertyID=" + propertyID,
 				function (data) {
 					callback(data);
 				});
+		},
+		documentsHandDelivery: function (OrganizationID, callback) {
+			const url = OrganizationID
+				? `/documents/hand-delivery?OrganizationID=${OrganizationID}`
+				: '/documents/hand-delivery';
+
+			return API.get(url, callback);
 		},
 		generateDocuments: function (documents, callback) {
 			API.post(
@@ -430,11 +452,25 @@ $(function () {
 					callback(data);
 				});
 		},
+		exportDocuments: function (documentIds, callback) {
+			this.postDownloadFile(`/documents/documentsZip?hash=${User._id}`, {documentIds}, callback);
+		},
+		exportDocumentsCSV: function (documentIds, callback) {
+			this.postDownloadFile(`/documents/documentsCSV?hash=${User._id}`, {documentIds}, callback);
+		},
 		exportPropertyDocuments: function (documentIds, propertyID, callback) {
-			this.postDownloadFile(`/documents/documentsZip?PropertyID=${propertyID}&hash=${User._id}`, {documentIds}, callback);
+			this.postDownloadFile(`/documents/propertyDocumentsZip?PropertyID=${propertyID}&hash=${User._id}`, {documentIds}, callback);
 		},
 		exportPropertyDocumentsCSV: function (documentIds, propertyID, callback) {
-			this.postDownloadFile(`/documents/documentsCSV?PropertyID=${propertyID}&hash=${User._id}`, {documentIds}, callback);
+			this.postDownloadFile(`/documents/propertyDocumentsCSV?PropertyID=${propertyID}&hash=${User._id}`, {documentIds}, callback);
+		},
+		updateDocument: function (id, document, callback) {
+			return new Promise((resolve, reject) => {
+				API.post("/documents/" + id, document, function (data) {
+					callback && callback(data);
+					resolve(data);
+				})
+			});
 		},
 		activateDocument: function (documentID, callback) {
 			API.get("/documents/" + documentID + "/activate", callback);
@@ -566,25 +602,35 @@ $(function () {
 			});
 		},
 		post: function (URL, Params, Callback, onError) {
-			// $.post(Config.APIURL + URL + "?hash=" + User._id, Params, function (data) {
-			// 	Callback(data);
-			// });
-
-			$.ajax({
-				url: Config.APIURL + URL + "?hash=" + User._id,
-				type: "POST",
-				data: JSON.stringify(Params),
-				dataType: "json",
-				mimeType: "application/json",
-				contentType: "application/json",
-				success: Callback,
-				error: onError
-			});
+			return wrapWithProgress(new Promise((resolve, reject) => {
+				$.ajax({
+					url: Config.APIURL + URL + "?hash=" + User._id,
+					type: "POST",
+					data: JSON.stringify(Params),
+					dataType: "json",
+					mimeType: "application/json",
+					contentType: "application/json",
+					success: data => {
+						Callback && Callback(data);
+						resolve(data);
+					},
+					error: err => {
+						onError && onError(err);
+						reject(err);
+					}
+				});
+			}));
 		},
 		get: function (URL, Callback, onError) {
-			$.get(Config.APIURL + URL + (URL.indexOf('?') >= 0 ? '&' : '?') + "hash=" + User._id, function (data) {
-				Callback(data);
-			}).error(onError);
+			return wrapWithProgress(new Promise((resolve, reject) => {
+				$.get(Config.APIURL + URL + (URL.indexOf('?') >= 0 ? '&' : '?') + "hash=" + User._id, function (data) {
+					Callback && Callback(data);
+					resolve(data);
+				}).error((error) => {
+					onError && onError(error);
+					reject(error);
+				});
+			}));
 		},
         delete: function (URL, Callback, onError) {
             var url = Config.APIURL + URL + (URL.indexOf('?') >= 0 ? '&' : '?') + "hash=" + User._id;
@@ -598,32 +644,33 @@ $(function () {
             });
         },
 		postDownloadFile(urlToSend, data, onload) {
-			var req = new XMLHttpRequest();
+			return wrapWithProgress(new Promise((resolve) => {
+				var req = new XMLHttpRequest();
 
-			req.open("POST", urlToSend, true);
-			req.responseType = "blob";
-			req.setRequestHeader("Content-Type", "application/json");
+				req.open("POST", urlToSend, true);
+				req.responseType = "blob";
+				req.setRequestHeader("Content-Type", "application/json");
 
-			req.onload = function (event) {
-				var blob = req.response;
-				var fileName = "Exported Documents.zip";
-				if (req.getResponseHeader("content-disposition")) {
-					var contentDisposition = req.getResponseHeader("content-disposition");
-					fileName = contentDisposition.substring(contentDisposition.indexOf("=") + 1);
-					fileName = decodeURIComponent(fileName);
+				req.onload = function (event) {
+					var blob = req.response;
+					var fileName = "Exported Documents.zip";
+					if (req.getResponseHeader("content-disposition")) {
+						var contentDisposition = req.getResponseHeader("content-disposition");
+						fileName = contentDisposition.substring(contentDisposition.indexOf("=") + 1);
+						fileName = decodeURIComponent(fileName);
+					}
+
+					var link = document.createElement('a');
+					link.href = window.URL.createObjectURL(blob);
+					link.download = fileName;
+					link.click();
+
+					onload && onload(event);
+					resolve(event);
 				}
 
-				var link = document.createElement('a');
-				link.href = window.URL.createObjectURL(blob);
-				link.download = fileName;
-				link.click();
-
-				onload && onload(event);
-			}
-
-			req.send(data ? JSON.stringify(data) : undefined);
-
-			return req;
+				req.send(data ? JSON.stringify(data) : undefined);
+			}));
         }
 	}
 });
@@ -642,3 +689,33 @@ function QueryString(name, url) {
 	if (!results[2]) return '';
 	return decodeURIComponent(results[2].replace(/\+/g, " "));
 }
+
+function stringifyQueryParams(queryParams = {}) {
+	return Object.keys(queryParams).map(key => `${key}=${queryParams[key]}`).join('&');
+}
+
+let progressCounter = 0;
+
+function startProgress() {
+	if (progressCounter === 0) {
+		NProgress.start();
+	}
+
+	progressCounter++;
+}
+
+function stopProgress() {
+	--progressCounter;
+
+	if (progressCounter === 0) {
+		NProgress.done();
+	}
+}
+
+function wrapWithProgress(promiseLike) {
+	startProgress();
+	return Promise
+		.resolve(promiseLike)
+		.finally(stopProgress)
+}
+
