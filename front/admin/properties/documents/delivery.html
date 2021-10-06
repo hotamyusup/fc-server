@@ -242,7 +242,10 @@
                                         </div>
                                         <div class="item-col item-col-header">
                                             <div class="no-overflow">
-                                                <span>Last time delivered at</span>
+                                                <a data-bind="click: $root.sortDocumentsByNotified">
+                                                    <span>Delivered at</span>
+                                                    <i data-bind="css: $root.sortIcons()['notified_at'] || {'fa-sort' : true}" class="fa"></i>
+                                                </a>
                                             </div>
                                         </div>
                                         <div class="item-col item-col-header text-center">
@@ -455,6 +458,8 @@
             filteredDocuments: ko.observable([]),
             selectedDocuments: ko.observable([]),
             selectedAllDocuments: ko.observable(false),
+            sortedFields: ko.observable({}),
+            sortIcons: ko.observable({}),
             getBuildingsForFilter() {
                 let buildingsByProperty = this.Buildings();
                 if (this.filteredPropertyID()) {
@@ -470,6 +475,35 @@
                     floorsByBuilding = _.filter(this.Floors(), floor => floor.PropertyID === this.filteredPropertyID())
                 }
                 return floorsByBuilding;
+            },
+            sortIcon(field) {
+                const sortOrder = Model.sortedFields()[field] || 0;
+                const icons = {0: "fa-sort", 1: "fa-sort-up", [-1]: "fa-sort-down"};
+                const icon = icons[sortOrder];
+                return icon;
+            },
+            sortDocumentsByNotified() {
+                this.sortDocuments('notified_at');
+            },
+            sortDocuments(field) {
+                const sortOrder = Model.sortedFields()[field] || 0;
+                const toggle = {0: 1, 1: -1, [-1]: 0};
+                const nextValue = toggle[sortOrder];
+                Model.sortedFields({
+                    ...Model.sortedFields(),
+                    [field]: nextValue
+                });
+
+                const icons = {0: "fa-sort", 1: "fa-sort-up", [-1]: "fa-sort-down"};
+                this.sortIcons({
+                    ...this.sortIcons(),
+                    [field]: {
+                        "fa-sort": false,
+                        "fa-sort-up": false,
+                        "fa-sort-down": false,
+                        [icons[nextValue]]: true
+                    }
+                });
             },
             activateDocument(document) {
                 API.activateDocument(document._id, getDocumentsForCurrentOrganization)
@@ -562,11 +596,33 @@
                 this.filteredFloorID(null);
             },
             getFilteredDocuments() {
+                const documents = this.Documents();
+                let sortedDocuments = documents;
+
+                const sortedFields = Model.sortedFields();
+                if (sortedFields['notified_at']) {
+                    const sortingFunction = (doc1, doc2) => {
+                        if (!doc1.notified_at)  {
+                            return sortedFields['notified_at'];
+                        }
+                        if (!doc2.notified_at)  {
+                            return -sortedFields['notified_at'];
+                        }
+                        const notified1 = moment(doc1.notified_at).format('L');
+                        const notified2 = moment(doc2.notified_at).format('L');
+                        return sortedFields['notified_at'] === -1
+                            ? notified1.localeCompare(notified2)
+                            : notified2.localeCompare(notified1);
+                    };
+
+                    sortedDocuments = documents.sort(sortingFunction);
+                }
+
                 const itemsPerPage = parseInt(this.itemsPerPage());
                 const filteredDocuments = [];
 
                 let filteredCounter = 0;
-                for (const document of this.Documents()) {
+                for (const document of sortedDocuments) {
                     if (itemsPerPage > -1) {
                         if (this.filterDocument(document)) {
                             const pageIndex = this.pageNum() - 1;
