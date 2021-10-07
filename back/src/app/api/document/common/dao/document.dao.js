@@ -28,7 +28,7 @@ class DocumentDAO extends BaseDAO {
                     const propertyById = _.indexBy(properties, '_id');
                     return this.model.find({
                         type: 'fire-safety-disclosure',
-                        'signer.email': {$exists: true},
+                        'signer.email': {$exists: true, $ne: ""},
                         PropertyID: {$in: Object.keys(propertyById)},
                         $or: [
                             {notified_at: {$lt: prevNotifiedAt}},

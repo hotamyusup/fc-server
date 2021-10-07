@@ -19,6 +19,11 @@
             document.write('<link rel="stylesheet" id="theme-style" href="/admin/css/app.css">');
         }
     </script>
+    <style>
+        .item-list .item-check .checkbox + span {
+            cursor: pointer;
+        }
+    </style>
 </head>
 <body>
 <div class="main-wrapper">
@@ -351,7 +356,7 @@
                                             <h4 class="item-title no-wrap"
                                                 data-bind="text: $data.options && $data.options.language"></h4>
                                         </div>
-                                        <div class="item-col no-overflow" title="last time notified_at">
+                                        <div class="item-col no-overflow" title="Notified at">
                                             <h4 class="item-title no-wrap"
                                                 data-bind="text: $data.notified_at && moment($data.notified_at).format('L')"></h4>
                                         </div>

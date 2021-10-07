@@ -19,6 +19,11 @@
             document.write('<link rel="stylesheet" id="theme-style" href="/admin/css/app.css">');
         }
     </script>
+    <style>
+        .item-list .item-check .checkbox + span {
+            cursor: pointer;
+        }
+    </style>
 </head>
 <body>
 <div class="main-wrapper">
@@ -340,7 +345,7 @@
                                             <h4 class="item-title no-wrap"
                                                 data-bind="text: $data.options && $data.options.language"></h4>
                                         </div>
-                                        <div class="item-col no-overflow" title="last time notified_at">
+                                        <div class="item-col no-overflow" title="Notified at">
                                             <h4 class="item-title no-wrap"
                                                 data-bind="text: $data.notified_at && moment($data.notified_at).format('L')"></h4>
                                         </div>
@@ -513,11 +518,16 @@
             },
             markAsDeliveredDocument(document, event) {
                 const handDelivered = event.target.checked;
-                API.documentsBatch([{
-                    _id: document._id,
-                    notified_at: new Date(),
-                    handDelivered
-                }], getDocumentsForCurrentOrganization)
+                if (handDelivered) {
+                    API.documentsHandDeliveryBatch([{
+                        _id: document._id,
+                    }], getDocumentsForCurrentOrganization);
+                } else {
+                    API.documentsBatch([{
+                        _id: document._id,
+                        handDelivered: false
+                    }], getDocumentsForCurrentOrganization);
+                }
             },
             isDeactivated(document) {
                 const isDeactivatedStatus = document.Status === 0;
@@ -659,6 +669,7 @@
                 }
 
                 Model.selectedDocuments([]);
+
                 this.filteredDocuments(filteredDocuments);
 
                 return filteredDocuments;
@@ -697,11 +708,10 @@
                             this.selectedAction(null);
                         }
                     } else if (action === 'Delivered') {
-                        API.documentsBatch(_.map(documents, ({_id}) => ({
-                            _id,
-                            notified_at: moment().format(),
-                            handDelivered: true,
-                        })), getDocumentsForCurrentOrganization);
+                        API.documentsHandDeliveryBatch(
+                            _.map(documents, ({_id}) => ({_id})),
+                            getDocumentsForCurrentOrganization
+                        );
                         this.selectedAction(null);
                     } else if (action === 'ExportSelected') {
                         API.exportDocuments(_.map(documents, ({_id}) => _id));
@@ -749,7 +759,7 @@
             Model.id2document(id2document);
             Model.Documents(documents);
 
-            return documents;
+            return Model.Documents();
         }
 
         getDocumentsForCurrentOrganization();
