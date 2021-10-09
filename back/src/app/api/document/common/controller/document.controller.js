@@ -846,6 +846,8 @@ async function notifyOnEmail(document) {
     document.handDelivered = false;
 
     savedDocument.notified_at = document.notified_at;
+    savedDocument.handDelivered = document.handDelivered;
+
     await DocumentHistoryDAO.createHistoryRecord(savedDocument);
 
     return document.save().then(d => ({_id: d._id}));
