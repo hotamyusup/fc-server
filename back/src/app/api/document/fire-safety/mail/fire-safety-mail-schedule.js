@@ -6,6 +6,7 @@ const logger = require('../../../../core/logger');
 const MailService = require('../../../../core/mail.service');
 const DocumentDAO = require('../../common/dao/document.dao.instance');
 const documentToMailMessage = require('./documentToMailMessage');
+const DocumentHistoryDAO = require("../../common/dao/document-history.dao.instance");
 
 // cron details: https://crontab.guru/#0_09_*_JAN_*
 // ****  DiSABLED 12.2.2019 **** //
@@ -53,7 +54,12 @@ async function sendNotificationsToAllSigners() {
                 const {DocumentID} = message;
                 if (DocumentID) {
                     const document = await DocumentDAO.get(DocumentID);
-                    document.notified_at = moment().toISOString();
+
+                    document.notified_at = new Date();
+                    document.handDelivered = false;
+
+                    await DocumentHistoryDAO.createHistoryRecord(document);
+
                     return document.save();
                 }
             });

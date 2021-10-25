@@ -28,6 +28,7 @@ const documentToMailMessage = require('../../fire-safety/mail/documentToMailMess
 
 const PDFMakeService = require('../service/pdfmake.service');
 const DocumentDAO = require("../dao/document.dao.instance");
+const DocumentHistoryDAO = require("../dao/document-history.dao.instance");
 
 const BuildingDAO = require("../../../../api/property/building/dao/building.dao");
 const FloorDAO = require("../../../../api/property/floor/dao/floor.dao");
@@ -310,7 +311,7 @@ class DocumentController extends BaseController {
                                 value: document => document.FloorID && document.FloorID.Title || '',
                             },
                             {
-                                label: 'Last time notified_at',
+                                label: 'Notified at',
                                 value: document => {
                                     if (document.notified_at) {
                                         const dateTimeInLA = moment(document.notified_at).tz("America/Los_Angeles");
@@ -509,7 +510,7 @@ class DocumentController extends BaseController {
                                 value: document => id2floor[document.FloorID] && id2floor[document.FloorID].Title || '',
                             },
                             {
-                                label: 'Last time notified_at',
+                                label: 'Notified at',
                                 value: document => {
                                     if (document.notified_at) {
                                         const dateTimeInLA = moment(document.notified_at).tz("America/Los_Angeles");
@@ -691,11 +692,53 @@ class DocumentController extends BaseController {
         }
     }
 
+    get handDeliveryBatch() {
+        return {
+            handler: (request, reply) => {
+                const hash = request.query.hash || '';
+                const action = 'handDeliveryBatch';
+                const entitiesJSON = request.payload[this.batchEntitiesKey];
+
+                const handDelivery = async (document) => {
+                    document.handDelivered = true;
+                    document.notified_at = new Date();
+                    await DocumentHistoryDAO.createHistoryRecord(document);
+                    return document.save().then(d => ({_id: d._id}));
+                }
+
+                return this.handle(action, request, reply,
+                    Promise
+                        .map(entitiesJSON, entityJSON => this.DAO.get(entityJSON._id).then(handDelivery), {concurrency: 10})
+                        .catch(error => {
+                            logger.error(`sessionId: ${hash} ${this.controllerName}.${action} error: ${error}`);
+                            throw error;
+                        })
+                );
+            },
+            payload: {
+                maxBytes: 100 * 1024 * 1024,
+                timeout: 3 * 60 * 60 * 1000,
+            },
+            timeout: {
+                socket: 3 * 60 * 60 * 1000 + 1000,
+            },
+        }
+    }
+
     get notifyOnEmail() {
         return {
             handler: (request, reply) => {
                 const action = 'notifyOnEmail';
                 return this.handle(action, request, reply, this.DAO.get(request.params[this.requestIDKey]).then(notifyOnEmail));
+            }
+        }
+    }
+
+    get history() {
+        return {
+            handler: (request, reply) => {
+                const action = 'history';
+                return this.handle(action, request, reply, DocumentHistoryDAO.getHistoryRecord(request.params[this.requestIDKey]));
             }
         }
     }
@@ -776,6 +819,8 @@ function getBase64FromBlob(blob) {
 }
 
 async function notifyOnEmail(document) {
+    const savedDocument = document.toJSON();
+
     if (document.type === 'fire-safety-disclosure') {
         const message = await documentToMailMessage(document);
         await MailService.sendMessage(message);
@@ -798,6 +843,13 @@ async function notifyOnEmail(document) {
     SendGridService.fetchNewBouncesFromSendGridDebounced();
 
     document.notified_at = new Date();
+    document.handDelivered = false;
+
+    savedDocument.notified_at = document.notified_at;
+    savedDocument.handDelivered = document.handDelivered;
+
+    await DocumentHistoryDAO.createHistoryRecord(savedDocument);
+
     return document.save().then(d => ({_id: d._id}));
 }
 

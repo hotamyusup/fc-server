@@ -350,10 +350,18 @@
 
                                 <li class="item">
                                     <div class="item-row ">
-                                        <div class="item-col item-col-title no-overflow text-left">
+                                        <div class="item-col no-overflow text-left">
+                                            <div>
+                                                <button data-bind="click: saveDocumentAndReturn"
+                                                        class="btn btn-success"
+                                                        type="button">
+                                                    <i class="fa fa-chevron-left"></i>
+                                                    Save
+                                                </button>
+                                            </div>
                                             <div>
                                                 <button data-bind="click: saveDocument"
-                                                        class="btn btn-success"
+                                                        class="btn btn-secondary"
                                                         type="button">Save
                                                 </button>
                                             </div>
@@ -383,9 +391,14 @@
                                                         type="button">Send Now
                                                 </button>
                                                 <!-- /ko -->
+                                                <button data-bind="click: $root.handDeliveredDocument"
+                                                        class="btn btn-secondary"
+                                                        type="button">Hand Delivered
+                                                </button>
+
                                             </div>
                                         </div>
-                                        <div class="item-col item-col-title no-overflow text-right">
+                                        <div class="item-col no-overflow text-right">
                                             <div>
                                                 <button data-bind="click: deleteDocument" class="btn btn-danger"
                                                         type="button">Delete
@@ -395,6 +408,37 @@
                                     </div>
                                 </li>
                             </ul>
+
+                        </div>
+
+                        <div class="card items" data-exclude="xs,sm,lg" data-bind="if: documentHistory()">
+                            <div class="card-header bordered">
+                                <div class="header-block">
+                                    <h3 class="title">Document Delivery History</h3>
+                                </div>
+                                <div class="header-block pull-right">
+
+                                </div>
+                            </div>
+
+                            <ul class="item-list striped" data-bind="foreach: documentHistory()">
+                                <li class="item">
+                                    <div class="item-row">
+                                        <div class="item-col item-col-title no-overflow">
+                                            <!-- ko if: $data.document.handDelivered -->
+                                            <h4 class="item-title no-wrap">Hand Delivered</h4>
+                                            <!-- /ko -->
+                                            <!-- ko if: !$data.document.handDelivered -->
+                                            <h4 class="item-title no-wrap" data-bind="text: document.signer.email"></h4>
+                                            <!-- /ko -->
+                                        </div>
+                                        <div class="item-col item-col-title no-overflow text-right">
+                                            <h4 class="item-title no-wrap" data-bind="text: $data.document.notified_at && moment($data.document.notified_at).format('LLLL')"></h4>
+                                        </div>
+                                    </div>
+                                </li>
+                            </ul>
+
 
                         </div>
                     </div>
@@ -427,6 +471,7 @@
         var fromPage = QueryString("fromPage");
         var Model = {
             ACL: Auth.ACL(),
+            documentHistory: ko.observable(null),
             _document: ko.observable(null),
             get Document() {
                 return this._document();
@@ -468,14 +513,23 @@
                 Model.Document = null;
                 Model.Document = doc;
             },
-            saveDocument() {
-                const {_id, PropertyID, BuildingID, FloorID, Status, signer, options, handDelivered} = Model.Document;
+            async saveDocumentAndReturn() {
+                await Model.updateDocument();
 
                 const redirect = fromPage === 'delivery'
                     ? `/properties/documents/delivery.html`
                     : `/properties/documents/list.html?i=${Model.Document.PropertyID}`;
 
-                API.updateDocument(
+                Site.redirect(redirect);
+            },
+            async saveDocument() {
+                await Model.updateDocument();
+                fetchDocument();
+            },
+            updateDocument() {
+                const {_id, PropertyID, BuildingID, FloorID, Status, signer, options, handDelivered} = Model.Document;
+
+                return API.updateDocument(
                     _id,
                     {
                         _id,
@@ -486,8 +540,7 @@
                         signer,
                         options,
                         handDelivered
-                    },
-                    _ => Site.redirect(redirect));
+                    });
             },
             activateDocument() {
                 API.activateDocument(Model.Document._id, fetchDocument)
@@ -511,7 +564,11 @@
                     : `/properties/documents/list.html?i=${Model.Document.PropertyID}`;
 
                 API.updateDocument(_id, changeSet, _ => Site.redirect(redirect));
-            }
+            },
+            handDeliveredDocument() {
+                const {_id} = Model.Document;
+                API.documentsHandDeliveryBatch([{_id}], fetchDocument);
+            },
         };
 
 
@@ -531,6 +588,10 @@
                         Model.Floor = _.findWhere(Model.Building.Floors, {_id: document.FloorID});
                     }
                 }, 'Floors');
+
+                API.documentHistory(document._id, function (history) {
+                    Model.documentHistory(history);
+                });
             });
         }
 
