@@ -135,7 +135,7 @@ function buildFireSafetyDisclosureHtml(title, attachmentsListHtml, propertyManag
                                     ${attachmentsListHtml}
                                 </ul>
                                 <div>
-                                    If you have any questions, please reach out to the ${propertyManagerTitle} ${contacts.join(' or ')}.
+                                    Have a question, contact the office team at ${propertyManagerEmail} ${contacts.join(' or ')}. 
                                 </div>
                             </div>
                         </td>
