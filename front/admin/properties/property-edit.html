@@ -451,8 +451,8 @@
                     Document409ManagerContact.Email = `${Document409ManagerContact.Email || ''}`.trim()
                     const {Phone, Email} = Document409ManagerContact;
 
-                    if (!Phone || !Email) {
-                        return alert('Phone and Email fields for 409 Contact Manager are required');
+                    if (!Email) {
+                        return alert('Email field is required for 409 Contact Manager');
                     }
                 }
 
