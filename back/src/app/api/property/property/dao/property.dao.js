@@ -44,7 +44,7 @@ class PropertyDAO extends PropertyChildrenBaseDAO {
                     property.Longitude = geocodingResponse[0].longitude;
                 } else {
                     const addressString = property.Street + ', ' + property.City + ', ' + property.ZipCode + ', ' + property.State;
-                    logger.info(`PropertyDAO.prepareUpdateObject() geocoding result is empty for Property ${property._id} : ${property.Title()} - address: ${addressString}`)
+                    logger.info(`PropertyDAO.prepareUpdateObject() geocoding result is empty for Property ${property._id} : ${property.Title} - address: ${addressString}`)
                 }
             } catch (e) {
                 logger.error(`PropertyDAO.prepareUpdateObject():${property._id} geocoding error =  ${e}`)
