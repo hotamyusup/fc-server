@@ -288,6 +288,18 @@
 										<li class="item">
 											<div class="item-row">
 												<div class="item-col item-col-title no-overflow">
+													<h4 class="item-title no-wrap">Alarm Zone</h4>
+												</div>
+												<div class="item-col item-col-title no-overflow">
+													<div class="form-group">
+														<input type="text" class="form-control required underlined" data-bind="value: Device.AlarmZone">
+													</div>
+												</div>
+											</div>
+										</li>
+										<li class="item">
+											<div class="item-row">
+												<div class="item-col item-col-title no-overflow">
 													<h4 class="item-title no-wrap">Inspections</h4>
 												</div>
 												<div class="item-col item-col-title no-overflow">
@@ -362,8 +374,8 @@
 				saveDevice() {
 					Model.isSaving(true);
 
-					const {_id, DeviceType, IsEmergencyExit} = Model.Device;
-					const changeSet = {_id};
+					const {_id, DeviceType, IsEmergencyExit, AlarmZone} = Model.Device;
+					const changeSet = {_id, AlarmZone};
 					if (DeviceType ==="56fa2d50dfe0b75622682654") {
 						changeSet.IsEmergencyExit = IsEmergencyExit;
 					}
