@@ -166,7 +166,7 @@
 
                             <!-- ko if: pagesCount() > 1 -->
                             <ul class="pagination" data-bind="foreach: new Array(pagesCount())"
-                                style="margin-bottom: .5rem; margin-left: .5rem;">
+                                style="margin-bottom: .5rem; margin-left: .5rem; max-width: 240px;">
                                 <li class="page-item" data-bind="css: {active: ($root.pageNum() === ($index()+1))}">
                                     <a class="page-link"
                                        data-bind='text: $index()+1, click: $root.goToPage.bind(this, $index()+1)'
@@ -255,6 +255,11 @@
                                         </div>
                                         <div class="item-col item-col-header">
                                             <div class="no-overflow">
+                                                <span>Unit</span>
+                                            </div>
+                                        </div>
+                                        <div class="item-col item-col-header">
+                                            <div class="no-overflow">
                                                 <span>Language</span>
                                             </div>
                                         </div>
@@ -317,6 +322,8 @@
                                         </div>
                                         <div class="item-col item-col-header">
                                         </div>
+                                        <div class="item-col item-col-header">
+                                        </div>
                                         <div class="item-col fixed item-col-check">
                                         </div>
                                     </div>
@@ -351,6 +358,10 @@
                                         <div class="item-col no-overflow" title="Floor">
                                             <h4 class="item-title no-wrap"
                                                 data-bind="text: $parent.id2floor()[FloorID] && $parent.id2floor()[FloorID].Title"></h4>
+                                        </div>
+                                        <div class="item-col no-overflow" title="Unit">
+                                            <h4 class="item-title no-wrap"
+                                                data-bind="text: $data.signer.unit"></h4>
                                         </div>
                                         <div class="item-col no-overflow" title="language">
                                             <h4 class="item-title no-wrap"
@@ -712,6 +723,40 @@
                 }
             },
         };
+
+        let updateUrlParams = true;
+        const urlParamsMapping = [
+            ['filteredBuildingID', 'BuildingID'],
+            ['filteredFloorID', 'FloorID']
+        ];
+
+        for (const [modelParamName, urlParamName] of urlParamsMapping) {
+            if (Model[modelParamName] && Model[modelParamName].subscribe) {
+                Model[modelParamName].subscribe(newModelParamValue => {
+                    if (updateUrlParams) {
+                        insertUrlParamsDebounced({[urlParamName]: newModelParamValue});
+                    }
+                });
+            }
+        }
+
+        function updateModelWithUrlParams() {
+            console.log(`window.onpopstate() start`);
+            updateUrlParams = false;
+            const urlParamNames = urlParamsMapping.map(([_, urlParamName])=> urlParamName);
+            const urlParams = readUrlParams(urlParamNames);
+
+            for (const [modelParamName, urlParamName] of urlParamsMapping) {
+                const urlParamValue = urlParams[urlParamName];
+                Model[modelParamName](urlParamValue);
+            }
+
+            console.log(`window.onpopstate() BuildingID end`);
+            updateUrlParams = true;
+        }
+        updateModelWithUrlParams();
+
+        window.onpopstate = updateModelWithUrlParams
 
         Model.selectedAllDocuments.subscribe(isAllSelected => {
             const selection = [];

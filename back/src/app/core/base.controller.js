@@ -83,7 +83,7 @@ class BaseController {
     get all() {
         return {
             handler: (request, reply) => {
-                const {from, sort, limit, skip, filter} = request.query;
+                const {from, sort, limit, skip, filter, fields} = request.query;
 
                 const options = {
                     sort: sort ? JSON.parse(decodeURIComponent(sort)) : undefined,
@@ -126,7 +126,17 @@ class BaseController {
                     }
                 });
 
-                this.handle('all', request, reply, this.DAO.all(conditions, options));
+
+                let fieldsObj;
+                if (fields) {
+                    const parsedFields = decodeURIComponent(fields).split(',')
+                    fieldsObj = {};
+                    for (const name of parsedFields) {
+                        fieldsObj[name] = 1;
+                    }
+                }
+
+                this.handle('all', request, reply, this.DAO.all(conditions, options, fieldsObj));
             }
         };
     }
@@ -170,7 +180,10 @@ class BaseController {
 
                 this.handle(action, request, reply,
                     Promise
-                        .map(entitiesJSON, entityJSON => this.DAO.upsert(entityJSON), {concurrency: 30})
+                        .map(entitiesJSON, entityJSON => entityJSON && entityJSON._id
+                                ? this.DAO.update(entityJSON)
+                                : this.DAO.create(entityJSON)
+                            , {concurrency: 30})
                         .catch(error => {
                             logger.error(`sessionId: ${hash} ${this.controllerName}.${action} error: ${error}`);
                             throw error;
@@ -183,6 +196,12 @@ class BaseController {
     get getBatch() {
         return {
             handler: (request, reply) => this.handle('getBatch', request, reply, this.DAO.all({_id: {$in: request.payload}}))
+        }
+    }
+
+    get deleteBatch() {
+        return {
+            handler: (request, reply) => this.handle('deleteBatch', request, reply, Promise.map(request.payload, id => this.DAO.delete(id), {concurrency: 30}))
         }
     }
 

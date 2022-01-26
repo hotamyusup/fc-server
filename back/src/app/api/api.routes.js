@@ -1,4 +1,5 @@
 const API_ROUTES = [
+    ...require("./integration/integration.routes"),
     ...require("./internal-inventory/routes/internal-inventory.routes"),
 
     ...require("./document/common/routes/document.routes"),

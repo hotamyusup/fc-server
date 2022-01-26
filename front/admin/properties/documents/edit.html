@@ -590,7 +590,8 @@
                 }, 'Floors');
 
                 API.documentHistory(document._id, function (history) {
-                    Model.documentHistory(history);
+                    const sortedHistory = _.sortBy(history, 'created_at').reverse();
+                    Model.documentHistory(sortedHistory);
                 });
             });
         }
