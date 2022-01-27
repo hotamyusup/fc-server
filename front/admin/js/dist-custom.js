@@ -205,13 +205,20 @@ $(function () {
 				}
 			});
 		},
-		properties: function (callback) {
-			return new Promise((resolve, reject) => {
-				API.get("/properties", function (data) {
-					callback && callback(data);
-					resolve(data);
-				})
-			});
+		properties: function (queryParams, callback) {
+			// old call
+			if (!callback && queryParams && typeof queryParams === 'function') {
+				callback = queryParams;
+				return new Promise((resolve, reject) => {
+					API.get("/properties", function (data) {
+						callback && callback(data);
+						resolve(data);
+					})
+				});
+			} else {
+				const url = `/properties?${stringifyQueryParams(queryParams)}`;
+				return API.get(url, callback);
+			}
 		},
 		property: function (id, callback, level, onlyActive) {
 			const queryParams = [];
@@ -252,7 +259,7 @@ $(function () {
 		},
         buildings: function (queryParams = {}, callback) {
             const url = `/buildings?${stringifyQueryParams(queryParams)}`;
-            API.get(url, callback);
+            return API.get(url, callback);
         },
 		building: function (id, callback) {
 			API.get("/buildings/"+id, callback);
@@ -265,7 +272,7 @@ $(function () {
         },
         floors: function (queryParams = {}, callback) {
             const url = `/floors?${stringifyQueryParams(queryParams)}`;
-            API.get(url, callback);
+            return API.get(url, callback);
         },
         floor: function (id, callback) {
             API.get("/floors/"+id, callback);
@@ -277,9 +284,16 @@ $(function () {
             API.get("/floors/" + id + "/copy", callback);
         },
         devices: function (queryParams = {}, callback) {
-            const url = `/devices?${Object.keys(queryParams).map(key => `${key}=${queryParams[key]}`)}`;
+            const url = `/devices?${stringifyQueryParams(queryParams)}`;
             API.get(url, callback);
         },
+        devicesPoints: function (queryParams = {}, callback) {
+            const url = `/devices/points?${stringifyQueryParams(queryParams)}`;
+            return API.get(url, callback);
+        },
+		device: function (id, callback) {
+			return API.get("/devices/"+id, callback);
+		},
 		deleteInspection: function (id, callback) {
 			API.delete("/inspections/"+id, function (data) {
 				callback(data);
@@ -484,8 +498,14 @@ $(function () {
 		documentsNotifyBatch: function (documents, callback) {
 			API.post("/documents/notify-batch", {documents}, callback);
 		},
+		documentsHandDeliveryBatch: function (documents, callback) {
+			API.post("/documents/hand-delivery-batch", {documents}, callback);
+		},
 		documentsBatch: function (documents, callback) {
 			API.post("/documents/batch", {documents}, callback);
+		},
+		documentHistory: function (documentID, callback) {
+			return API.get("/documents/" + documentID + "/history", callback);
 		},
 		equipments: function (callback) {
 			return new Promise((resolve, reject)=> {
@@ -601,6 +621,19 @@ $(function () {
 				}, reject);
 			});
 		},
+		nameMapping: function (propertyID, callback) {
+			const apiUrl = "/integration/name-mapping?PropertyID=" + propertyID;
+			return API.get(apiUrl, callback);
+		},
+		createNameMapping: function (nameMapping, callback) {
+			return API.post("/integration/name-mapping", nameMapping, callback);
+		},
+		nameMappingBatch: function (namemapping, callback) {
+			return API.post("/integration/name-mapping/batch", {namemapping}, callback);
+		},
+		deleteNameMappingBatch: function (mappingIds, callback) {
+			return API.post("/integration/name-mapping/delete", mappingIds, callback);
+		},
 		post: function (URL, Params, Callback, onError) {
 			return wrapWithProgress(new Promise((resolve, reject) => {
 				$.ajax({
@@ -678,6 +711,63 @@ $(function () {
 function Redirect(URL) {
 	//window.location.href = Config.BaseURL + URL;
 	window.location.href = "/admin" + URL;
+}
+
+function insertUrlParams(params = {}) {
+	if (window.history.pushState) {
+		const searchParams = new URLSearchParams(window.location.search);
+		let changed = false;
+		for (const key in params) {
+			const currentValue = searchParams.get(key);
+			const value = params[key];
+			if (currentValue !== value) {
+				if (value == null) {
+					searchParams.delete(key);
+				} else {
+					searchParams.set(key, value);
+				}
+				changed = true;
+			}
+		}
+
+		if (changed) {
+			const newUrl = window.location.protocol + "//"
+				+ window.location.host
+				+ window.location.pathname
+				+ '?' + searchParams.toString();
+
+			window.history.pushState({path: newUrl}, '', newUrl);
+		}
+	}
+}
+
+let insertUrlParamsDebouncedParams = {};
+let insertUrlParamsDebouncedTimeout;
+function insertUrlParamsDebounced(params = {}) {
+	return insertUrlParams(params);
+	insertUrlParamsDebouncedParams = {
+		...insertUrlParamsDebouncedParams,
+		params
+	}
+
+	if (insertUrlParamsDebouncedTimeout) {
+		clearTimeout(insertUrlParamsDebouncedTimeout);
+	}
+
+	insertUrlParamsDebouncedTimeout = setTimeout(()=> {
+		insertUrlParams({...insertUrlParamsDebouncedParams});
+		insertUrlParamsDebouncedParams = {};
+	}, 100);
+}
+
+function readUrlParams(paramNames = []) {
+	const params = new URLSearchParams(window.location.search);
+	const values = {};
+	for (const paramName of paramNames) {
+		values[paramName] = params.get(paramName);
+	}
+
+	return values;
 }
 
 function QueryString(name, url) {
