@@ -159,7 +159,7 @@
 
                             <!-- ko if: pagesCount() > 1 -->
                             <ul class="pagination" data-bind="foreach: new Array(pagesCount())"
-                                style="margin-bottom: .5rem; margin-left: .5rem;">
+                                style="margin-bottom: .5rem; margin-left: .5rem; max-width: 240px;">
                                 <li class="page-item" data-bind="css: {active: ($root.pageNum() === ($index()+1))}">
                                     <a class="page-link"
                                        data-bind='text: $index()+1, click: $root.goToPage.bind(this, $index()+1)'
@@ -181,7 +181,7 @@
                                     value: OrganizationID,
                                     optionsText: 'Title',
                                     optionsValue: '_id',
-                                    event:{ change: $root.getDocumentsForCurrentOrganization}
+                                    event:{ change: $root.selectOrganization }
                             "
                             ></select>
                             <!-- /ko -->
@@ -238,6 +238,11 @@
                                         <div class="item-col item-col-header">
                                             <div class="no-overflow">
                                                 <span>Floor</span>
+                                            </div>
+                                        </div>
+                                        <div class="item-col item-col-header">
+                                            <div class="no-overflow">
+                                                <span>Unit</span>
                                             </div>
                                         </div>
                                         <div class="item-col item-col-header">
@@ -300,6 +305,8 @@
                                         </div>
                                         <div class="item-col item-col-header">
                                         </div>
+                                        <div class="item-col item-col-header">
+                                        </div>
                                         <div class="item-col fixed item-col-check">
                                         </div>
                                     </div>
@@ -341,7 +348,11 @@
                                             <h4 class="item-title no-wrap"
                                                 data-bind="text: $parent.id2floor()[FloorID] && $parent.id2floor()[FloorID].Title"></h4>
                                         </div>
-                                        <div class="item-col no-overflow" title="language">
+                                        <div class="item-col no-overflow" title="Unit">
+                                            <h4 class="item-title no-wrap"
+                                                data-bind="text: $data.signer.unit"></h4>
+                                        </div>
+                                        <div class="item-col no-overflow" title="Language">
                                             <h4 class="item-title no-wrap"
                                                 data-bind="text: $data.options && $data.options.language"></h4>
                                         </div>
@@ -428,6 +439,9 @@
         const ACL = Auth.ACL();
         const user = Auth.getCurrentUser();
         var OrganizationID = user.Organization;
+        if (ACL.isAdmin) {
+            OrganizationID = QueryString("OrganizationID");
+        }
 
         var allChecked = false;
         var Model = {
@@ -720,6 +734,12 @@
                     }
                 }
             },
+            selectOrganization() {
+                insertUrlParams({
+                    OrganizationID: Model.OrganizationID()
+                });
+                getDocumentsForCurrentOrganization();
+            }
         };
 
         Model.selectedAllDocuments.subscribe(isAllSelected => {

@@ -139,7 +139,7 @@
 					</div>
 					<form role="form" id="form">
 						<div class="form-group">
-							<label class="control-label">CSV File</label>
+							<label class="control-label" for="csvFile">CSV File</label>
 							<input name="csvFile" id="csvFile" type="file" class="form-control underlined required email">
 						</div>
 						<div class="form-group">
@@ -148,14 +148,65 @@
 									  type="text"
 									  name="csvData"
 									  rows="10"
-									  placeholder="first name, last name, email, building, floor, unit"
 									  class="form-control underlined required"
 									  style="height: 120px;"
 							></textarea>
 						</div>
 
+						<ul class="item-list striped">
+
+							<li class="item">
+								<div class="item-row">
+									<div class="item-col item-col-title no-overflow">
+										<h4 class="item-title no-wrap">Format</h4>
+									</div>
+<!--									<div class="item-col item-col-title no-overflow">-->
+<!--										<span>first name, last name, email, building, floor, unit</span>-->
+<!--									</div>-->
+									<div class="item-col item-col-title no-overflow">
+										<div class="item-col item-col-header">
+											<select class="form-control underlined" data-bind="options: $root.PARSED_FORMATS, value: $root.parseFormat, event:{ change: $root.propertyFiltered }">
+											</select>
+										</div>
+									</div>
+								</div>
+							</li>
+
+							<li class="item">
+								<div class="item-row">
+									<div class="item-col no-overflow">
+										<h4 class="item-title no-wrap">Delimiter</h4>
+										<!-- ko if: !$root.parseDelimiter() !== '\t'-->
+										<a class="form-text text-muted"
+										   href="#"
+										   style="position: absolute; margin-left: 80px; font-size: 80%; font-weight: normal;"
+										   data-bind="click: setDelimiterTab">(use tab)</a>
+										<!-- /ko -->
+									</div>
+									<div class="item-col no-overflow">
+										<div class="form-group">
+											<input type="text" data-bind="value: parseDelimiter" class="form-control required underlined">
+										</div>
+									</div>
+								</div>
+							</li>
+
+							<li class="item">
+								<div class="item-row">
+									<div class="item-col no-overflow">
+										<h4 class="item-title no-wrap">Mapping</h4>
+									</div>
+									<div class="item-col no-overflow">
+										<div data-bind="if: isLoaded">
+											<a href="javascript:;;" data-bind="attr: {href:'/admin/integration/property-names-mapping.html?PropertyID='+Property()._id}" class="userlink">Mapping</a>
+										</div>
+									</div>
+								</div>
+							</li>
+						</ul>
+
 						<div class="form-group">
-							<a id="prepareCSVDataBtn" class="btn btn-primary btn-sm" href="#">Parse CSV data</a>
+							<a id="prepareCSVDataBtn" class="btn btn-primary btn-sm" style="margin-top: 20px;" href="#">Parse CSV data</a>
 						</div>
 					</form>
 				</div>
@@ -169,9 +220,19 @@
 									<h3 class="title">
 										<span>Parsed Documents:</span>
 									</h3>
+									<div class="header-block pull-right">
+											<label class="item-check">
+												<input type="checkbox"
+													   data-bind="checked: $root.isHideValid, value: $root.isHideValid"
+													   class="checkbox">
+												<span>Hide Valid</span>
+												<span data-bind="text: $root.isHideValid()"></span>
+											</label>
+									</div>
 								</div>
 							</div>
 							<ul class="item-list striped"  data-bind="foreach: parsedDocuments">
+								<!-- ko if: !$root.isHideValid() || !$root.isValidDocument($data)-->
 								<li class="item">
 									<div class="item-row">
 										<div class="item-col no-overflow" title="resident name">
@@ -211,6 +272,7 @@
 										</div>
 									</div>
 								</li>
+								<!-- /ko -->
 							</ul>
 							<div class="card-footer bordered">
 								<div class="header-block pull-right" >
@@ -265,10 +327,16 @@ Igor, Kalashnikov, zo0m.cfg@gmail.com, main building 11, 3rd floor, unit124
 Igor, Kalashnikov, zo0m.cfg@gmail.com, main building 11, 11th floor, unit121
 Igor, Kalashnikov, zo0m.cfgmail.com, main building 11, 11th floor, unit121
 `.trim());*/
+		var PARSED_FORMATS = [
+			`first name, last name, email, unit`,
+			`first name, last name, email, building, floor, unit, language`,
+		];
+
 		var rootModel = {
 			ACL: Auth.ACL(),
 		    isLoaded: ko.observable(false),
 		    isScheduling: ko.observable(false),
+			isHideValid: ko.observable(false),
 			stepName: ko.observable('upload'),
 			isPreview() {
 				return this.stepName() === 'preview'
@@ -278,14 +346,18 @@ Igor, Kalashnikov, zo0m.cfgmail.com, main building 11, 11th floor, unit121
 			Buildings: ko.observableArray([]),
 			Floors: ko.observableArray([]),
 			SUPPORTED_LANGUAGES: ["ENGLISH", "CHINESE", "SPANISH", "FILIPINO", "RUSSIAN", "VIETNAMESE"],
+			PARSED_FORMATS,
 			id2building: {},
 			id2floor: {},
 			title2building: {},
 			title2floor: {},
 			csvBuilding2buildingId: {},
 			csvFloor2floorId: {},
-
+			parseFormat: PARSED_FORMATS[0],
+			parseDelimiter: ko.observable('\t'),
 			Documents: ko.observableArray([]),
+			nameMapping: ko.observableArray([]),
+			unit2mapping: {},
 			parsedDocuments: ko.observableArray([]),
 			isAnyParsedDocument() {
 				return this.parsedDocuments().length;
@@ -347,6 +419,9 @@ Igor, Kalashnikov, zo0m.cfgmail.com, main building 11, 11th floor, unit121
 					}
 				}
 			},
+			setDelimiterTab() {
+				rootModel.parseDelimiter('\t');	
+			},
 			scheduleParsedDocuments() {
 					rootModel.isScheduling(true);
 					var parsedDocuments = rootModel.parsedDocuments();
@@ -386,8 +461,8 @@ Igor, Kalashnikov, zo0m.cfgmail.com, main building 11, 11th floor, unit121
 
 		var scheduledDocumentsEmails = [];
 
-		var ID = QueryString("i");
-		API.property(ID, function (property) {
+		var PropertyID = QueryString("i");
+		API.property(PropertyID, function (property) {
 			rootModel.Property(property);
 			rootModel.Buildings(property.Buildings);
 
@@ -412,7 +487,7 @@ Igor, Kalashnikov, zo0m.cfgmail.com, main building 11, 11th floor, unit121
 			rootModel.Floors(floors);
 
 
-			API.documents(ID, function (documents) {
+			API.documents(PropertyID, function (documents) {
 				rootModel.Documents(documents || []);
 				_.forEach(documents, function (doc) {
 					if (doc && doc.signer && doc.signer.email) {
@@ -422,12 +497,25 @@ Igor, Kalashnikov, zo0m.cfgmail.com, main building 11, 11th floor, unit121
 
 				rootModel.isLoaded(true);
 			});
+			
+			// API.nameMapping(PropertyID, function (nameMapping) {
+			// 	rootModel.nameMapping(nameMapping);
+			// 	rootModel.unit2mapping = _.indexBy(nameMapping, 'Unit');
+			// });
 		});
 
 		function getBuildingIDByTitle(title) {
-			return title
-					&& rootModel.title2building[title.toLowerCase()]
-					&& rootModel.title2building[title.toLowerCase()]._id
+			if (title) {
+				const findIdByTitle = (title) => rootModel.title2building[title.toLowerCase()]
+						&& rootModel.title2building[title.toLowerCase()]._id;
+				
+				let buildingId = findIdByTitle(title);
+				if (!buildingId) {
+					
+				}
+
+				return buildingId;
+			}
 		}
 
 		function getFloorIDByTitle(buildingID, title) {
@@ -490,13 +578,16 @@ Igor, Kalashnikov, zo0m.cfgmail.com, main building 11, 11th floor, unit121
 			return errors;
 		}
 
-		$("#prepareCSVDataBtn").click(function (e) {
+		$("#prepareCSVDataBtn").click(async function (e) {
 			var rawCSVData = $('#csvData').val();
 			if (rawCSVData && rawCSVData.length) {
+				const nameMapping = await API.nameMapping(PropertyID);
+				const unit2mapping = _.indexBy(nameMapping, 'Unit');
+				
 				const rows = rawCSVData
 						.split('\n')
 						.map(function (line) {
-							var columns = line.split(',').map(function (column) {
+							var columns = line.split(rootModel.parseDelimiter()).map(function (column) {
 								return column ? column.trim() : null;
 							});
 							return columns;
@@ -505,18 +596,15 @@ Igor, Kalashnikov, zo0m.cfgmail.com, main building 11, 11th floor, unit121
 							return row && row.length && row[0];
 						});
 
-				var parsedDocuments = _.map(rows, function (row) {
-					var first_name = (row[0] || '');
-					var last_name = (row[1] || '');
-					var email = (row[2] || '');
-					var building = (row[3] || '');
-					var floor = (row[4] || '');
-					var unit = (row[5] || '');
-					var language = (row[6] || 'ENGLISH');
+				const column2index = getFormatColumnToIndex(rootModel.parseFormat);
+				const parsedDocuments = _.map(rows, function (row) {
+					const {
+						first_name,  last_name,  email,  building,  floor,  unit,  language
+					} = parseRowWithFormat(row, column2index);
 
-					var buildingID = getBuildingIDByTitle(building);
+					const buildingID = getBuildingIDByTitle(building);
 
-					var document = {
+					const document = {
 						BuildingID: buildingID,
 						FloorID: getFloorIDByTitle(buildingID, floor),
 						language: language,
@@ -531,11 +619,21 @@ Igor, Kalashnikov, zo0m.cfgmail.com, main building 11, 11th floor, unit121
 						}
 					};
 
+					if (!document.BuildingID
+							&& !document.FloorID
+							&& unit
+							&& unit2mapping[unit]
+					) {
+						const {BuildingID, FloorID} = unit2mapping[unit];
+						document.BuildingID = BuildingID;
+						document.FloorID = FloorID;
+					}
+
 					return document;
 				});
 
 				rootModel.parsedDocuments(parsedDocuments);
-				rootModel.stepName('preview')
+				rootModel.stepName('preview');
 
 
 			} else {
@@ -598,6 +696,30 @@ Igor, Kalashnikov, zo0m.cfgmail.com, main building 11, 11th floor, unit121
 				$('#csvData').val(fileContent);
 			});
 		});
+
+		function getFormatColumnToIndex(formatLine = `first name, last name, email, building, floor, unit, language`) {
+			const column2index = {};
+			const columns = formatLine
+					.split(',')//rootModel.parseDelimiter)
+					.map((column) => column ? column.trim().replace(' ', '_') : null);
+
+			columns.forEach((column, i) => column2index[column] = i);
+			return column2index;
+		}
+
+		function parseRowWithFormat(row, index) {
+			const getWithDefault = (name, def = '') => row[index[name]] || def;
+
+			const first_name = getWithDefault('first_name');
+			const last_name = getWithDefault('last_name');
+			const email = getWithDefault('email');
+			const building = getWithDefault('building');
+			const floor = getWithDefault('floor');
+			const unit = getWithDefault('unit');
+			const language = getWithDefault('language', 'ENGLISH');
+
+			return { first_name,  last_name,  email,  building,  floor,  unit,  language };
+		}
 	});
 </script>
 </body>

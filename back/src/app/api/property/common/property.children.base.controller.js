@@ -41,7 +41,7 @@ class PropertyChildrenBaseController extends BaseController {
     get all() {
         return {
             handler: async (request, reply) => {
-                const {from, sort, limit, skip, filter, DeviceID, FloorID, BuildingID, PropertyID} = request.query;
+                const {from, sort, limit, skip, filter, fields, DeviceID, FloorID, BuildingID, PropertyID} = request.query;
 
                 const options = {
                     sort: sort ? JSON.parse(decodeURIComponent(sort)) : undefined,
@@ -87,7 +87,16 @@ class PropertyChildrenBaseController extends BaseController {
 
                 const user = request.auth && request.auth.credentials;
                 await this.addConditionFilterUserOwnEntities(conditions, user);
-                const entities = await this.DAO.all(conditions, options);
+                
+                let fieldsObj;
+                if (fields) {
+                    const parsedFields = decodeURIComponent(fields).split(',')
+                    fieldsObj = {};
+                    for (const name of parsedFields) {
+                        fieldsObj[name] = 1;
+                    }
+                }
+                const entities = await this.DAO.all(conditions, options, fieldsObj);
                 return this.handle('all', request, reply, entities);
             },
             timeout: {

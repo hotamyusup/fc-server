@@ -1,0 +1,858 @@
+<!doctype html>
+<html class="no-js" lang="en" xmlns:v-bind="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="x-ua-compatible" content="ie=edge">
+    <title>Fire Cloud Admin</title>
+    <meta name="description" content="">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="apple-touch-icon" href="apple-touch-icon.png">
+    <link rel="stylesheet" href="/admin/css/vendor.css">
+    <link rel="stylesheet" href="/admin/css/app.css">
+    <script>
+        var themeSettings = (localStorage.getItem('themeSettings')) ? JSON.parse(localStorage.getItem('themeSettings')) :
+            {};
+        var themeName = themeSettings.themeName || 'red';
+        if (themeName) {
+            document.write('<link rel="stylesheet" id="theme-style" href="/admin/css/app-' + themeName + '.css">');
+        } else {
+            document.write('<link rel="stylesheet" id="theme-style" href="/admin/css/app.css">');
+        }
+    </script>
+
+    <!--PRODUCTION VUE-->
+    <script src="https://cdn.jsdelivr.net/npm/vue"></script>
+
+    <!--DEVELOPMENT VUE-->
+    <!--<script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>-->
+    <style>
+        .checkbox-label {
+            margin-bottom: 0;
+            margin-left: 8px;
+        }
+
+        .item-row.selected {
+            background-color: #FF6161 !important;
+            color: white;
+        }
+
+        .item-row.selected a {
+            color: white;
+        }
+    </style>
+</head>
+<body>
+<div class="main-wrapper">
+    <div class="app" id="app">
+        <header class="header">
+            <div class="header-block header-block-collapse d-lg-none d-xl-none">
+                <button class="collapse-btn" id="sidebar-collapse-btn">
+                    <i class="fa fa-bars"></i>
+                </button>
+            </div>
+            <div class="header-block header-block-search"></div>
+            <div class="header-block header-block-buttons"></div>
+            <div class="header-block header-block-nav">
+                <ul class="nav-profile">
+                    <li id="notificationNavItem" data-bind="if: ACL.user.notificationSupported"
+                        class="notifications new">
+                        <a href="" data-toggle="dropdown" aria-expanded="false">
+                            <i class="fa" data-bind="css: ACL.user.notificationIcon"></i>
+                            <sup data-bind="style: {opacity: ACL.user.notificationsStats.notReadCount ? 1 : 0}">
+                                <span class="counter"
+                                      data-bind="text: ACL.user.notificationsStats.notReadCount"></span>
+                            </sup>
+                        </a>
+                        <div class="dropdown-menu notifications-dropdown-menu" x-placement="bottom-start"
+                             style="position: absolute; will-change: transform; top: 0px; left: 0px; transform: translate3d(-116px, 25px, 0px);">
+                            <ul class="notifications-container"
+                                data-bind="foreach: ACL.user.notificationsStats.notifications">
+                                <li data-bind="style: {opacity: read ? 0.6 : 1}">
+                                    <a href="javascript:;;"
+                                       data-bind="attr: {id:_id, href:'/admin/notifications/show.html?id='+_id}"
+                                       class="notification-item">
+                                        <div class="body-col">
+                                            <p>
+                                                <span data-bind="text: $data.notificationEvent.data.title"
+                                                      class="accent"/>
+                                            </p>
+                                            <p data-bind="text: $data.notificationEvent.data.body"/>
+                                        </div>
+                                    </a>
+                                </li>
+                            </ul>
+                            <footer>
+                                <ul>
+                                    <li>
+                                        <a href="/admin/notifications/show.html"> View All </a>
+                                    </li>
+                                </ul>
+                            </footer>
+                        </div>
+                    </li>
+                </ul>
+            </div>
+        </header>
+
+        <aside class="sidebar">
+            <div class="sidebar-container">
+                <div class="sidebar-header">
+                    <div class="brand">Fire Cloud Admin</div>
+                </div>
+                <nav class="menu">
+                    <ul class="sidebar-menu metismenu" id="sidebar-menu">
+                        <li class="active">
+                            <a href="/admin/properties">
+                                <i class="fa fa-th-large"></i> Properties
+                            </a>
+                        </li>
+                        <li data-bind="visible: ACL.isAdmin" style="display: none;">
+                            <a href="/admin/users">
+                                <i class="fa fa-users"></i> Users
+                            </a>
+                        </li>
+                        <li data-bind="visible: ACL.isAdmin" style="display: none;">
+                            <a href="/admin/organizations">
+                                <i class="fa fa-dot-circle-o"></i> Organizations
+                            </a>
+                        </li>
+                        <li data-bind="visible: ACL.isAdminOrEmployee" style="display: none;">
+                            <a href="/admin/equipments">
+                                <i class="fa fa-lightbulb-o"></i> Equipments
+                            </a>
+                        </li>
+                        <li data-bind="visible: ACL.isAdminOrEmployee" style="display: none;">
+                            <a href="/admin/constructiontypes">
+                                <i class="fa fa-building-o"></i> Construction Types
+                            </a>
+                        </li>
+                        <li data-bind="visible: ACL.isAdminOrEmployee" style="display: none;">
+                            <a href="/admin/occupancytypes">
+                                <i class="fa fa-home"></i> Occupancy Types
+                            </a>
+                        </li>
+
+                        <li data-bind="visible: ACL.isAdminOrEmployee" style="display: none;">
+                            <a href="/admin/bulkeditor">
+                                <i class="fa fa-table"></i> Bulk Editor
+                            </a>
+                        </li>
+                        <li data-bind="visible: ACL.isAdminOrEmployee" style="display: none;">
+                            <a href="/admin/internal-inventory">
+                                <i class="fa fa-list-alt"></i> Internal Inventory
+                            </a>
+                        </li>
+                        <li>
+                            <a href="/admin/logout.html">
+                                <i class="fa fa-lock"></i> Log out
+                            </a>
+                        </li>
+                    </ul>
+                </nav>
+            </div>
+        </aside>
+        <div class="sidebar-overlay" id="sidebar-overlay"></div>
+        <div class="sidebar-mobile-menu-handle" id="sidebar-mobile-menu-handle"></div>
+        <div class="mobile-menu-handle"></div>
+        <article class="content dashboard-page">
+            <section class="section" id="property-names-mapping" style="display: none;" :style="{display: true}">
+                <div class="row">
+                    <div class="col-xl-12">
+                        <div class="title-block">
+                            <div class="pull-right">
+                                <select v-if="properties && properties.length"
+                                        v-model="fieldFilters['PropertyID']"
+                                        style="display: inline; width: 100%;"
+                                        @change="filterFieldChanged('PropertyID', fieldFilters['PropertyID'])">
+                                    <option value=""></option>
+                                    <option v-for="property in properties"
+                                            :value="property._id">{{property.Title}}
+                                    </option>
+                                </select>
+                            </div>
+                            <h3 class="title">
+                                <span>Property Names Mapping for </span>
+                                <a :href="`/admin/properties/documents/create.html?i=${PropertyID}`">Schedule Notification</a>
+                                <span>{{message}}</span>
+                            </h3>
+                        </div>
+                    </div>
+                    <div class="col-xl-12">
+                        <div class="card items" data-exclude="xs,sm,lg">
+                            <div class="card-header bordered">
+                                <div class="header-block pull-right">
+                                    <span>fetched: {{mapping.length}}</span>
+                                    <span>limit: </span>
+                                    <input style="display: inline; max-width: 60px"
+                                           v-model="fetchLimit"
+                                           type="number"
+                                           @input="fetchDataFromServer()"
+                                           placeholder="filter">
+                                    <span> and skip: </span>
+                                    <input style="display: inline; max-width: 60px"
+                                           v-model="fetchSkip"
+                                           type="number"
+                                           @input="fetchDataFromServer()"
+                                           placeholder="filter">
+                                    <span> sort by field:</span>
+                                    <select v-model="fetchSortField"
+                                            style="display: inline; max-width: 160px;"
+                                            @change="fetchDataFromServer()">
+                                        <option v-for="field in TABLE_FIELDS" :value="field">
+                                            {{field}}
+                                        </option>
+                                    </select>
+                                    <select v-model="fetchSortOrder"
+                                            style="display: inline; max-width: 160px;"
+                                            @change="fetchDataFromServer()">
+                                        <option value="1">ASC</option>
+                                        <option value="-1">DESC</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="card-header bordered">
+                                <div class="header-block">
+                                    <select v-if="selectedItems.count > 0"
+                                            v-model="selectedAction"
+                                            class="underlined required">
+                                        <option disabled selected value>Select Action</option>
+                                        <option value="Delete">Delete</option>
+                                    </select>
+
+                                    <a v-if="selectedItems.count > 0"
+                                       class="btn btn-primary btn-sm"
+                                       style="margin-left: 10px;"
+                                       @click="applyActionToSelected(selectedAction)"
+                                       href="#">
+                                        Apply action to selected {{selectedItems.count}}
+                                    </a>
+                                </div>
+                                <div class="header-block pull-right">
+                                    <a class="btn btn-secondary btn-sm" href="#" @click="toggleImportNameMapping()">Import</a>
+                                    <a class="btn btn-primary-outline btn-sm" href="#" @click="showCreateNameMapping()">Create</a>
+                                </div>
+                            </div>
+
+                            <ul v-if="showCreate" class="item-list">
+                                <li class="item">
+                                    <div class="item-row">
+                                        <div class="item-col fixed item-col-check"></div>
+    
+                                        <div v-for="(field, index) in TABLE_FIELDS" v-if="field !== 'created_at'"  class="item-col item-col-title no-overflow">
+                                            <select v-if="field === 'PropertyID'"
+                                                    v-model="newMapping[field]"
+                                                    style="display: inline; width: 100%;">
+                                                <option value=""></option>
+                                                <option v-for="property in properties"
+                                                        :value="property._id">{{property.Title}}
+                                                </option>
+                                            </select>
+                                            <select v-else-if="field === 'BuildingID'"
+                                                    v-model="newMapping[field]"
+                                                    style="display: inline; width: 100%;">
+                                                <option value=""></option>
+                                                <option v-for="building in buildings"
+                                                        :value="building._id">{{building.Title}}
+                                                </option>
+                                            </select>
+                                            <select v-else-if="field === 'FloorID'"
+                                                    v-model="newMapping[field]"
+                                                    style="display: inline; width: 100%;"
+                                                    :disabled="!newMapping['BuildingID']">
+                                                <option value=""></option>
+                                                <option v-for="floor in floors"
+                                                        v-if="newMapping['BuildingID'] === floor.BuildingID"
+                                                        :value="floor._id">{{floor.Title}}
+                                                </option>
+                                            </select>
+                                            <div v-else-if="field === 'updated_at'">
+                                                <a class="btn btn-primary btn-sm"
+                                                   @click="createNameMapping()"
+                                                   href="#">Save</a>
+                                            </div>
+                                            <div v-else-if="field === 'Unit'">
+                                                <input type="text"
+                                                       v-model="newMapping[field]"
+                                                       :placeholder="TABLE_NAMES[index]"
+                                                       class="form-control underlined required">
+                                            </div>
+    
+                                        </div>
+                                    </div>
+                                </li>
+                            </ul>
+                            <div v-if="showImport" class="card-block">
+                                <div class="form-group">
+                                    <label class="control-label">CSV</label>
+                                    <textarea type="text"
+                                              rows="10"
+                                              placeholder="building, floor, unit"
+                                              class="form-control underlined required"
+                                              style="height: 120px;"
+                                              v-model="importText"
+                                    ></textarea>
+                                </div>
+                                <div class="flex-row justify-content-between align-items-center">
+                                    <a class="btn btn-secondary btn-sm" href="#" @click="importedValues = []">Clear</a>
+
+                                    <div class="form-inline">
+                                        <div class="form-group">
+                                            <label class="control-label">Hide Prepared Items</label>
+                                            <input type="checkbox"
+                                                   style="width: 60px;"
+                                                   v-model="hidePrepared"
+                                                   class="form-control text-center underlined">
+                                        </div>
+                                        <div>
+                                            <div class="form-group">
+                                                <label class="control-label">Delimiter</label>
+                                                <input type="text" style="width: 60px;"
+                                                       v-model="parseDelimiter"
+                                                       class="form-control text-center underlined">
+                                            </div>
+                                            <a class="form-text text-muted"
+                                               href="javascript:;;"
+                                               v-if="parseDelimiter !== '\t'"
+                                               style="position: absolute; margin-left: 80px; font-size: 80%; font-weight: normal;"
+                                               @click="parseDelimiter = '\t'">use tab</a>
+                                        </div>
+
+                                        <a class="btn btn-primary btn-sm" href="#" @click="parseNameMapping()">Parse</a>
+                                    </div>
+                                </div>
+                                <ul class="item-list">
+                                    <li class="item" v-for="imported in importedValues">
+                                        <div class="item-row" :class="{'has-success': isImportSuccess(imported)}"
+                                             v-if="!hidePrepared || !isImportSuccess(imported)">
+                                            <div class="item-col fixed item-col-check no-overflow">
+                                                <i v-if="isImportSuccess(imported)" class="fa fa-check-circle-o"
+                                                   style="color:#109a1a;"></i>
+                                                <i v-else class="fa fa-warning has-warning" style="color: #e3924d"></i>
+                                            </div>
+                                            <div class="item-col item-col-title no-overflow">
+                                                <div class="form-group">
+                                                    <label class="control-label">{{imported.ImportData.Building}}</label>
+                                                    <select v-model="imported['BuildingID']"
+                                                            v-on:change="buildingSelected(imported)"
+                                                            class="form-control underlined">
+                                                        <option value=""></option>
+                                                        <option v-for="building in buildings" :value="building._id">
+                                                            {{building.Title}}
+                                                        </option>
+                                                    </select>
+                                                </div>
+                                            </div>
+                                            <div class="item-col item-col-title no-overflow">
+                                                <div class="form-group">
+                                                    <label class="control-label">{{imported.ImportData.Floor}}</label>
+                                                    <select v-model="imported['FloorID']"
+                                                            v-on:change="floorSelected(imported)"
+                                                            class="form-control underlined"
+                                                            :disabled="!imported['BuildingID']">
+                                                        <option value=""></option>
+                                                        <option v-for="floor in floors"
+                                                                v-if="imported['BuildingID'] === floor.BuildingID"
+                                                                :value="floor._id">{{floor.Title}}
+                                                        </option>
+                                                    </select>
+                                                </div>
+                                            </div>
+                                            <div class="item-col item-col-title no-overflow">
+                                                <div class="form-group">
+                                                    <label class="control-label">{{imported.ImportData.Unit}}</label>
+                                                    <input type="text"
+                                                           v-model="imported['Unit']"
+                                                           placeholder="Unit"
+                                                           class="form-control underlined required">
+                                                </div>
+                                            </div>
+                                            <div class="item-col no-overflow"
+                                                 style="max-width: 50px; display: flex; justify-content: center;">
+                                                <a href="#" @click="deleteImported(imported)">
+                                                    <i class="fa fa-trash"></i>
+                                                </a>
+                                            </div>
+                                        </div>
+                                    </li>
+                                </ul>
+
+                                <div class="text-right" v-if="importedValues.length">
+                                    <a class="btn btn-primary btn-sm" href="#" @click="addParsedValues()">Add parsed
+                                        values</a>
+                                </div>
+                            </div>
+                            <ul class="item-list striped">
+                                <li class="item">
+                                    <div class="item-row">
+                                        <div class="item-col fixed item-col-check">
+                                            <label class="item-check" id="select-all-items">
+                                                <input id="checkbox_all"
+                                                       type="checkbox"
+                                                       v-model="isSelectAll"
+                                                       @change="selectAll(isSelectAll)">
+                                            </label>
+                                        </div>
+
+                                        <div v-for="field in TABLE_NAMES"
+                                             class="item-col item-col-title no-overflow">
+                                            {{field}}
+                                        </div>
+
+                                        <div class="item-col no-overflow"
+                                             style="max-width: 50px; display: flex; justify-content: center;">
+                                        </div>
+                                    </div>
+                                </li>
+                                <li class="item">
+                                    <div class="item-row">
+                                        <div class="item-col fixed item-col-check">
+                                            <i class="fa fa-filter"></i>
+                                        </div>
+
+                                        <div v-for="(field, index) in TABLE_FIELDS"
+                                             class="item-col item-col-title no-overflow">
+
+                                            <select v-if="field === 'PropertyID'"
+                                                    v-model="fieldFilters[field]"
+                                                    style="display: inline; width: 100%;"
+                                                    @change="filterFieldChanged(field, fieldFilters[field])">
+                                                <option value=""></option>
+                                                <option v-for="property in properties"
+                                                        :value="property._id">{{property.Title}}
+                                                </option>
+                                            </select>
+                                            <select v-else-if="field === 'BuildingID'"
+                                                    v-model="fieldFilters[field]"
+                                                    style="display: inline; width: 100%;"
+                                                    @change="filterFieldChanged(field, fieldFilters[field])">
+                                                <option value=""></option>
+                                                <option v-for="building in buildings"
+                                                        :value="building._id">{{building.Title}}
+                                                </option>
+                                            </select>
+                                            <select v-else-if="fieldFilters['BuildingID'] && field === 'FloorID'"
+                                                    v-model="fieldFilters[field]"
+                                                    style="display: inline; width: 100%;"
+                                                    @change="filterFieldChanged(field, fieldFilters[field])">
+                                                <option value=""></option>
+                                                <option v-for="floor in floors"
+                                                        v-if="fieldFilters['BuildingID'] === floor.BuildingID"
+                                                        :value="floor._id">{{floor.Title}}
+                                                </option>
+                                            </select>
+                                            <div v-else-if="field === 'Unit'">
+                                                <input type="text"
+                                                       v-model="fieldFilters[field]"
+                                                       :placeholder="TABLE_NAMES[index]"
+                                                       class="form-control underlined required"
+                                                       @keyup="filterFieldChanged(field, fieldFilters[field])"
+                                                >
+                                            </div>
+                                        </div>
+                                        <div class="item-col text-right">
+                                        </div>
+                                    </div>
+                                </li>
+
+                                <li class="item" v-for="mapping in mapping">
+
+                                    <div class="item-row" :class="{selected: selectedItems[mapping._id]}">
+                                        <label style="margin: 0;" class="item-col fixed item-col-check">
+                                            <input :id="`checkbox_${mapping._id}`"
+                                                   type="checkbox"
+                                                   @change="changeSelected(mapping._id)"
+                                                   v-model="selectedItems[mapping._id]">
+                                        </label>
+                                        <div v-for="(field, index) in TABLE_FIELDS"
+                                             class="item-col item-col-title no-overflow">
+                                            <select v-if="field === 'PropertyID'"
+                                                    v-model="mapping[field]"
+                                                    class="form-control underlined"
+                                                    style="display: inline; width: 100%;">
+                                                <option value=""></option>
+                                                <option v-for="property in properties"
+                                                        :value="property._id">{{property.Title}}
+                                                </option>
+                                            </select>
+                                            <select v-else-if="field === 'BuildingID'"
+                                                    v-model="mapping[field]"
+                                                    class="form-control underlined"
+                                                    style="display: inline; width: 100%;"
+                                                    @change="fieldChanged(field, mapping)">
+                                                <option value=""></option>
+                                                <option v-for="building in buildings"
+                                                        :value="building._id">{{building.Title}}
+                                                </option>
+                                            </select>
+                                            <select v-else-if="field === 'FloorID'"
+                                                    v-model="mapping[field]"
+                                                    class="form-control underlined"
+                                                    style="display: inline; width: 100%;"
+                                                    @change="fieldChanged(field, mapping)"
+                                                    :disabled="!mapping['BuildingID']">
+                                                <option value=""></option>
+                                                <option v-for="floor in floors"
+                                                        v-if="mapping['BuildingID'] === floor.BuildingID"
+                                                        :value="floor._id">{{floor.Title}}
+                                                </option>
+                                            </select>
+                                            <span class="item-title no-wrap" v-else-if="field === 'Unit'">
+                                                <input type="text"
+                                                       v-model="mapping[field]"
+                                                       @change="fieldChanged(field, mapping)"
+                                                       :placeholder="TABLE_NAMES[index]"
+                                                       class="form-control underlined required">
+                                            </span>
+                                            <span class="item-title no-wrap" v-else-if="field === 'updated_at'">
+                                                 {{mapping[field]}}
+                                            </span>
+                                            <span class="item-title no-wrap" v-else-if="field === 'created_at'">
+                                                 {{mapping[field]}}
+                                            </span>
+                                        </div>
+
+                                        <div class="item-col no-overflow"
+                                             style="max-width: 50px; display: flex; justify-content: center;">
+                                            <a href="#" @click="deleteItem(mapping)">
+                                                <i class="fa fa-trash"></i>
+                                            </a>
+                                        </div>
+                                    </div>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+        </article>
+        <footer class="footer"></footer>
+    </div>
+</div>
+<!-- Reference block for JS -->
+<div class="ref" id="ref">
+    <div class="color-primary"></div>
+    <div class="chart">
+        <div class="color-primary"></div>
+        <div class="color-secondary"></div>
+    </div>
+</div>
+<script src="https://www.gstatic.com/firebasejs/7.14.5/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/7.14.5/firebase-messaging.js"></script>
+
+<script src="/admin/js/config-front.js"></script>
+<script src="/admin/js/vendor.js"></script>
+<script src="/admin/js/app.js"></script>
+<script src="/admin/js/custom.js"></script>
+<script src="/admin/js/fcm-init.js"></script>
+<script type="text/javascript">
+    $(function () {
+        if (Site.init(['Admin'])) {
+            ko.applyBindings({ACL: Auth.ACL()});
+
+            const PropertyID = QueryString("PropertyID");
+
+            async function getEntities(apiUrl, query = {}) {
+                query.hash = User._id;
+                const queryString = Object.keys(query)
+                    .map(key => `${key}=${typeof query[key] === 'object'
+                        ? encodeURIComponent(JSON.stringify(query[key]))
+                        : query[key]}`)
+                    .join('&');
+
+                const url = `${Config.APIURL}/${apiUrl}?${queryString}`;
+                return new Promise((resolve, reject) => $.get(url, resolve));
+            }
+
+            const [TABLE_FIELDS, TABLE_NAMES] = _.compact([
+                !PropertyID ? ['PropertyID', 'Property'] : undefined,
+                ['BuildingID', 'Building'],
+                ['FloorID', 'Floor'],
+                ['Unit', 'Unit'],
+                ['updated_at', 'Updated At'],
+                ['created_at', 'Created At'],
+            ]).reduce(([fields, names], [field, name]) => {
+                return [[...fields, field], [...names, name]];
+            }, [[], []]);
+
+            (async function run() {
+                const vueListData = {
+                    async fieldChanged(field, item) {
+                        await API.nameMappingBatch([item]);
+                    },
+                    async deleteItem(item) {
+                        if (item._id) {
+                            if (this.selectedItems[item._id]) {
+                                this.$set(this.selectedItems, item._id, false);
+                                this.changeSelected();
+                            }
+
+                            this.mapping = this.mapping.filter(({_id}) => _id !== item._id)
+
+                            await API.deleteNameMappingBatch([item._id]);
+                            this.fetchDataFromServer();   
+                        }
+                    },
+                };
+
+                const vueSelectData = {
+                    id2selected: {},
+                    selectedItems: {count: 0},
+                    resetSelection(exceptItems = []) {
+                        const newSelected = exceptItems.filter(item => this.selectedItems[item._id]);
+                        this.selectedItems = {count: 0};
+                        this.id2selected = {};
+                        this.isSelectAll = false;
+                        
+                        for (const selected of newSelected) {
+                            this.$set(this.selectedItems, selected._id, true);
+                            this.id2selected[selected._id] = selected;
+                            // this.selectedItems[selected._id] = true;
+                            // this.id2selected[selected._id] = this.id2mapping[selected._id];
+                        }
+                        this.changeSelected();
+                    },
+                    changeSelected(id) {
+                        if (id) {
+                            if (this.selectedItems[id]) {
+                                this.id2selected[id] = this.id2mapping[id];
+                            } else {
+                                delete this.id2selected[id];
+                            }
+                        }
+                        this.$set(this.selectedItems, 'count', _.keys(this.selectedItems).filter(id => id !== 'count' && !!this.selectedItems[id]).length)
+                    },
+                    isSelectAll: false,
+                    selectAll(isSelectAll) {
+                        if (isSelectAll) {
+                            _.forEach(this.mapping, item => {
+                                this.$set(this.selectedItems, item._id, true);
+                                this.id2selected[item._id] = item;
+                            });
+                        } else {
+                            _.keys(this.selectedItems).forEach(id => {
+                                this.$set(this.selectedItems, id, false);
+                                delete this.id2selected[id];
+                            });
+                        }
+
+                        this.changeSelected();
+                    },
+                    async applyActionToSelected(action) {
+                        if (action === 'Delete') {
+                            await this.deleteSelectedItems();
+                        }
+                        this.selectedAction = '';
+                    },
+                    async deleteSelectedItems() {
+                        const ids = _.keys(this.selectedItems).filter(id => id !== 'count');
+                        await API.deleteNameMappingBatch(ids);
+                        this.resetSelection();
+                        this.fetchDataFromServer();
+                    },
+                };
+
+                const vueFiltersData = {
+                    fieldFilters: {
+                        Status: 1,
+                        PropertyID
+                    },
+                    filterFieldChanged(field, value) {
+                        this.fetchDataFromServer();
+                    },
+                    fetchDataFromServer() {
+                        fetchMappingDebounced();
+                    },
+                };
+
+                const vueMappingCreate = {
+                    newMapping: {},
+                    showCreate: false,
+                    showCreateNameMapping() {
+                        this.showCreate = true;
+                    },
+                    async createNameMapping() {
+                        const newMapping = {...this.newMapping, PropertyID};
+                        await API.nameMappingBatch([newMapping]);
+                        this.newMapping = {...this.newMapping, Unit: ''};
+                        this.fetchDataFromServer();
+                    },
+                }
+
+                const vueMappingImport = {
+                    hidePrepared: false,
+                    showImport: false,
+                    importText: '', //'building1,floor2,unit1',
+                    parseDelimiter: ',',
+                    importedValues: [],
+                    deleteImported(imported) {
+                        this.importedValues = this.importedValues.filter(item => imported !== item);
+                    },
+                    isImportSuccess(imported) {
+                        return imported.BuildingID && imported.FloorID && imported.Unit
+                    },
+                    toggleImportNameMapping() {
+                        this.showImport = !this.showImport;
+                    },
+                    parseNameMapping() {
+                        const rows = this.importText
+                            .split('\n')
+                            .map((line) => line
+                                .split(this.parseDelimiter || ',')
+                                .map(column => column ? column.trim() : null)
+                            )
+                            .filter(row => row && row.length);
+
+                        this.importedValues.push(...rows.map(row => {
+                            return {
+                                ImportData: {
+                                    Building: row[0],
+                                    Floor: row[1],
+                                    Unit: row[2]
+                                },
+                                Unit: row[2]
+                            };
+                        }));
+                    },
+                    async addParsedValues() {
+                        const importedMappings = this.importedValues
+                            .filter(value => this.isImportSuccess(value))
+                            .map(value => ({
+                                PropertyID,
+                                ...value
+                            }));
+
+                        console.log(`importedMappings = `, JSON.stringify(importedMappings));
+                        await API.nameMappingBatch(importedMappings);
+                        this.importedValues = [];
+                        fetchMappingDebounced();
+                        // this.importedValues = await API.nameMapping(PropertyID);
+                    },
+                    // buildingSelected(document, event) {
+                    buildingSelected(imported) {
+                        this.fieldSelected(imported, 'Building', 'BuildingID')
+                    },
+                    floorSelected(imported) {
+                        const isValid = item => imported['BuildingID'] === item['BuildingID'];
+                        this.fieldSelected(imported, 'Floor', 'FloorID', isValid);
+                    },
+                    fieldSelected(imported, importedField, entityField, isValid) {
+                        if (imported.ImportData[importedField] && imported[entityField]) {
+                            this.importedValues = this.importedValues.map(item => {
+                                let sameValues = imported.ImportData[importedField] === item.ImportData[importedField];
+                                if (sameValues && (!isValid || isValid(item))) {
+                                    return {
+                                        ...item,
+                                        [entityField]: imported[entityField]
+                                    }
+                                }
+                                return item;
+                            });
+                        }
+                    },
+                }
+
+                const app = new Vue({
+                    el: '#property-names-mapping',
+                    data: {
+                        message: `Loading`,
+                        moment,
+                        selectedShowFilter: 'ShowActive',
+                        selectedAction: '',
+                        reservedToUser: null,
+                        fetchLimit: 100,
+                        fetchSkip: 0,
+                        fetchSortField: 'created_at',
+                        fetchSortOrder: -1,
+                        TABLE_FIELDS,
+                        TABLE_NAMES,
+                        PropertyID,
+                        properties: [],
+                        id2property: {},
+                        buildings: [],
+                        id2building: {},
+                        floors: [],
+                        id2floor: {},
+                        users: [],
+                        id2user: {},
+                        mapping: [],
+                        ...vueListData,
+                        ...vueSelectData,
+                        ...vueFiltersData,
+                        ...vueMappingCreate,
+                        ...vueMappingImport,
+                    }
+                });
+
+                let fetchMappingDebounced = _.debounce(async function () {
+                    const filter = {};
+                    for (const field in app.fieldFilters) {
+                        const value = app.fieldFilters[field];
+
+                        if (value == null || value == '') {
+                            delete filter[field];
+                        } else if ((field === 'FloorID')
+                            || (field === 'BuildingID')
+                            || (field === 'PropertyID')) {
+                            filter[field] = value;
+                        } else if (!_.isNumber(value)) {
+                            const firstSymbol = value[0];
+                            const lastSymbol = value[value.length - 1];
+                            if ((firstSymbol === "'" && lastSymbol === "'") || (firstSymbol === '"' && lastSymbol === '"')) {
+                                filter[field] = value.slice(1, -1);
+                            } else {
+                                filter[field] = {$regex: value};
+                            }
+                        }
+                    }
+
+                    const limit = app.fetchLimit;
+                    const skip = app.fetchSkip;
+                    const sort = {[app.fetchSortField]: app.fetchSortOrder, _id: -1};
+
+                    const mapping = await getEntities('integration/name-mapping', {filter, limit, skip, sort});
+                    const id2mapping = _.indexBy(mapping, '_id');
+
+                    app.message = ``;
+
+                    app.mapping = mapping;
+                    app.id2mapping = id2mapping;
+
+                    app.resetSelection && app.resetSelection(mapping);
+
+                }, 800);
+
+                fetchMappingDebounced();
+
+                const isActive = ({Status}) => parseInt(Status) === 1;
+
+                app.properties = await API.properties({
+                    fields: "_id,Title,Status"
+                });
+                app.properties = _.sortBy(app.properties, 'Title').filter(isActive)
+                app.id2property = _.indexBy(app.properties, '_id');
+
+                app.buildings = await API.buildings({
+                    PropertyID,
+                    fields: "_id,Title,PropertyID,Status"
+                });
+                app.buildings = _.sortBy(app.buildings, 'Title').filter(isActive)
+                app.id2building = _.indexBy(app.buildings, '_id');
+
+                app.floors = await API.floors({
+                    PropertyID,
+                    fields: "_id,Title,PropertyID,BuildingID,Status"
+                });
+                app.floors = _.sortBy(app.floors, 'Title').filter(isActive)
+                app.id2floor = _.indexBy(app.floors, '_id');
+
+                app.users = await API.users();
+                app.users = _.sortBy(app.users, 'Title');
+                app.id2user = _.indexBy(app.users, '_id');
+            })();
+        }
+    });
+
+</script>
+</body>
+</html>
