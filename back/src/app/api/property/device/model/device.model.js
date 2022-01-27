@@ -22,6 +22,7 @@ const DeviceSchema = new Schema({
     Picture: {type: String},
     XPos: {type: Number},
     YPos: {type: Number},
+    AlarmZone: {type: String},
     // Records: [{type: Schema.Types.ObjectId, ref: 'Inspection'}],
     Status: {type: Number},
     created_at: {type: Date, default: Date.now},
