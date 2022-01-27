@@ -26,11 +26,11 @@ module.exports = async function documentToMailMessage(document) {
     if (document409ManagerContact
         && document409ManagerContact.Email
         && document409ManagerContact.Email.trim().length
-        && document409ManagerContact.Phone
-        && document409ManagerContact.Phone.trim().length
     ) {
         propertyManagerEmail = document409ManagerContact.Email;
-        propertyManagerPhone = document409ManagerContact.Phone;
+        if (document409ManagerContact.Phone) {
+            propertyManagerPhone = document409ManagerContact.Phone;
+	}
         if (document409ManagerContact.Title) {
             propertyManagerTitle = document409ManagerContact.Title
         }
@@ -79,16 +79,20 @@ module.exports = async function documentToMailMessage(document) {
 
     }
 
-    const from = `${property.Title} <${config.sendgrid.from}>`;
+    //we can check if no property email to use sendgrid property
+    //const from = `${property.Title} <${config.sendgrid.from}>`;
+    const from = `${property.Title} <${propertyManagerEmail}>`;
 
     const DocumentID = `${document._id}`;
 
     const to = [signer.email];
+/*
+//no longer seems to be wanted, they want access to Portal
     if (propertyManagerEmail) {
         //removing prop manager according to FC team request Dec2019
         // to.push(propertyManagerEmail);
     }
-
+*/
     const message = {
         DocumentID,
         from,
@@ -135,7 +139,7 @@ function buildFireSafetyDisclosureHtml(title, attachmentsListHtml, propertyManag
                                     ${attachmentsListHtml}
                                 </ul>
                                 <div>
-                                    Have a question, contact the office team at ${propertyManagerEmail} ${contacts.join(' or ')}. 
+                                    Have a question, contact the office team at ${propertyManagerEmail}. 
                                 </div>
                             </div>
                         </td>
