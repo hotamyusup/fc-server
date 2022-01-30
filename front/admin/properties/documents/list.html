@@ -155,11 +155,12 @@
 
                             <label style="margin-left: 10px;">Limit:
                                 <select data-bind="value: itemsPerPage" class="underlined required">
-                                    <option selected value="20">20</option>
-                                    <option value="50">50</option>
-                                    <option value="100">100</option>
+                                    <option selected value="50">50</option>
+                                    <option value="150">150</option>
                                     <option value="200">200</option>
-                                    <option value="500">500</option>
+                                    <option value="250">250</option>
+                                    <option value="300">300</option>
+                                    <option value="350">350</option>
                                     <option value="-1">No Limit</option>
                                 </select>
                             </label>
@@ -317,6 +318,11 @@
                                         <div class="item-col item-col-header">
                                         </div>
                                         <div class="item-col item-col-header">
+                                            <p>here</p>
+                                            <!---
+                                            lorem
+                                            ipsum
+                                            -->
                                         </div>
                                         <div class="item-col item-col-header">
                                         </div>
@@ -429,11 +435,12 @@
                         <div class="text-center">
                             <label style="margin-left: 10px;">Limit:
                                 <select data-bind="value: itemsPerPage" class="underlined required">
-                                    <option selected value="20">20</option>
-                                    <option value="50">50</option>
-                                    <option value="100">100</option>
+                                    <option selected value="50">50</option>
+                                    <option value="150">150</option>
                                     <option value="200">200</option>
-                                    <option value="500">500</option>
+                                    <option value="250">250</option>
+                                    <option value="300">300</option>
+                                    <option value="350">350</option>
                                     <option value="-1">No Limit</option>
                                 </select>
                             </label>
@@ -489,7 +496,7 @@
             filteredFloorID: ko.observable(null),
             selectedAction: ko.observable(null),
             selectedFilter: ko.observable('ShowAll'),
-            itemsPerPage: ko.observable(20),
+            itemsPerPage: ko.observable(100),
             pageNum: ko.observable(1),
             pagesCount: ko.observable(1),
             totalFilteredCount: ko.observable(0),
