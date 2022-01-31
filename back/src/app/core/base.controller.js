@@ -57,7 +57,7 @@ class BaseController {
                             .header('content-disposition', `attachment; filename=${filename || defaultFilename}`);
                     } else {
                         return reply(csv);
-                    }li
+                    }
                 } else {
                     // promise
                     this.onAction(action, request, result)
@@ -178,16 +178,18 @@ class BaseController {
                     };
                 }
 
-                this.handle(action, request, reply,
-                    Promise
-                        .map(entitiesJSON, entityJSON => entityJSON && entityJSON._id
-                                ? this.DAO.update(entityJSON)
-                                : this.DAO.create(entityJSON)
-                            , {concurrency: 30})
-                        .catch(error => {
-                            logger.error(`sessionId: ${hash} ${this.controllerName}.${action} error: ${error}`);
-                            throw error;
-                        })
+                this.handle(action, request, reply, Promise
+                    .map(
+                        entitiesJSON,
+                        entityJSON => entityJSON && entityJSON._id
+                            ? this.DAO.upsert(entityJSON)
+                            : this.DAO.create(entityJSON),
+                        {concurrency: 30}
+                    )
+                    .catch(error => {
+                        logger.error(`sessionId: ${hash} ${this.controllerName}.${action} error: ${error}`);
+                        throw error;
+                    })
                 );
             }
         }
