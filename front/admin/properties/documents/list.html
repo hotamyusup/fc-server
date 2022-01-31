@@ -372,6 +372,9 @@
                                         <div class="item-col no-overflow" title="Notified at">
                                             <h4 class="item-title no-wrap"
                                                 data-bind="text: $data.notified_at && moment($data.notified_at).format('L')"></h4>
+                                                    <!-- ko ifnot: $data.notified_at -->
+                                                    <h4 class="item-title no-wrap">Not Notified</h4>
+                                                    <!-- /ko -->
                                         </div>
                                         <div class="item-col no-overflow">
                                             <h4 class="item-title no-wrap" data-bind="if: $data.bounced">Bounced</h4>
@@ -379,6 +382,8 @@
                                                 data-bind="if: !$data.bounced && $data.Status === 1">Scheduled</h4>
                                             <h4 class="item-title no-wrap"
                                                 data-bind="if: !$data.bounced && $data.Status === 0">Deactivated</h4>
+                                            <h4 class="item-title no-wrap"
+                                                data-bind="if: $data.Status === -1">Deleted</h4>
                                         </div>
                                         <div class="item-col text-right">
 
@@ -559,9 +564,12 @@
                 const isDeletedStatus = document.Status === -1;
                 const isNotified = document.notified_at;
 
+                // Show values as strings to users
+
+
                 switch (currentFilter) {
                     case 'Not Notified':
-                        return !isNotified;
+                        return !isNotified && isScheduledStatus;
                     case 'ShowScheduled':
                         return !document.bounced && isScheduledStatus;
                     case 'ShowDeactivated':
