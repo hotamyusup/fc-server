@@ -172,7 +172,7 @@
                             </div>
                             <h3 class="title">
                                 <span>Property Names Mapping for </span>
-                                <a :href="`/admin/properties/documents/create.html?i=${PropertyID}`">Schedule Notification</a>
+                                <a :href="`/admin/properties/documents/create.html?i=${fieldFilters['PropertyID']}`">Schedule Notification</a>
                                 <span>{{message}}</span>
                             </h3>
                         </div>
@@ -672,7 +672,10 @@
                         this.showCreate = true;
                     },
                     async createNameMapping() {
-                        const newMapping = {...this.newMapping, PropertyID};
+                        const newMapping = {
+                            ...this.newMapping, 
+                            PropertyID: this.fieldFilters['PropertyID']
+                        };
                         await API.nameMappingBatch([newMapping]);
                         this.newMapping = {...this.newMapping, Unit: ''};
                         this.fetchDataFromServer();
@@ -718,7 +721,7 @@
                         const importedMappings = this.importedValues
                             .filter(value => this.isImportSuccess(value))
                             .map(value => ({
-                                PropertyID,
+                                PropertyID: this.fieldFilters['PropertyID'],
                                 ...value
                             }));
 
@@ -833,14 +836,14 @@
                 app.id2property = _.indexBy(app.properties, '_id');
 
                 app.buildings = await API.buildings({
-                    PropertyID,
+                    PropertyID: app.fieldFilters['PropertyID'],
                     fields: "_id,Title,PropertyID,Status"
                 });
                 app.buildings = _.sortBy(app.buildings, 'Title').filter(isActive)
                 app.id2building = _.indexBy(app.buildings, '_id');
 
                 app.floors = await API.floors({
-                    PropertyID,
+                    PropertyID: app.fieldFilters['PropertyID'],
                     fields: "_id,Title,PropertyID,BuildingID,Status"
                 });
                 app.floors = _.sortBy(app.floors, 'Title').filter(isActive)

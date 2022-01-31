@@ -637,8 +637,8 @@
                         if (!doc2.notified_at)  {
                             return -sortedFields['notified_at'];
                         }
-                        const notified1 = moment(doc1.notified_at).format('L');
-                        const notified2 = moment(doc2.notified_at).format('L');
+                        const notified1 = moment(doc1.notified_at).toISOString();
+                        const notified2 = moment(doc2.notified_at).toISOString();
                         return sortedFields['notified_at'] === -1
                             ? notified1.localeCompare(notified2)
                             : notified2.localeCompare(notified1);
