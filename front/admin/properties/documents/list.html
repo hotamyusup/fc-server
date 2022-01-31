@@ -144,6 +144,7 @@
                             <label>
                                 <select data-bind="value: selectedFilter" class="underlined required">
                                     <option selected value="ShowAll">No Filter</option>
+                                    <option value="Not Notified">Not Notified</option>
                                     <option value="ShowScheduled">Scheduled</option>
                                     <option value="ShowDeactivated">Deactivated</option>
                                     <option value="ShowBounced">Bounced</option>
@@ -556,8 +557,11 @@
                 const isScheduledStatus = document.Status === 1;
                 const isDeactivatedStatus = document.Status === 0;
                 const isDeletedStatus = document.Status === -1;
+                const isNotified = document.notified_at;
 
                 switch (currentFilter) {
+                    case 'Not Notified':
+                        return !isNotified;
                     case 'ShowScheduled':
                         return !document.bounced && isScheduledStatus;
                     case 'ShowDeactivated':
