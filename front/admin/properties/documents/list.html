@@ -569,7 +569,7 @@
 
                 switch (currentFilter) {
                     case 'Not Notified':
-                        return !isNotified && isScheduledStatus && document.bounced;                 
+                        return !isNotified && isScheduledStatus && !document.bounced;                 
                     case 'ShowScheduled':
                         return !document.bounced && isScheduledStatus;
                     case 'ShowDeactivated':
