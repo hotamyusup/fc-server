@@ -243,15 +243,20 @@ class TenantFireSafetyDisclosureDocumentBuilder {
                         if (GET_UNIT_NUMBER_REGEX.test(residentialUnit)) {
                             const result = GET_UNIT_NUMBER_REGEX.exec(residentialUnit);
                             if (result && result[2]) {
-                                residentialUnit = result[2];
+                                residentialUnit = result[2]; //when this is reassigned, need to compare case again or set to lower
                             }
                         }
 
                         logger.info(`TenantFireSafetyDisclosureDocumentBuilder.buildBatch({}) processing ${createdDefinitionsCounter}/${dataCountToProcess} params ${FloorID}/${residentialUnit} ${signer && signer.name || ''}`);
+
                         logMemoryUsage();
                         const compareUnits = device => {
                             const result = GET_UNIT_NUMBER_REGEX.exec(device.DeviceLocation);
-                            return result && result[2] === residentialUnit
+
+				logger.info(`residential result: ${result}`);
+
+                            //return result && result[2] === residentialUnit //needs lowercase
+                            return result && `${result[2]}`.toLowerCase() === `${residentialUnit}`.toLowerCase();
                         };
 
                         const filterInUnitSmokedetectors = device => {
@@ -788,7 +793,7 @@ class TenantFireSafetyDisclosureDocumentBuilder {
 ///////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////
 
-
+//when does this get called?
     async build(FloorID, tenant) {
         logger.info(`TenantFireSafetyDisclosureDocumentBuilder.build(${FloorID})`);
         logMemoryUsage();
@@ -799,9 +804,11 @@ class TenantFireSafetyDisclosureDocumentBuilder {
         if (getUnitNumberRegex.test(residentialUnit)) {
             const result = getUnitNumberRegex.exec(residentialUnit);
             if (result && result[2]) {
-                residentialUnit = result[2];
+                residentialUnit = result[2];//tolower
+                //residentialUnit = `${result[2]}`.toLowerCase();
             }
         }
+	logger.info(`residential Unit: ${residentialUnit}`);
 
         // to test uncomment
         // const residentialUnit = '900';
@@ -863,7 +870,7 @@ class TenantFireSafetyDisclosureDocumentBuilder {
 
             const compareUnits = device => {
                 const result = getUnitNumberRegex.exec(device.DeviceLocation);
-                return result && result[2] === residentialUnit
+		return result && `${result[2]}`.toLowerCase() === `${residentialUnit}`.toLowerCase();
             };
 
             const filterInUnitSmokedetectors = device => {
