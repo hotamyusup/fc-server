@@ -806,7 +806,7 @@
                     Model.id2building()[building._id] = building;
                     Model.Buildings().push(building);
                     _.forEach(building.Floors, function (floor) {
-                        if (floor) {
+                        if (floor && floor.Status != -1) {
                             Model.id2floor()[floor._id] = floor;
                             Model.Floors().push(floor);
                         }
