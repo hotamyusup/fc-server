@@ -373,7 +373,7 @@
                                                 data-bind="text: $data.options && $data.options.language"></h4>
                                         </div>
                                         <div class="item-col no-overflow" title="Notified at">
-                                            <!--ko if: $data.notified_at-->
+                                            <!--ko if: $data.notified_at -->
                                             <h4 class="item-title no-wrap"
                                                 data-bind="text: $data.notified_at && moment($data.notified_at).format('L')"></h4>
                                             <!-- /ko -->
@@ -565,7 +565,7 @@
 
                 // Fails filtering not notified dates
                 if (dateID){
-                    if (moment(document.notified_at).format('L') !== moment(dateID.notified_at).format('L')){
+                    if (moment(document.notified_at).format('L') !== moment(dateID).format('L')){
                         return false;
                     }
                 }
