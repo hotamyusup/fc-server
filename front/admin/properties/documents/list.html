@@ -318,7 +318,10 @@
                                         </div>
                                         <div class="item-col item-col-header">
                                         </div>
-                                        <div class="item-col item-col-header">
+                                        <div class="item-col item-col-header">                                            
+                                            <select data-bind="options: $root.getFilteredDocuments(), optionsText: $root.getFilteredDocuments(),optionsValue: 'notified_at', value: $data.filteredDate, optionsCaption: 'Select date'"
+                                                            class="form-control underlined">
+                                            </select>                                            
                                         </div>
                                         <div class="item-col item-col-header">
                                         </div>
@@ -370,11 +373,13 @@
                                                 data-bind="text: $data.options && $data.options.language"></h4>
                                         </div>
                                         <div class="item-col no-overflow" title="Notified at">
+                                            <!--ko if: $data.notified_at-->
                                             <h4 class="item-title no-wrap"
                                                 data-bind="text: $data.notified_at && moment($data.notified_at).format('L')"></h4>
-                                                    <!-- ko ifnot: $data.notified_at -->
-                                                    <h4 class="item-title no-wrap">Not Notified</h4>
-                                                    <!-- /ko -->
+                                            <!-- /ko -->
+                                            <!-- ko ifnot: $data.notified_at -->
+                                            <h4 class="item-title no-wrap">Not Notified</h4>
+                                            <!-- /ko -->
                                         </div>
                                         <div class="item-col no-overflow">
                                             <h4 class="item-title no-wrap" data-bind="if: $data.bounced">Bounced</h4>
@@ -506,6 +511,7 @@
             selectedAllDocuments: ko.observable(false),
             sortedFields: ko.observable({}),
             sortIcons: ko.observable({}),
+            filteredDate: ko.observable(1),
             getFloorsByBuildings() {
                 let floorsByBuilding = this.Floors();
                 if (this.filteredBuildingID()) {
@@ -548,6 +554,23 @@
                         return false;
                     }
                 }
+
+                const dateID = this.filteredDate();
+
+                // if (dateID){
+                //     if (document.notified_at !== dateID){
+                //         return false;
+                //     }
+                // }
+
+                // Fails filtering not notified dates
+                if (dateID){
+                    if (moment(document.notified_at).format('L') !== moment(dateID.notified_at).format('L')){
+                        return false;
+                    }
+                }
+
+
 
                 if (this.residentNameSearch() && this.residentNameSearch().trim().length) {
                     const name = document.signer && document.signer.name;
@@ -736,6 +759,23 @@
                     }
                 }
             },
+            // getUniqueFilteredDocuments(){
+            //     const docs = this.getFilteredDocuments();
+            //     let unique = [];
+            //     docs.forEach(element => {
+            //         if(!unique[0]){
+            //             unique.push(element);
+            //             console.log("first push");
+            //         }
+            //         else{
+            //             if(!unique.values.includes(element.notified_at)){
+            //                 unique.push(element);
+            //             }
+            //         }                
+            //     });
+            //     console.log(unique);
+            //     return unique;            
+            // },
         };
 
         let updateUrlParams = true;
