@@ -615,7 +615,7 @@
                     case 'ShowDeactivated':
                         return !document.bounced && isDeactivatedStatus;
                     case 'ShowBounced':
-                        return !!document.bounced && !isDeletedStatus;
+                        return document.bounced && !isDeletedStatus;
                     case 'ShowDeleted':
                         return isDeletedStatus;
                     case 'ShowAll':
@@ -677,8 +677,8 @@
                         if (!doc2.notified_at)  {
                             return -sortedFields['notified_at'];
                         }
-                        const notified1 = moment(doc1.notified_at).format('L');
-                        const notified2 = moment(doc2.notified_at).format('L');
+                        const notified1 = moment(doc1.notified_at).toISOString();
+                        const notified2 = moment(doc2.notified_at).toISOString();
                         return sortedFields['notified_at'] === -1
                             ? notified1.localeCompare(notified2)
                             : notified2.localeCompare(notified1);
@@ -846,7 +846,7 @@
                     Model.id2building()[building._id] = building;
                     Model.Buildings().push(building);
                     _.forEach(building.Floors, function (floor) {
-                        if (floor) {
+                        if (floor && floor.Status != -1) {
                             Model.id2floor()[floor._id] = floor;
                             Model.Floors().push(floor);
                         }
