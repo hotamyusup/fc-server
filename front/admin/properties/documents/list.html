@@ -537,20 +537,6 @@
                 const isDeactivatedStatus = document.Status === 0;
                 return !document.bounced && isDeactivatedStatus
             },
-            uniqBy(arr,predicate){
-                const uniqBy = (arr, predicate) => {
-                const cb = typeof predicate === 'function' ? predicate : (o) => o[predicate];
-                
-                return [...arr.reduce((map, item) => {
-                    const key = (item === null || item === undefined) ? 
-                    item : cb(item);
-                    
-                    map.has(key) || map.set(key, item);
-                    
-                    return map;
-                }, new Map()).values()];
-                };
-            },
             getUniqueDocuments(){  
                 let unique = this.Documents();
                 unique.forEach(element =>{
