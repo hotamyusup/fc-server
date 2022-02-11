@@ -144,7 +144,6 @@
                             <label>
                                 <select data-bind="value: selectedFilter" class="underlined required">
                                     <option selected value="ShowAll">No Filter</option>
-                                    <option value="Not Notified">Not Notified</option>
                                     <option value="ShowScheduled">Scheduled</option>
                                     <option value="ShowDeactivated">Deactivated</option>
                                     <option value="ShowBounced">Bounced</option>
@@ -319,7 +318,7 @@
                                         <div class="item-col item-col-header">
                                         </div>
                                         <div class="item-col item-col-header">                                            
-                                            <select data-bind="options: $root.getFilteredDocuments(), optionsText: $root.getFilteredDocuments(),optionsValue: 'notified_at', value: $data.filteredDate, optionsCaption: 'Select date'"
+                                            <select data-bind="options: $root.getUniqueDocuments(), optionsText: $root.getUniqueDocuments(),optionsValue: 'notified_at', value: $data.filteredDate, optionsCaption: 'Select date'"
                                                             class="form-control underlined">
                                             </select>                                            
                                         </div>
@@ -373,11 +372,11 @@
                                                 data-bind="text: $data.options && $data.options.language"></h4>
                                         </div>
                                         <div class="item-col no-overflow" title="Notified at">
-                                            <!--ko if: $data.notified_at -->
+                                            <!--ko if: $data.notified_at && $data.notified_at != 'Not Notified' -->
                                             <h4 class="item-title no-wrap"
                                                 data-bind="text: $data.notified_at && moment($data.notified_at).format('L')"></h4>
                                             <!-- /ko -->
-                                            <!-- ko ifnot: $data.notified_at -->
+                                            <!-- ko if: $data.notified_at == 'Not Notified' -->
                                             <h4 class="item-title no-wrap">Not Notified</h4>
                                             <!-- /ko -->
                                         </div>
@@ -538,6 +537,36 @@
                 const isDeactivatedStatus = document.Status === 0;
                 return !document.bounced && isDeactivatedStatus
             },
+            uniqBy(arr,predicate){
+                const uniqBy = (arr, predicate) => {
+                const cb = typeof predicate === 'function' ? predicate : (o) => o[predicate];
+                
+                return [...arr.reduce((map, item) => {
+                    const key = (item === null || item === undefined) ? 
+                    item : cb(item);
+                    
+                    map.has(key) || map.set(key, item);
+                    
+                    return map;
+                }, new Map()).values()];
+                };
+            },
+            getUniqueDocuments(){  
+                let unique = this.Documents();
+                unique.forEach(element =>{
+                    if(element.notified_at && element.notified_at != 'Not Notified'){
+                        console.log(element.notified_at);
+                        element.notified_at = moment(element.notified_at).format('L');
+                    }
+                    else{
+                        element.notified_at = "Not Notified";
+                    }
+
+                })
+                unique = _.uniq(unique, false,_.iteratee('notified_at'));
+                unique = _.sortBy(unique, 'notified_at');
+                return unique; 
+            },
             filterDocument(document) {
                 const buildingId = this.filteredBuildingID();
 
@@ -557,20 +586,11 @@
 
                 const dateID = this.filteredDate();
 
-                // if (dateID){
-                //     if (document.notified_at !== dateID){
-                //         return false;
-                //     }
-                // }
-
-                // Fails filtering not notified dates
                 if (dateID){
                     if (moment(document.notified_at).format('L') !== moment(dateID).format('L')){
                         return false;
                     }
                 }
-
-
 
                 if (this.residentNameSearch() && this.residentNameSearch().trim().length) {
                     const name = document.signer && document.signer.name;
@@ -585,14 +605,11 @@
                 const isScheduledStatus = document.Status === 1;
                 const isDeactivatedStatus = document.Status === 0;
                 const isDeletedStatus = document.Status === -1;
-                const isNotified = document.notified_at;
 
                 // Show values as strings to users
 
 
-                switch (currentFilter) {
-                    case 'Not Notified':
-                        return !isNotified && isScheduledStatus && !document.bounced;                 
+                switch (currentFilter) {              
                     case 'ShowScheduled':
                         return !document.bounced && isScheduledStatus;
                     case 'ShowDeactivated':
@@ -759,23 +776,6 @@
                     }
                 }
             },
-            // getUniqueFilteredDocuments(){
-            //     const docs = this.getFilteredDocuments();
-            //     let unique = [];
-            //     docs.forEach(element => {
-            //         if(!unique[0]){
-            //             unique.push(element);
-            //             console.log("first push");
-            //         }
-            //         else{
-            //             if(!unique.values.includes(element.notified_at)){
-            //                 unique.push(element);
-            //             }
-            //         }                
-            //     });
-            //     console.log(unique);
-            //     return unique;            
-            // },
         };
 
         let updateUrlParams = true;
