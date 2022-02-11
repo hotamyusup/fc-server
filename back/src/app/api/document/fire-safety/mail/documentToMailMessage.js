@@ -59,12 +59,14 @@ module.exports = async function documentToMailMessage(document) {
         const filePath = path.normalize(`${__dirname}../../../fire-safety/files/${filename}`);
         attachments.push({filename, path: filePath});
 
+	const propertyTitleTrimmed = property.Title.trim();
         const filesToAttach = [
             'fire alarm sleeping area requirements.pdf',
             'resident fire safety disclosure.pdf',
             'smoke alarm info disclosure.pdf',
             'CO alarm info disclosure.pdf',
             'Smoke_CO_Disclosure_Fire_Department.pdf',
+            `${propertyTitleTrimmed}` +'-SOC.pdf',
         ].map(filename => ({
             filename,
             path: path.normalize(`${__dirname}../../../fire-safety/files/${filename}`)
