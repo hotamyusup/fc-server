@@ -132,7 +132,7 @@
                 </div>
             </div>
             <section class="section" data-bind="visible: Document" style="display: none;">
-                <div class="row">
+                <div class="row" style="display: contents;">
                         <div class="card items" data-exclude="xs,sm,lg" data-bind="if: documentHistory()">
                             <div class="card-header bordered">
                                 <div class="header-block">
@@ -145,7 +145,7 @@
 
                             <ul class="item-list striped" data-bind="foreach: documentHistory()">
                                 <li class="item">
-                                    <div class="item-row">
+                                    <div class="item-row" >
                                         <div class="item-col no-overflow fixed" title="resident document">
                                             <a class="item-title no-wrap" href="javascript:;;"
                                                data-bind="attr: {href:'/documents/'+$data.document._id + '.pdf?hash=' + User._id}"><i
@@ -165,9 +165,22 @@
                                     </div>
                                 </li>
                             </ul>
+                            </div>  
+                            <div style="margin-left: 25px;margin-top: 8px;">
+                                <div class="item-col no-overflow">
+                                    <div>
+                                        <button data-bind="click: previousPage"
+                                                class="btn btn-secondary"
+                                                type="button">
+                                            <i class="fa fa-chevron-left"></i>
+                                            Return
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
-                </div>
+                </div>     
             </section>
         </article>
         <footer class="footer"></footer>
@@ -238,18 +251,12 @@
                 Model.Document = null;
                 Model.Document = doc;
             },
-            async saveDocumentAndReturn() {
-                await Model.updateDocument();
-
+            previousPage(){
                 const redirect = fromPage === 'delivery'
                     ? `/properties/documents/delivery.html`
                     : `/properties/documents/list.html?i=${Model.Document.PropertyID}`;
 
                 Site.redirect(redirect);
-            },
-            async saveDocument() {
-                await Model.updateDocument();
-                fetchDocument();
             },
             updateDocument() {
                 const {_id, PropertyID, BuildingID, FloorID, Status, signer, options, handDelivered} = Model.Document;
