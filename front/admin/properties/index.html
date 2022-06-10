@@ -246,7 +246,8 @@
 														',','equipment type', ',','model no', ',', 'serial no',
 														',','inspection date',
 														',', 'inspection frequency', ',', 'inspector', ',', 'pass/fail',
-														',', 'reason', ',', 'inspector note', ',', 'image url','\n');
+														',', 'reason', ',', 'inspector note', ',', 'image url',
+														',', 'QR code', '\n');
 
 											_.each(floor.Devices, (device) => {
 												if (device.Status <= 0) return;
@@ -326,7 +327,8 @@
 														',', frequencies[record.Frequency],
 														',', temp_user,
 														',', status, ',', record.Reason.replace(/,/g,';'), ',', record.Note.replace(/,/g,';'),
-														',', record.Photos.length > 0 ? record.Photos[0].URL : '', ',', '\n');
+														',', record.Photos.length > 0 ? record.Photos[0].URL : '', 
+														',', device.QRCode, '\n');
 												});
 
 
@@ -341,7 +343,7 @@
 														',', device.DeviceLocation, ',', device.InstallationDate, ',', currentDeviceStatus,
 														',', device.Notes,
 														',', deviceEquipmentType, ',', device.ModelNumber.replace(/,/g,';'),
-														 ',', device.SerialNumber, ',','\n'
+														',', device.SerialNumber, ',', device.QRCode, '\n'
 													);
 												}
 

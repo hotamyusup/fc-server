@@ -651,8 +651,9 @@ class TenantFireSafetyDisclosureDocumentBuilder {
                                             width: "70%"
                                         },
                                         {
-                                            //text: `${moment().format(toStringDateFormat)}`,
-                                            text: `January 31, 2022`,
+                                            text: `${moment().format(toStringDateFormat)}`,
+						// WHEN WE HAVE TO HARD CODE THE DATE, needs to be resolved business wide
+                                            //text: `January 31, 2022`,
                                             width: "30%",
                                             alignment: "right"
 
@@ -1307,7 +1308,6 @@ class TenantFireSafetyDisclosureDocumentBuilder {
                             },
                             {
                                 text: `${moment().format(toStringDateFormat)}`,
-                                //text: `January 31, 2021`,
                                 width: "30%",
                                 alignment: "right"
 

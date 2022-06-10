@@ -6,3 +6,6 @@ src/config/db.js
 src/config/config.js
 src/app/api/document/fire-safety/files/*
 src/log/*
+*-bak
+*_bak
+*.pem
