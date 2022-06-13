@@ -252,10 +252,6 @@ class TenantFireSafetyDisclosureDocumentBuilder {
                         logMemoryUsage();
                         const compareUnits = device => {
                             const result = GET_UNIT_NUMBER_REGEX.exec(device.DeviceLocation);
-
-				logger.info(`residential result: ${result}`);
-
-                            //return result && result[2] === residentialUnit //needs lowercase
                             return result && `${result[2]}`.toLowerCase() === `${residentialUnit}`.toLowerCase();
                         };
 
