@@ -349,9 +349,6 @@ class TenantFireSafetyDisclosureDocumentBuilder {
                                 const lastDeviceInspection = deviceId2lastInspection[device._id];
                                 const lastDeviceInspectionDateKey = lastDeviceInspection && moment(lastDeviceInspection.InspectionDate).format('YYYY-MM-DD');
 
-
-                        logger.info(`TenantFireSafetyDisclosureDocumentBuilder. params ${deviceTypeType}`);
-
                                 if (deviceTypeType === 'exit') {
                                     valuesKey2Value['none'] = {};
                                 } else if (deviceTypeType === 'smokedetector') {
@@ -374,13 +371,7 @@ class TenantFireSafetyDisclosureDocumentBuilder {
                                     }
 
                                     const alarmPanelFloor = id2floor[device.FloorID];
-                        logger.info(`TenantFireSafetyDisclosureDocumentBuilder. floorid ${FloorID}`);
-                        logger.info(`TenantFireSafetyDisclosureDocumentBuilder. defloorID l:365 ${device.FloorID}`);
-                        logger.info(`TenantFireSafetyDisclosureDocumentBuilder. id2floors l:365 ${JSON.stringify(id2floor)}`);
-                        logger.info(`TenantFireSafetyDisclosureDocumentBuilder. alarmpanelFloor ${alarmPanelFloor}`);
                                     if (alarmPanelFloor) {
-                        logger.info(`TenantFireSafetyDisclosureDocumentBuilder. if alarmpanelfloor ${device.FloorID}`);
-                        logger.info(`TenantFireSafetyDisclosureDocumentBuilder. alarmpanelFloor ${alarmPanelFloor}`);
                                         valuesKey2Value[valuesKey].FloorTitle = alarmPanelFloor.Title;
                                     }
 
