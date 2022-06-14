@@ -59,12 +59,23 @@ class TenantFireSafetyDisclosureDocumentBuilder {
                 (floorId2signers[FloorID] = floorId2signers[FloorID] || []).push(signer);
             });
 
-            const floors = await FloorDAO.all({_id: {$in: floorIds}, Status: {$ne: -1}});
+            const floorsPre = await FloorDAO.all({_id: {$in: floorIds}, Status: {$ne: -1}});
 
             let propertyIds = [];
             let buildingIds = [];
             floorIds = [];
 
+            const id2floorPre = {};
+            _.forEach(floorsPre, floor => {
+                floorIds.push(floor._id);
+                id2floorPre[floor._id] = floor;
+                propertyIds.push(floor.PropertyID);
+                buildingIds.push(floor.BuildingID);
+            });
+
+            const properties = await PropertyDAO.all({_id: {$in: propertyIds}, Status: {$ne: -1}});
+            //floors were not being found unless at least 1 resident was in each floor (including non-occupy?)
+            const floors = await FloorDAO.all({BuildingID: {$in: buildingIds}, Status: {$ne: -1}});
             const id2floor = {};
             _.forEach(floors, floor => {
                 floorIds.push(floor._id);
@@ -73,7 +84,6 @@ class TenantFireSafetyDisclosureDocumentBuilder {
                 buildingIds.push(floor.BuildingID);
             });
 
-            const properties = await PropertyDAO.all({_id: {$in: propertyIds}, Status: {$ne: -1}});
             propertyIds = [];
             const id2property = {};
             _.forEach(properties, property => {
@@ -249,6 +259,7 @@ class TenantFireSafetyDisclosureDocumentBuilder {
 
                         logger.info(`TenantFireSafetyDisclosureDocumentBuilder.buildBatch({}) processing ${createdDefinitionsCounter}/${dataCountToProcess} params ${FloorID}/${residentialUnit} ${signer && signer.name || ''}`);
 
+                        logger.info(`TenantFireSafetyDisclosureDocumentBuilder. residentials ${residentialUnit}`);
                         logMemoryUsage();
                         const compareUnits = device => {
                             const result = GET_UNIT_NUMBER_REGEX.exec(device.DeviceLocation);
@@ -267,6 +278,9 @@ class TenantFireSafetyDisclosureDocumentBuilder {
                         const devicesSortedByType = _.filter(floorId2preparedDevices[FloorID], filterInUnitSmokedetectors);
 
                         const alarmPanelsCount = floorId2alarmCounter[FloorID];
+
+                        logger.info(`TFSDDocBuilder. alarmpanelscount: ${alarmPanelsCount}`);
+
                         if (!alarmPanelsCount) {
                             devicesSortedByType.push(...(buildingId2alarmPanels[building._id] || []));
                         }
@@ -335,6 +349,9 @@ class TenantFireSafetyDisclosureDocumentBuilder {
                                 const lastDeviceInspection = deviceId2lastInspection[device._id];
                                 const lastDeviceInspectionDateKey = lastDeviceInspection && moment(lastDeviceInspection.InspectionDate).format('YYYY-MM-DD');
 
+
+                        logger.info(`TenantFireSafetyDisclosureDocumentBuilder. params ${deviceTypeType}`);
+
                                 if (deviceTypeType === 'exit') {
                                     valuesKey2Value['none'] = {};
                                 } else if (deviceTypeType === 'smokedetector') {
@@ -357,7 +374,13 @@ class TenantFireSafetyDisclosureDocumentBuilder {
                                     }
 
                                     const alarmPanelFloor = id2floor[device.FloorID];
+                        logger.info(`TenantFireSafetyDisclosureDocumentBuilder. floorid ${FloorID}`);
+                        logger.info(`TenantFireSafetyDisclosureDocumentBuilder. defloorID l:365 ${device.FloorID}`);
+                        logger.info(`TenantFireSafetyDisclosureDocumentBuilder. id2floors l:365 ${JSON.stringify(id2floor)}`);
+                        logger.info(`TenantFireSafetyDisclosureDocumentBuilder. alarmpanelFloor ${alarmPanelFloor}`);
                                     if (alarmPanelFloor) {
+                        logger.info(`TenantFireSafetyDisclosureDocumentBuilder. if alarmpanelfloor ${device.FloorID}`);
+                        logger.info(`TenantFireSafetyDisclosureDocumentBuilder. alarmpanelFloor ${alarmPanelFloor}`);
                                         valuesKey2Value[valuesKey].FloorTitle = alarmPanelFloor.Title;
                                     }
 
