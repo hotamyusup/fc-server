@@ -21,6 +21,7 @@ const PropertySchema = new Schema({
     YearConstructed: {type: String},
     Organization: {type: Schema.Types.ObjectId, ref: 'Organization'},
     Client: {type: String},
+    BFID: {type:String},
     PropertyManager: {type: Schema.Types.ObjectId, ref: 'User'},
     Document409ManagerContact: ContactSchema,
     QRCode: {type: String},
