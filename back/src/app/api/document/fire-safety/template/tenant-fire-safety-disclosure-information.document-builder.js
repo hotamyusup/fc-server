@@ -114,6 +114,7 @@ class TenantFireSafetyDisclosureDocumentBuilder {
 
             const filterEmergencyExit = device => {
                 const type = equipment2type[device.DeviceType] && equipment2type[device.DeviceType].type;
+
                 return type !== 'exit' || (type === 'exit' && device.IsEmergencyExit);
             };
 
@@ -259,13 +260,19 @@ class TenantFireSafetyDisclosureDocumentBuilder {
 
                         logger.info(`TenantFireSafetyDisclosureDocumentBuilder.buildBatch({}) processing ${createdDefinitionsCounter}/${dataCountToProcess} params ${FloorID}/${residentialUnit} ${signer && signer.name || ''}`);
 
-                        logger.info(`TenantFireSafetyDisclosureDocumentBuilder. residentials ${residentialUnit}`);
+                        //logger.info(`TenantFireSafetyDisclosureDocumentBuilder. residentials ${residentialUnit}`);
                         logMemoryUsage();
                         const compareUnits = device => {
                             const result = GET_UNIT_NUMBER_REGEX.exec(device.DeviceLocation);
-                            return result && `${result[2]}`.toLowerCase() === `${residentialUnit}`.toLowerCase();
+
+                        //logger.info(`TenantFireSafetyDisclosureDocumentBuilder. compareUnits -> ${result}`);
+                            return result && (
+					`${result[2]}`.toLowerCase() === `${residentialUnit}`.toLowerCase() ||
+					`0${result[2]}`.toLowerCase() === `${residentialUnit}`.toLowerCase() 
+				);
                         };
 
+//                        logger.info(`TenantFireSafetyDisclosureDocumentBuilder. compareUnits before filter: ${compareUnits(device)}`);
                         const filterInUnitSmokedetectors = device => {
                             if (!residentialUnit) {
                                 return true;
@@ -876,12 +883,16 @@ class TenantFireSafetyDisclosureDocumentBuilder {
 
             const filterEmergencyExit = device => {
                 const type = equipment2type[device.DeviceType] && equipment2type[device.DeviceType].type;
+
                 return type !== 'exit' || (type === 'exit' && device.IsEmergencyExit);
             };
 
             const compareUnits = device => {
                 const result = getUnitNumberRegex.exec(device.DeviceLocation);
-		return result && `${result[2]}`.toLowerCase() === `${residentialUnit}`.toLowerCase();
+                return result && (
+			`${result[2]}`.toLowerCase() === `${residentialUnit}`.toLowerCase() ||
+			`0${result[2]}`.toLowerCase() === `${residentialUnit}`.toLowerCase() 
+		);
             };
 
             const filterInUnitSmokedetectors = device => {
@@ -907,7 +918,7 @@ class TenantFireSafetyDisclosureDocumentBuilder {
                 .filter(getStyleFromDevice)
                 .filter(device => device.Status !== -1)
                 .filter(device => device.QRCode !== "")
-                .filter(filterEmergencyExit)
+                .filter(filterEmergencyExit => filterEmergencyExit.Status !== null)
                 .filter(filterInUnitSmokedetectors);
 
             const alarmPanelsCount = devicesSortedByType.filter(device => getStyleFromDevice(device).type === 'alarmpanel').length;
