@@ -663,6 +663,8 @@ class TenantFireSafetyDisclosureDocumentBuilder {
                         }
 
                         const residentialUnitTitle = residentialUnit ? ` - Unit ${residentialUnit}` : '';
+			//Fillmore hard code check to use building title as addy
+			const buildingStreet = (property._id == 'b02032f6af785886e393ac3a') ? building.Title : property.Street;
                         const documentDefinition = {
                             content: [
                                 {
@@ -689,7 +691,7 @@ class TenantFireSafetyDisclosureDocumentBuilder {
                                 {
                                     columns: [
                                         {
-                                            text: `BUILDING ADDRESS: ${property.Street}, ${property.City}`,
+                                            text: `BUILDING ADDRESS: ${buildingStreet}, ${property.City}`,
                                             width: "70%"
                                         },
                                         {
