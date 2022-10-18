@@ -53,6 +53,10 @@ class PropertyDAO extends PropertyChildrenBaseDAO {
 
         return property;
     }
+
+    async getByTitle(Title) {
+        return await this.model.find({Title});
+    }
 }
 
 

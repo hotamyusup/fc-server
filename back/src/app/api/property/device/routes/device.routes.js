@@ -11,6 +11,7 @@ const DEVICE_ROUTES = [
     {method: 'POST', path: '/devices/{DeviceID}', config: DeviceController.update},
     {method: 'POST', path: '/devices/batch', config: DeviceController.batch},
     {method: 'POST', path: '/devices/getBatch', config: DeviceController.getBatch},
+    {method: 'POST', path: '/devices/alarmData', config: DeviceController.alarmData},
 ];
 
 module.exports = DEVICE_ROUTES;
