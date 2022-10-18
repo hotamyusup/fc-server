@@ -92,7 +92,7 @@ class DeviceController extends PropertyChildrenBaseController {
                                 { $set: { AlarmStatus: alarmItem.event }},
                                 { multi: true }
                             );
-                            debugger;
+
                             if (result.ok !== 1 || result.nModified === 0) {
                                 const errMsg = `Property "${alarmItem.siteName}", zone "${alarmItem.zoneId}". Set alarm status "${alarmItem.event}": ${(result.ok !== 1) ? 'update failed' : '0 updated records'}`
                                 throw new Error(errMsg);
